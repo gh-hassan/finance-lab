@@ -673,3 +673,9 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 .theme-fade .bg{transition:background .5s ease!important}
 /* pictures use a softer blue than the heavy navy so they feel light */
 :root[data-theme="light"] .sv-stage{--c2:#4F8CBF}
+
+/* question cards: a tidy wrapping grid, nothing cut off, nothing blinking */
+.qrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:16px;overflow:visible;padding:0;margin:0;scroll-snap-type:none}
+.qcard{flex:none;min-width:0;min-height:150px;padding:20px}
+.qcard b{overflow-wrap:break-word}
+.qcard .qdot{display:none}

@@ -46,7 +46,7 @@ export function renderHome(main, go) {
   const bands = h('div', { class: 'bands' }, learnBand, scBand);
   const qCards = QUESTIONS.map(id => MODS.find(m => m.id === id)).filter(Boolean).map(m => {
     const t = TOPICS[m.group];
-    return h('a', { class: `qcard tint-${t.tint} tilt`, href: '/' + m.id, 'data-link': true }, h('span', { class: 'qdot' }), h('small', {}, t.label), h('b', {}, (BEGINNER[m.id] || {}).ask || m.title), h('span', { class: 'go', html: ICONS.arrow }));
+    return h('a', { class: `qcard tint-${t.tint} tilt`, href: '/' + m.id, 'data-link': true }, h('small', {}, t.label), h('b', {}, (BEGINNER[m.id] || {}).ask || m.title), h('span', { class: 'go', html: ICONS.arrow }));
   });
   const qrow = h('section', { class: 'sec reveal' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Start with a question')), h('div', { class: 'qrow' }, qCards));
 
@@ -87,9 +87,4 @@ export function renderHome(main, go) {
   const hn = main.querySelector('#heroNum'); if (hn) countUp(hn, '$98,420', 1200);
   let k = 0; const ask = main.querySelector('#askText');
   const timer = setInterval(() => { if (!ask.isConnected) { clearInterval(timer); return; } ask.classList.add('swap'); setTimeout(() => { k = (k + 1) % PLACEHOLDERS.length; ask.textContent = PLACEHOLDERS[k]; ask.classList.remove('swap'); }, 220); }, 2600);
-  const qrowEl = main.querySelector('.qrow');
-  let dir = 1, paused = false;
-  qrowEl.addEventListener('pointerenter', () => (paused = true)); qrowEl.addEventListener('pointerleave', () => (paused = false));
-  const drift = () => { if (!qrowEl.isConnected) return; if (!paused && !matchMedia('(prefers-reduced-motion: reduce)').matches) { qrowEl.scrollLeft += dir * 0.5; if (qrowEl.scrollLeft + qrowEl.clientWidth >= qrowEl.scrollWidth - 1) dir = -1; else if (qrowEl.scrollLeft <= 0) dir = 1; } requestAnimationFrame(drift); };
-  requestAnimationFrame(drift);
 }
