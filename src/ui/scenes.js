@@ -3,12 +3,12 @@
    draw(t, p, W, H): t runs 0..1, p holds the parameters, and W x H is the real pixel size of the stage,
    so text is never scaled. Design rules: no characters, only proportional bars and lines, one accent per idea,
    labels centred on what they describe. */
-import { corr, linreg, mean, median, money, ncdf, nf, stdev, sum } from '../lib/math';
+import { compact, corr, linreg, mean, median, money, ncdf, nf, stdev, sum } from '../lib/math';
 import { esc, h, reduced } from './visuals.js';
 import { rangeSlider } from './slider.js';
 import { tick } from './ticker.js';
 
-const M = x => money(x, 0);
+const M = x => (Math.abs(x) >= 1e6 ? compact(x) : money(x, 0));
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, u) => a + (b - a) * u;
 const ease = u => 1 - Math.pow(1 - clamp(u, 0, 1), 3);
@@ -107,7 +107,7 @@ export const SCENES = {
       let now = 0, pv = 0; const few = flows.length <= 8;
       flows.forEach(f => { const val = f.a / Math.pow(1 + r, f.y * u); now += val; pv += f.a / Math.pow(1 + r, f.y); const cx = pad + (f.y + 0.5) * slot; g += R(cx - bw / 2, base - f.a * sc, bw, f.a * sc, 'none', { r: 6, stroke: 'var(--mute)', dash: true }) + R(cx - bw / 2, base - val * sc, bw, val * sc, 'var(--c3)', { r: 6 }); if (few) g += T(cx, base - f.a * sc - 14, M(val), { z: 13.5 }); });
       const px = pad + 0.5 * slot, pw = clamp(slot * 0.8, 10, 60);
-      g += R(px - pw / 2, base - now * sc, pw, now * sc, 'var(--c1)', { r: 6 }) + T(px, base - Math.max(pv, 1) * sc - 16, M(now), { z: 17, c: 'var(--c1)' }) + T(px, base + 16, 'Today', { z: 12, w: 700 });
+      g += R(px - pw / 2, base - now * sc, pw, now * sc, 'var(--c1)', { r: 6 }) + T(px, base - Math.max(nominal, 1) * sc - 16, M(now), { z: 17, c: 'var(--c1)' }) + T(px, base + 16, 'Today', { z: 12, w: 700 });
       const step = Math.max(N <= 12 ? 1 : Math.ceil(N / 6), Math.ceil(40 / slot));
       for (let k = step; k <= N; k += step) g += T(pad + (k + 0.5) * slot, base + 16, slot * step > 50 ? 'Yr ' + k : '' + k, { z: 12, w: 600, c: 'var(--mute)' });
       const cap = u < 0.03 ? `These payments add up to ${M(nominal)} on paper.` : u < 0.999 ? `Bringing them back to today at ${p.rate}% a year, each one shrinks.` : `Worth ${p.result || M(pv)} today, not ${M(nominal)}. Waiting costs money.`;

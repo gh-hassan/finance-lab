@@ -749,3 +749,10 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 .glcard b{font:600 15px var(--display);letter-spacing:-.03em}
 .glcard p{font:400 14.5px/1.45 var(--body);color:var(--ink)}
 .glcard a{font:600 13px var(--body);color:var(--c1)}
+
+/* result cards grow with their numbers and wrap onto the next row instead of clipping */
+.stats{display:flex;flex-wrap:wrap;grid-template-columns:none}
+.stats>.stat{flex:1 1 172px;min-width:min-content;max-width:100%}
+.stats>.grp{flex:1 1 100%}
+.stat .sv{overflow-wrap:normal}
+.stat{container-type:normal}
