@@ -8,6 +8,8 @@ import { mountModule } from './module.js';
 import { renderHome } from './home.js';
 import { renderLearn } from './learn.js';
 import { renderScenarios } from './scenarios.js';
+import { renderCompare } from './compare.js';
+import { renderGlossary, enhanceTerms } from './glossary.js';
 
 let cleanup = () => { };
 let view;
@@ -36,7 +38,9 @@ export function startApp(root) {
     h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
     h('a', { class: 'pill', href: '/learn', 'data-link': true, 'data-id': 'learn' }, h('span', { html: ICONS.learn }), h('em', {}, 'Learn')),
     calcBtn,
-    h('a', { class: 'pill', href: '/scenarios', 'data-link': true, 'data-id': 'scenarios' }, h('span', { html: ICONS.scenarios }), h('em', {}, 'Scenarios'))
+    h('a', { class: 'pill', href: '/scenarios', 'data-link': true, 'data-id': 'scenarios' }, h('span', { html: ICONS.scenarios }), h('em', {}, 'Scenarios')),
+    h('a', { class: 'pill', href: '/compare', 'data-link': true, 'data-id': 'compare' }, h('span', { html: ICONS.scenarios }), h('em', {}, 'Compare')),
+    h('a', { class: 'pill', href: '/glossary', 'data-link': true, 'data-id': 'glossary' }, h('span', { html: ICONS.learn }), h('em', {}, 'Glossary'))
   ];
 
   const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<img src="/logo.png" alt="" width="38" height="38">' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop);
@@ -52,7 +56,7 @@ export function startApp(root) {
   let sel = 0, shown = [], extra = [];
   const renderList = () => {
     const q = input.value.trim().toLowerCase();
-    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
+    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
     shown = [...extra, ...MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q))];
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${m.blurb && !BEGINNER[m.id] ? esc(m.blurb) : esc(m.title) + ' · ' + esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';
@@ -105,14 +109,17 @@ export function navigate(path) {
 }
 
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios';
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary';
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === (isLearn ? 'learn' : isSc ? 'scenarios' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === (isLearn ? 'learn' : isSc ? 'scenarios' : isCmp ? 'compare' : isGl ? 'glossary' : 'home')));
   const rerender = () => route();
   if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
   else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
+  else if (isCmp) { document.title = 'Compare · SmartWealth'; cleanup = renderCompare(view); }
+  else if (isGl) { document.title = 'Glossary · SmartWealth'; cleanup = renderGlossary(view); }
   else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
   else { document.title = 'SmartWealth · Learn money by playing with it'; renderHome(view, navigate); }
+  if (!isGl) enhanceTerms(view);
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   if (location.hash && id === 'learn') setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 600);
   else window.scrollTo({ top: 0 });
