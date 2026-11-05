@@ -536,6 +536,9 @@ export const SCENES = {
   }
 };
 
+/** Which moment of each story to show while the picture is at rest (1 = the finished frame). */
+const POSTER = { loan: 0.4, growth: 0.7, inflation: 0.75, breakeven: 0.6, cycle: 0.85, rent: 0.9, spread: 0.75, risk: 0.85, snowball: 0.85 };
+
 export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present', 'exchange', 'loan', 'bond', 'stock', 'leverage', 'risk', 'diversify', 'beta', 'mix2', 'journey', 'npv', 'blend', 'breakeven', 'cycle', 'merge', 'option', 'average', 'spread', 'bell', 'tail', 'expected', 'lawlarge', 'correlation', 'regression', 'montecarlo'];
 
 /** Animated scene player with two modes.
@@ -544,7 +547,7 @@ export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present'
  *  Draws at the stage's real pixel size; the caption box reserves the height of its longest caption. */
 export class SceneView {
   constructor(host, id, { params = {}, external = false, mode = 'loop' } = {}) {
-    this.sc = SCENES[id]; this.id = id; this.external = external; this.hover = mode === 'hover'; this.t = this.hover ? 1 : 0; this.mode = 'watch';
+    this.sc = SCENES[id]; this.id = id; this.external = external; this.hover = mode === 'hover'; this.poster = POSTER[id] == null ? 1 : POSTER[id]; this.t = this.hover ? this.poster : 0; this.mode = 'watch';
     this.raf = 0; this.timer = 0; this.loopT = 0; this.playing = false; this.visible = this.hover; this.touched = false; this.active = false; this.plays = 0;
     this.p = { seed: 3, ...Object.fromEntries(this.sc.params.map(q => [q.id, q.v])), ...params };
     host.innerHTML = ''; host.classList.add('sv-wrap');
@@ -556,20 +559,25 @@ export class SceneView {
     requestAnimationFrame(() => this.fitCaption());
   }
   buildHover(host) {
-    this.badge = h('span', { class: 'sv-badge' }, 'Hover to play');
     this.stage.tabIndex = 0; this.stage.classList.add('hoverable');
-    host.append(h('div', { class: 'sv-frame' }, this.stage, this.badge), this.cap);
+    host.append(h('div', { class: 'sv-frame' }, this.stage), this.cap);
     const start = () => {
-      if (this.active) return; this.active = true; this.badge.hidden = true;
+      if (this.active) return;
+      if (SceneView.current && SceneView.current !== this) SceneView.current.stopHover();
+      SceneView.current = this; this.active = true;
       if (this.sc.seeded && this.plays++ > 0) { this.p.seed = (this.p.seed || 1) + 1; this.fitCaption(); }
       this.startWatch();
     };
-    const stop = () => { if (!this.active) return; this.active = false; this.halt(); this.t = 1; this.draw(); this.badge.hidden = false; };
     this.stage.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') start(); });
-    this.stage.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') stop(); });
-    this.stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') (this.active ? stop() : start()); });
+    this.stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') start(); });
     this.stage.addEventListener('focus', start);
-    this.stage.addEventListener('blur', stop);
+    /* once started it keeps playing until the reader moves on: another picture starts, or this one scrolls away */
+    if ('IntersectionObserver' in window) { this.io = new IntersectionObserver(es => { if (!es[0].isIntersecting) this.stopHover(); }, { threshold: 0.15 }); this.io.observe(host); }
+  }
+  stopHover() {
+    if (!this.active) return;
+    this.active = false; this.halt(); this.t = this.poster; this.draw();
+    if (SceneView.current === this) SceneView.current = null;
   }
   buildLoop(host) {
     this.btn = h('button', { class: 'btn play', type: 'button', onclick: () => this.setMode(this.mode === 'watch' ? 'explore' : 'watch') }, 'Make it interactive');
@@ -643,5 +651,5 @@ export class SceneView {
     [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1].forEach(t => { let c = ''; try { c = this.sc.draw(t, this.p, W, H).cap; } catch (e) { /* ignore */ } m.textContent = c; max = Math.max(max, m.offsetHeight); });
     this.cap.style.minHeight = max + 'px';
   }
-  destroy() { this.halt(); clearTimeout(this.timer); if (this.io) this.io.disconnect(); if (this.ob) this.ob.disconnect(); if (this.measure) this.measure.remove(); }
+  destroy() { if (SceneView.current === this) SceneView.current = null; this.halt(); clearTimeout(this.timer); if (this.io) this.io.disconnect(); if (this.ob) this.ob.disconnect(); if (this.measure) this.measure.remove(); }
 }
