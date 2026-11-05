@@ -5,6 +5,9 @@ Nineteen finance calculators for MBA students and beginners. Every calculator ha
 - **Beginner mode:** one plain-English question, a few friendly inputs, a big answer, one animated chart, and a short glossary.
 - **Pro mode:** every input, all results, step-by-step workings with your numbers, tables and the formulas behind it.
 
+- **Scenarios:** pick a situation (project, company, loan, savings, small business, stock), set worst/base/best numbers, then see the three futures, what matters most, a two-way what-if grid and a 3,000-run risk simulation.
+- **Learn:** 21 short animations of the basic ideas.
+
 Calculators: time value of money, interest rates, annuities, loan amortization, bonds, stock valuation (DDM), DCF, capital budgeting, WACC, capital structure, break-even, working capital, CAPM, portfolio theory, return statistics, options (Black-Scholes), ratios and DuPont, FX and parity, M&A accretion/dilution.
 
 ## Run it
@@ -33,6 +36,9 @@ src/modules/m1-5.js    the 19 calculators (inputs, calc, concept text)
 src/ui/beginner.js     plain-English layer: questions, labels, headlines, glossary
 src/ui/module.js       calculator page (Beginner and Pro)
 src/ui/home.js         home page
+src/ui/learn.js        Learn page
+src/ui/scenarios.js    Scenarios page
+src/lib/scenarios.ts   scenario engine (cases, tornado, grid, Monte Carlo)
 src/ui/shell.js        navigation, search (press /), theme, routing
 src/ui/visuals.js      charts, sparklines, count-up and confetti
 tests/                 vitest

@@ -53,8 +53,9 @@ export function mountModule(m, main, onMode) {
   inputsEl.append(h('div', { class: 'ihead' }, h('h2', {}, beginner ? 'Play with these' : 'Inputs'), h('button', { class: 'btn small', type: 'button', onclick: () => { store.del(key); store.del(sKey); onMode(); } }, 'Reset')));
   fieldList.forEach(f => {
     const id = `f_${m.id}_${f.id}`, wrap = h('div', { class: 'fld' }), label = (beginner && B.labels && B.labels[f.id]) || f.label, tip = beginner && (f.tip || (B.tips && B.tips[f.id]));
-    wrap.append(h('label', { for: id }, label));
-    if (tip) wrap.append(h('small', { class: 'tip' }, tip));
+    const tipEl = tip ? h('small', { class: 'tip', hidden: true }, tip) : null;
+    wrap.append(h('div', { class: 'lrow' }, h('label', { for: id }, label), tip ? h('button', { class: 'qbtn', type: 'button', 'aria-label': 'What does this mean?', onclick: () => { tipEl.hidden = !tipEl.hidden; } }, '?') : null));
+    if (tipEl) wrap.append(tipEl);
     let input, slider = null;
     if (f.type === 'select') { input = h('select', { id }, f.options.map(([val, txt]) => h('option', { value: val }, txt))); input.value = state[f.id]; }
     else if (f.type === 'text') input = h('input', { id, type: 'text', value: state[f.id], spellcheck: 'false', autocomplete: 'off' });
@@ -106,18 +107,18 @@ export function mountModule(m, main, onMode) {
       const ek = easyCard(B, k);
       let plain; try { const fn = simple ? B.simple.plain : B.plain; plain = fn ? fn(simple ? b : eff, out, k) : [`${ek.label}: ${k.value}`, '']; } catch (e) { plain = [`${ek.label}: ${k.value}`, '']; }
       heroEl.hidden = !cards.length;
-      heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>${plain[1] ? `<p class="detail">${esc(plain[1])}</p>` : ''}`;
+      heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>`;
       const big = heroEl.querySelector('[data-v]');
       if (fresh) { countUp(big, k.value || '—'); if (k.tone === 'good') setTimeout(() => burst(big), 500); } else big.textContent = k.value || '—';
-      const extra = cards.filter(c => !c.head && c !== k).slice(0, 3).map(c => easyCard(B, c));
-      cardsEl.innerHTML = extra.map(c => `<div class="stat ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv">${esc(c.value)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div>`).join('');
-      wordsEl.innerHTML = (B.words || []).length ? `<h3>New words, in plain English</h3><div class="wgrid">${B.words.map(([t, d]) => `<div class="word"><b>${esc(t)}</b><span>${esc(d)}</span></div>`).join('')}</div>` : '';
+      const extra = cards.filter(c => !c.head && c !== k).slice(0, 2).map(c => easyCard(B, c));
+      cardsEl.innerHTML = extra.map(c => `<div class="stat ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv">${esc(c.value)}</b></div>`).join('');
+      wordsEl.innerHTML = (B.words || []).length ? `<details><summary>Words to know</summary><div class="wgrid">${B.words.map(([t, d]) => `<div class="word"><b>${esc(t)}</b><span>${esc(d)}</span></div>`).join('')}</div></details>` : '';
       /* teaching animation driven by the user's numbers */
       if (B.scene && SCENES[B.scene.id] && cards.length) {
         let sp = null; try { sp = B.scene.map(simple ? b : eff, out); } catch (e) { sp = null; }
         if (sp) {
           sceneCard.hidden = false;
-          if (!sceneView) { sceneView = new SceneView(sceneHost, B.scene.id, { params: sp, external: true }); sceneCard.append(h('div', { class: 'chead' }, h('div', {}, h('h3', {}, SCENES[B.scene.id].title), h('p', { class: 'sub' }, SCENES[B.scene.id].plain))), sceneHost); }
+          if (!sceneView) { sceneView = new SceneView(sceneHost, B.scene.id, { params: sp, external: true }); sceneCard.append(h('div', { class: 'chead' }, h('h3', {}, SCENES[B.scene.id].title)), sceneHost); }
           else sceneView.setParams(sp, !fresh);
         }
         list = [];
@@ -147,7 +148,7 @@ export function mountModule(m, main, onMode) {
     h('div', { class: 'vtitle' },
       h('a', { class: `chip tint-${topic.tint}`, href: '/', 'data-link': true }, '← ' + topic.label),
       h('h1', { html: esc(beginner && B.ask ? B.ask : m.title).replace(/(\S+\??)$/, '<em>$1</em>') }),
-      h('p', { class: 'blurb' }, beginner ? (B.intro || 'Change a number and watch the answer and the picture update. Nothing here can break.') : m.blurb)),
+      beginner ? null : h('p', { class: 'blurb' }, m.blurb)),
     h('div', { class: 'seg', title: 'Beginner shows the simple version. Pro shows everything.' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner)));
   const lab = h('div', { class: 'lab' }, inputsEl, outEl);
   const concept = h('div', { class: 'concept card', html: m.concept, hidden: true });

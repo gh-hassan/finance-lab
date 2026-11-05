@@ -16,6 +16,8 @@ export const mult = (x: number, d = 2): string => (isNum(x) ? nf(x, d) + '×' : 
 export const yrs = (x: number, d = 2): string => (isNum(x) ? nf(x, d) + ' yrs' : '—');
 export const nfx = (x: number, d = 4): string => (isNum(x) ? x.toFixed(d) : '—');
 export const compact = (x: number): string => {
+  if (!isNum(x)) return '—';
+  if (x < 0) return '−' + compact(-x);
   const a = Math.abs(x);
   if (a >= 1e9) return '$' + +(x / 1e9).toFixed(2) + 'B';
   if (a >= 1e6) return '$' + +(x / 1e6).toFixed(2) + 'M';

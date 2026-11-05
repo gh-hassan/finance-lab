@@ -38,8 +38,12 @@ export function renderHome(main, go) {
       h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));
 
   const learnBand = h('a', { class: 'learnband tilt reveal', href: '/learn', 'data-link': true },
-    h('div', {}, h('p', { class: 'eyebrow' }, 'New to money? Start here'), h('h2', { html: `${SCENE_ORDER.length} big ideas, each one <em>an animation</em>` }), h('p', {}, 'Interest, risk, loans, stocks and more, in very simple words. Press play and watch it happen.')),
+    h('div', {}, h('p', { class: 'eyebrow' }, 'New to money? Start here'), h('h2', { html: `${SCENE_ORDER.length} big ideas, each one <em>an animation</em>` }), h('p', {}, 'Interest, risk, loans, stocks and more. Press play.')),
     h('span', { class: 'go', html: ICONS.arrow }));
+  const scBand = h('a', { class: 'learnband sc tilt reveal', href: '/scenarios', 'data-link': true },
+    h('div', {}, h('p', { class: 'eyebrow' }, 'Test your plan'), h('h2', { html: 'Run <em>what-if</em> scenarios' }), h('p', {}, 'Best case, worst case and risk, in one place.')),
+    h('span', { class: 'go', html: ICONS.arrow }));
+  const bands = h('div', { class: 'bands' }, learnBand, scBand);
   const qCards = QUESTIONS.map(id => MODS.find(m => m.id === id)).filter(Boolean).map(m => {
     const t = TOPICS[m.group];
     return h('a', { class: `qcard tint-${t.tint} tilt`, href: '/' + m.id, 'data-link': true }, h('span', { class: 'qdot' }), h('small', {}, t.label), h('b', {}, (BEGINNER[m.id] || {}).ask || m.title), h('span', { class: 'go', html: ICONS.arrow }));
@@ -76,7 +80,7 @@ export function renderHome(main, go) {
   const all = h('section', { class: 'sec reveal' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Every tool')),
     groups.map(g => h('div', { class: 'agroup' }, h('h3', { class: `tint-${TOPICS[g].tint}` }, TOPICS[g].label), h('div', { class: 'chips' }, MODS.filter(m => m.group === g).map(m => h('a', { class: `chip2 tint-${TOPICS[g].tint}`, href: '/' + m.id, 'data-link': true }, m.title))))));
 
-  main.append(hero, learnBand, qrow, grid2, all);
+  main.append(hero, bands, qrow, grid2, all);
 
   /* motion */
   main.querySelectorAll('[data-count]').forEach(el => { if (el.dataset.count) countUp(el, el.dataset.count, 900); });

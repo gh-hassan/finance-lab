@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { annF, bondPrice, bs, findRoot, fvF, irr, money, nf, npv, parseList, pct, range } from '../src/lib/math';
+import { annF, bondPrice, bs, compact, findRoot, fvF, irr, money, nf, npv, parseList, pct, range } from '../src/lib/math';
 
 describe('formatting', () => {
   it('formats money, numbers and percents', () => {
@@ -8,6 +8,12 @@ describe('formatting', () => {
     expect(money(-12.5)).toBe('−$12.50');
     expect(pct(0.12683, 2)).toBe('12.68%');
     expect(nf(NaN)).toBe('—');
+  });
+  it('compacts large and negative amounts', () => {
+    expect(compact(30300)).toBe('$30.3K');
+    expect(compact(-30300)).toBe('−$30.3K');
+    expect(compact(1250000)).toBe('$1.25M');
+    expect(compact(NaN)).toBe('—');
   });
   it('parses lists and ranges', () => {
     expect(parseList('1, 2;3  -4 x')).toEqual([1, 2, 3, -4]);

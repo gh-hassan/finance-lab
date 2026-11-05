@@ -7,6 +7,7 @@ import { ICONS } from './icons.js';
 import { mountModule } from './module.js';
 import { renderHome } from './home.js';
 import { renderLearn } from './learn.js';
+import { renderScenarios } from './scenarios.js';
 
 let cleanup = () => { };
 let view;
@@ -17,22 +18,21 @@ export function startApp(root) {
   const themeBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Toggle dark mode', html: theme() === 'dark' ? ICONS.sun : ICONS.moon, onclick: () => { const t = theme() === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; store.set('fl:theme', t); themeBtn.innerHTML = t === 'dark' ? ICONS.sun : ICONS.moon; } });
   const searchBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Search calculators (press /)', 'data-open-search': true, html: ICONS.search });
 
-  const pop = h('div', { class: 'menu', hidden: true });
-  const navItems = [h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home'))];
-  navItems.push(h('a', { class: 'pill', href: '/learn', 'data-link': true, 'data-id': 'learn' }, h('span', { html: ICONS.learn }), h('em', {}, 'Learn the basics')));
-  topics.forEach(g => {
-    const b = h('button', { class: 'pill', type: 'button', 'data-topic': g, 'aria-haspopup': 'true' }, h('span', { html: ICONS[g] }), h('em', {}, TOPICS[g].label));
-    b.addEventListener('click', e => {
-      e.stopPropagation();
-      if (!pop.hidden && pop.dataset.g === g) { pop.hidden = true; return; }
-      pop.dataset.g = g; pop.className = `menu tint-${TOPICS[g].tint}`;
-      pop.innerHTML = `<p>${esc(TOPICS[g].blurb)}</p>` + MODS.filter(m => m.group === g).map(m => `<a href="/${m.id}" data-link><b>${esc(m.title)}</b><small>${esc((BEGINNER[m.id] || {}).ask || m.blurb)}</small></a>`).join('');
-      const r = b.getBoundingClientRect(), pr = pop.parentElement.getBoundingClientRect();
-      pop.style.left = Math.max(0, Math.min(r.left - pr.left, pr.width - 320)) + 'px'; pop.hidden = false;
-    });
-    navItems.push(b);
+  const pop = h('div', { class: 'menu mega', hidden: true });
+  const calcBtn = h('button', { class: 'pill', type: 'button', 'data-id': 'calc', 'aria-haspopup': 'true' }, h('span', { html: ICONS.Valuation }), h('em', {}, 'Calculators'), h('span', { class: 'caret', html: '▾' }));
+  calcBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!pop.hidden) { pop.hidden = true; return; }
+    pop.innerHTML = topics.map(g => `<div class="mg tint-${TOPICS[g].tint}"><h4><i class="dot"></i>${esc(TOPICS[g].label)}</h4>${MODS.filter(m => m.group === g).map(m => `<a href="/${m.id}" data-link>${esc((BEGINNER[m.id] || {}).ask || m.title)}</a>`).join('')}</div>`).join('');
+    pop.hidden = false;
   });
-  document.addEventListener('click', e => { if (!e.target.closest('.menu')) pop.hidden = true; });
+  document.addEventListener('click', e => { if (!e.target.closest('.menu') && !e.target.closest('[data-id="calc"]')) pop.hidden = true; });
+  const navItems = [
+    h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
+    h('a', { class: 'pill', href: '/learn', 'data-link': true, 'data-id': 'learn' }, h('span', { html: ICONS.learn }), h('em', {}, 'Learn')),
+    calcBtn,
+    h('a', { class: 'pill', href: '/scenarios', 'data-link': true, 'data-id': 'scenarios' }, h('span', { html: ICONS.scenarios }), h('em', {}, 'Scenarios'))
+  ];
 
   const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<i></i><i></i><i></i>' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop);
   view = h('main', { id: 'view', tabindex: '-1' });
@@ -44,12 +44,13 @@ export function startApp(root) {
   const input = h('input', { type: 'search', placeholder: 'What do you want to figure out?', 'aria-label': 'Search calculators', autocomplete: 'off' }), list = h('div', { class: 'plist', role: 'listbox' });
   const palette = h('div', { class: 'palette', hidden: true }, h('div', { class: 'pbox' }, h('div', { class: 'pin', html: ICONS.search }, input, h('kbd', {}, 'esc')), list));
   document.body.append(palette);
-  let sel = 0, shown = [];
+  let sel = 0, shown = [], extra = [];
   const renderList = () => {
     const q = input.value.trim().toLowerCase();
-    shown = MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q));
+    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'animated lessons' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
+    shown = [...extra, ...MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q))];
     sel = Math.min(sel, Math.max(0, shown.length - 1));
-    list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${esc(m.title)} · ${esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';
+    list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${m.blurb && !BEGINNER[m.id] ? esc(m.blurb) : esc(m.title) + ' · ' + esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';
   };
   const openSearch = () => { palette.hidden = false; input.value = ''; sel = 0; renderList(); input.focus(); };
   const closeSearch = () => { palette.hidden = true; };
@@ -99,11 +100,12 @@ export function navigate(path) {
 }
 
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn';
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios';
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.topic === m.group : p.dataset.id === (isLearn ? 'learn' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === (isLearn ? 'learn' : isSc ? 'scenarios' : 'home')));
   const rerender = () => route();
   if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
+  else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
   else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
   else { document.title = 'SmartWealth · Learn money by playing with it'; renderHome(view, navigate); }
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
