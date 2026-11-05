@@ -32,3 +32,25 @@ export function tick(el, text, key) {
   cols.forEach(([col, d], i) => { col.style.transition = ''; col.style.transitionDelay = `${Math.min(i, 8) * 18}ms`; col.style.transform = `translateY(-${d * 10}%)`; });
   if (key) last.set(key, digits); el._digits = digits;
 }
+
+const NUM = /\d[\d,]*(?:\.\d+)?/g;
+const fmtLike = (v, sample) => { const dec = (sample.split('.')[1] || '').length; return sample.includes(',') || v >= 1000 ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec); };
+
+/** Sentences: the figures inside count smoothly from their old value to the new one, the words stay put. */
+export function tickText(el, text, dur = 650) {
+  text = String(text == null ? '' : text);
+  const from = el._tt, skeleton = text.replace(NUM, '#'), nums = text.match(NUM) || [];
+  cancelAnimationFrame(el._raf);
+  el._tt = { skeleton, nums: nums.map(n => parseFloat(n.replace(/,/g, ''))), shown: null };
+  const start = from && from.skeleton === skeleton && from.nums.length === nums.length && !reduced() ? (from.shown || from.nums) : null;
+  if (!start || !nums.length || start.every((v, i) => v === el._tt.nums[i])) { el.textContent = text; return; }
+  const t0 = performance.now(), to = el._tt.nums;
+  const step = now => {
+    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    const cur = to.map((v, i) => start[i] + (v - start[i]) * e); el._tt.shown = cur;
+    let i = 0; el.textContent = p >= 1 ? text : skeleton.replace(/#/g, () => { const s = nums_[i]; const v = cur[i++]; return fmtLike(Math.abs(v) < 1e-9 ? 0 : v, s); });
+    if (p < 1 && el.isConnected) el._raf = requestAnimationFrame(step);
+  };
+  const nums_ = nums;
+  el._raf = requestAnimationFrame(step);
+}
