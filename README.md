@@ -1,4 +1,4 @@
-# Finance Lab
+# SmartWealth
 
 Nineteen finance calculators for MBA students and beginners. Every calculator has:
 

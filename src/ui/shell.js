@@ -6,8 +6,7 @@ import { TOPICS, BEGINNER } from './beginner.js';
 import { ICONS } from './icons.js';
 import { mountModule } from './module.js';
 import { renderHome } from './home.js';
-
-const TICKER = 'FV = PV × (1 + r)ⁿ  ·  NPV = Σ CFₜ ÷ (1 + r)ᵗ  ·  WACC = E/V·kₑ + D/V·k_d·(1 − t)  ·  P₀ = D₁ ÷ (k − g)  ·  E[R] = r_f + β·(R_m − r_f)  ·  σₚ² = w₁²σ₁² + w₂²σ₂² + 2w₁w₂ρσ₁σ₂  ·  F = S·(1 + r_h) ÷ (1 + r_f)  ·  DOL = Contribution ÷ EBIT  ·  EOQ = √(2DS ÷ H)  ·  ';
+import { renderLearn } from './learn.js';
 
 let cleanup = () => { };
 let view;
@@ -20,6 +19,7 @@ export function startApp(root) {
 
   const pop = h('div', { class: 'menu', hidden: true });
   const navItems = [h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home'))];
+  navItems.push(h('a', { class: 'pill', href: '/learn', 'data-link': true, 'data-id': 'learn' }, h('span', { html: ICONS.learn }), h('em', {}, 'Learn the basics')));
   topics.forEach(g => {
     const b = h('button', { class: 'pill', type: 'button', 'data-topic': g, 'aria-haspopup': 'true' }, h('span', { html: ICONS[g] }), h('em', {}, TOPICS[g].label));
     b.addEventListener('click', e => {
@@ -34,9 +34,9 @@ export function startApp(root) {
   });
   document.addEventListener('click', e => { if (!e.target.closest('.menu')) pop.hidden = true; });
 
-  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<i></i><i></i><i></i>' }), 'Finance Lab'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop);
+  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<i></i><i></i><i></i>' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop);
   view = h('main', { id: 'view', tabindex: '-1' });
-  const foot = h('footer', { class: 'foot' }, h('div', { class: 'ticker', 'aria-hidden': 'true' }, h('div', { class: 'track' }, h('span', {}, TICKER.repeat(2)), h('span', {}, TICKER.repeat(2)))), h('p', {}, 'For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice.'));
+  const foot = h('footer', { class: 'foot' }, h('p', {}, 'For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice.'));
   const shell = h('div', { class: 'shell' }, bar, view, foot);
   root.append(shell);
 
@@ -99,12 +99,13 @@ export function navigate(path) {
 }
 
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id);
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn';
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.topic === m.group : p.dataset.id === 'home'));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.topic === m.group : p.dataset.id === (isLearn ? 'learn' : 'home')));
   const rerender = () => route();
-  if (m) { document.title = `${m.title} · Finance Lab`; cleanup = mountModule(m, view, rerender); }
-  else { document.title = 'Finance Lab · Learn finance by playing with it'; renderHome(view, navigate); }
+  if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
+  else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
+  else { document.title = 'SmartWealth · Learn money by playing with it'; renderHome(view, navigate); }
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   window.scrollTo({ top: 0 });
 }

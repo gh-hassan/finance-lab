@@ -71,8 +71,8 @@ export class XY {
     this.playing = true;
     const dur = this.spec.dur || Math.min(1500, Math.max(900, n * 16)), t0 = performance.now();
     const step = t => {
-      const p = Math.min(1, (t - t0) / dur), last = this.n0() - 1;
-      this.idx = Math.min(last, Math.floor(ease(p) * (last + 1)));
+      const p = Math.max(0, Math.min(1, (t - t0) / dur)), last = this.n0() - 1;
+      this.idx = Math.max(0, Math.min(last, Math.floor(ease(p) * (last + 1))));
       if (p < 1) { this.draw(); this.raf = requestAnimationFrame(step); }
       else { this.playing = false; this.idx = last; this.draw(); }
     };

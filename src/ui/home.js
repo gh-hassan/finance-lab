@@ -5,6 +5,7 @@ import { money, nf, range } from '../lib/math';
 import { h, esc, sparkline, countUp } from './visuals.js';
 import { BEGINNER, TOPICS, keyCard } from './beginner.js';
 import { ICONS } from './icons.js';
+import { SCENE_ORDER } from './scenes.js';
 
 const POPULAR = ['tvm', 'loan', 'bond', 'capbud', 'portfolio', 'options'];
 const QUESTIONS = ['tvm', 'loan', 'bond', 'ddm', 'capbud', 'breakeven', 'portfolio', 'options', 'fx', 'merger', 'wacc', 'ratios'];
@@ -28,7 +29,7 @@ export function renderHome(main, go) {
     h('div', { class: 'hero-copy' },
       h('p', { class: 'eyebrow' }, 'A free finance playground'),
       h('h1', { class: 'split', html: `${split('Money math,')}<br><em>${split('made playful.', 2)}</em>` }),
-      h('p', { class: 'lead' }, `${MODS.length} calculators that explain themselves. Change a number, watch the answer and the chart move, then peek at every step.`),
+      h('p', { class: 'lead' }, `${MODS.length} calculators that explain themselves in plain words. Change a number and watch the answer and a little animation update.`),
       h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },
       h('div', { class: 'float f1' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
@@ -36,6 +37,9 @@ export function renderHome(main, go) {
       h('div', { class: 'float f3' }, h('span', {}, 'NPV'), h('b', { class: 'pos' }, '+$32,199')),
       h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));
 
+  const learnBand = h('a', { class: 'learnband tilt reveal', href: '/learn', 'data-link': true },
+    h('div', {}, h('p', { class: 'eyebrow' }, 'New to money? Start here'), h('h2', { html: `${SCENE_ORDER.length} big ideas, each one <em>an animation</em>` }), h('p', {}, 'Interest, risk, loans, stocks and more, in very simple words. Press play and watch it happen.')),
+    h('span', { class: 'go', html: ICONS.arrow }));
   const qCards = QUESTIONS.map(id => MODS.find(m => m.id === id)).filter(Boolean).map(m => {
     const t = TOPICS[m.group];
     return h('a', { class: `qcard tint-${t.tint} tilt`, href: '/' + m.id, 'data-link': true }, h('span', { class: 'qdot' }), h('small', {}, t.label), h('b', {}, (BEGINNER[m.id] || {}).ask || m.title), h('span', { class: 'go', html: ICONS.arrow }));
@@ -72,7 +76,7 @@ export function renderHome(main, go) {
   const all = h('section', { class: 'sec reveal' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Every tool')),
     groups.map(g => h('div', { class: 'agroup' }, h('h3', { class: `tint-${TOPICS[g].tint}` }, TOPICS[g].label), h('div', { class: 'chips' }, MODS.filter(m => m.group === g).map(m => h('a', { class: `chip2 tint-${TOPICS[g].tint}`, href: '/' + m.id, 'data-link': true }, m.title))))));
 
-  main.append(hero, qrow, grid2, all);
+  main.append(hero, learnBand, qrow, grid2, all);
 
   /* motion */
   main.querySelectorAll('[data-count]').forEach(el => { if (el.dataset.count) countUp(el, el.dataset.count, 900); });

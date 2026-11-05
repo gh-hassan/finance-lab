@@ -1,7 +1,9 @@
 // @ts-nocheck
-/* Calculator page: Beginner mode (question, friendly inputs, one big answer) and Pro mode (everything). */
+/* Calculator page: Beginner mode (question, friendly inputs, one big answer, a teaching animation)
+   and Pro mode (every input, result, chart, step and table). */
 import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
-import { BEGINNER, TOPICS, keyCard } from './beginner.js';
+import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
+import { SceneView, SCENES } from './scenes.js';
 
 const stepsHtml = steps => `<ol class="steps">${steps.map(s => `<li><b>${esc(s[0])}</b><code>${esc(s[1])}</code></li>`).join('')}</ol>`;
 function tableHtml(t) {
@@ -42,7 +44,7 @@ export function mountModule(m, main, onMode) {
   const state = simple ? b : v, stateKey = simple ? sKey : key;
   const effective = () => (simple ? { ...defaults, ...B.simple.map(b) } : beginner ? { ...v, ...(B.force || {}) } : v);
   const refs = {};
-  let raf = 0, charts = [], sig = '', observers = [], firstPaint = true;
+  let raf = 0, charts = [], sig = '', observers = [], sceneView = null;
 
   /* ----- inputs ----- */
   const inputsEl = h('aside', { class: 'card inputs reveal' });
@@ -50,8 +52,9 @@ export function mountModule(m, main, onMode) {
   const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => update(false)); };
   inputsEl.append(h('div', { class: 'ihead' }, h('h2', {}, beginner ? 'Play with these' : 'Inputs'), h('button', { class: 'btn small', type: 'button', onclick: () => { store.del(key); store.del(sKey); onMode(); } }, 'Reset')));
   fieldList.forEach(f => {
-    const id = `f_${m.id}_${f.id}`, wrap = h('div', { class: 'fld' }), label = (beginner && B.labels && B.labels[f.id]) || f.label;
+    const id = `f_${m.id}_${f.id}`, wrap = h('div', { class: 'fld' }), label = (beginner && B.labels && B.labels[f.id]) || f.label, tip = beginner && (f.tip || (B.tips && B.tips[f.id]));
     wrap.append(h('label', { for: id }, label));
+    if (tip) wrap.append(h('small', { class: 'tip' }, tip));
     let input, slider = null;
     if (f.type === 'select') { input = h('select', { id }, f.options.map(([val, txt]) => h('option', { value: val }, txt))); input.value = state[f.id]; }
     else if (f.type === 'text') input = h('input', { id, type: 'text', value: state[f.id], spellcheck: 'false', autocomplete: 'off' });
@@ -63,7 +66,7 @@ export function mountModule(m, main, onMode) {
       slider.addEventListener('input', () => { input.value = slider.value; read(f); });
       wrap.append(slider);
     }
-    if (f.help) wrap.append(h('small', { class: 'help' }, f.help));
+    if (f.help && !beginner) wrap.append(h('small', { class: 'help' }, f.help));
     input.addEventListener('input', () => { read(f); if (slider) slider.value = input.value; });
     input.addEventListener('change', () => read(f));
     refs[f.id] = { f, wrap, input, slider, box, solved: false };
@@ -74,9 +77,10 @@ export function mountModule(m, main, onMode) {
   const noteEl = h('div', { class: 'note', hidden: true }), infoEl = h('div', { class: 'note info', hidden: true });
   const heroEl = h('section', { class: 'card answer reveal', hidden: !beginner });
   const cardsEl = h('div', { class: 'stats' }), chartsEl = h('div', { class: 'charts' });
+  const sceneHost = h('div', { class: 'sv-wrap' }), sceneCard = h('section', { class: 'card scenecard reveal', hidden: true });
   const wordsEl = h('section', { class: 'words reveal', hidden: !beginner });
   const stepsEl = h('section', { class: 'card steps-card reveal' }), tablesEl = h('div', { class: 'tables' });
-  const outEl = h('div', { class: 'out' }, noteEl, infoEl, heroEl, cardsEl, chartsEl, stepsEl, tablesEl, wordsEl);
+  const outEl = h('div', { class: 'out' + (beginner ? ' beg' : '') }, noteEl, infoEl, heroEl, cardsEl, sceneCard, chartsEl, stepsEl, tablesEl, wordsEl);
 
   function update(fresh) {
     const eff = effective();
@@ -97,21 +101,32 @@ export function mountModule(m, main, onMode) {
     noteEl.hidden = !out.note; noteEl.textContent = out.note || '';
     infoEl.hidden = !out.info; infoEl.textContent = out.info || '';
     const k = keyCard(out), cards = out.cards || [];
+    let list = (out.charts || []).filter(Boolean);
     if (beginner) {
-      let plain; try { plain = (simple ? B.simple.plain : B.plain) ? (simple ? B.simple.plain : B.plain)(simple ? b : eff, out, k) : [`${k.label}: ${k.value}`, '']; } catch (e) { plain = [`${k.label}: ${k.value}`, '']; }
+      const ek = easyCard(B, k);
+      let plain; try { const fn = simple ? B.simple.plain : B.plain; plain = fn ? fn(simple ? b : eff, out, k) : [`${ek.label}: ${k.value}`, '']; } catch (e) { plain = [`${ek.label}: ${k.value}`, '']; }
       heroEl.hidden = !cards.length;
-      heroEl.innerHTML = `<p class="eyebrow">${esc(k.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>${plain[1] ? `<p class="detail">${esc(plain[1])}</p>` : ''}`;
+      heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>${plain[1] ? `<p class="detail">${esc(plain[1])}</p>` : ''}`;
       const big = heroEl.querySelector('[data-v]');
       if (fresh) { countUp(big, k.value || '—'); if (k.tone === 'good') setTimeout(() => burst(big), 500); } else big.textContent = k.value || '—';
-      const extra = cards.filter(c => !c.head && c !== k).slice(0, 3);
+      const extra = cards.filter(c => !c.head && c !== k).slice(0, 3).map(c => easyCard(B, c));
       cardsEl.innerHTML = extra.map(c => `<div class="stat ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv">${esc(c.value)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div>`).join('');
-      wordsEl.innerHTML = (B.words || []).length ? `<h3>New words</h3><div class="wgrid">${B.words.map(([t, d]) => `<div class="word"><b>${esc(t)}</b><span>${esc(d)}</span></div>`).join('')}</div>` : '';
+      wordsEl.innerHTML = (B.words || []).length ? `<h3>New words, in plain English</h3><div class="wgrid">${B.words.map(([t, d]) => `<div class="word"><b>${esc(t)}</b><span>${esc(d)}</span></div>`).join('')}</div>` : '';
+      /* teaching animation driven by the user's numbers */
+      if (B.scene && SCENES[B.scene.id] && cards.length) {
+        let sp = null; try { sp = B.scene.map(simple ? b : eff, out); } catch (e) { sp = null; }
+        if (sp) {
+          sceneCard.hidden = false;
+          if (!sceneView) { sceneView = new SceneView(sceneHost, B.scene.id, { params: sp, external: true }); sceneCard.append(h('div', { class: 'chead' }, h('div', {}, h('h3', {}, SCENES[B.scene.id].title), h('p', { class: 'sub' }, SCENES[B.scene.id].plain))), sceneHost); }
+          else sceneView.setParams(sp, !fresh);
+        }
+        list = [];
+      } else sceneCard.hidden = true;
+      if (list.length) list = list.slice(0, 1);
     } else {
       cardsEl.innerHTML = cards.map(c => (c.head ? `<h3 class="grp">${esc(c.head)}</h3>` : `<div class="stat ${c.key ? 'key' : ''} ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv">${esc(c.value)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div>`)).join('');
       if (fresh) cardsEl.querySelectorAll('.sv').forEach(el => countUp(el, el.textContent, 550));
     }
-    let list = (out.charts || []).filter(Boolean);
-    if (beginner) list = list.slice(0, 1);
     const nsig = list.map(c => (c.type || 'xy') + '|' + c.title).join('~');
     let fr = fresh;
     if (nsig !== sig) {
@@ -124,7 +139,6 @@ export function mountModule(m, main, onMode) {
     stepsEl.hidden = !hasSteps;
     stepsEl.innerHTML = hasSteps ? (beginner ? `<details><summary><h3>Show me the math</h3></summary>${stepsHtml(out.steps)}</details>` : `<h3>Step-by-step calculation</h3>${stepsHtml(out.steps)}`) : '';
     tablesEl.innerHTML = beginner ? '' : (out.tables || []).map(t => `<section class="card tcard">${tableHtml(t)}</section>`).join('');
-    firstPaint = false;
   }
 
   /* ----- page frame ----- */
@@ -132,18 +146,17 @@ export function mountModule(m, main, onMode) {
   const head = h('header', { class: 'vhead reveal' },
     h('div', { class: 'vtitle' },
       h('a', { class: `chip tint-${topic.tint}`, href: '/', 'data-link': true }, '← ' + topic.label),
-      h('h1', { html: esc(beginner && B.ask ? B.ask : m.title).replace(/(\w+\??)$/, '<em>$1</em>') }),
-      h('p', { class: 'blurb' }, beginner ? (B.intro || 'Change a number and the answer updates instantly. Nothing here can break.') : m.blurb)),
-    h('div', { class: 'seg' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner)));
+      h('h1', { html: esc(beginner && B.ask ? B.ask : m.title).replace(/(\S+\??)$/, '<em>$1</em>') }),
+      h('p', { class: 'blurb' }, beginner ? (B.intro || 'Change a number and watch the answer and the picture update. Nothing here can break.') : m.blurb)),
+    h('div', { class: 'seg', title: 'Beginner shows the simple version. Pro shows everything.' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner)));
   const lab = h('div', { class: 'lab' }, inputsEl, outEl);
-  const concept = h('div', { class: 'concept card', html: m.concept, hidden: !beginner ? true : false });
+  const concept = h('div', { class: 'concept card', html: m.concept, hidden: true });
   main.innerHTML = '';
-  if (beginner) {
-    main.append(head, lab, h('details', { class: 'card idea reveal' }, h('summary', {}, h('h3', {}, 'The idea behind it')), h('div', { class: 'concept', html: m.concept })), h('p', { class: 'pro-link' }, 'Want every input, table and formula? ', h('button', { class: 'linkish', type: 'button', onclick: () => { store.set('fl:mode', 'pro'); onMode(); } }, 'Switch to Pro')));
-  } else {
+  if (beginner) main.append(head, lab);
+  else {
     const tabBtns = ['Calculator', 'Concept & formulas'].map((t, k) => h('button', { type: 'button', class: 'tab' + (k ? '' : ' on'), onclick: () => { tabBtns.forEach((x, j) => x.classList.toggle('on', j === k)); lab.hidden = !!k; concept.hidden = !k; } }, t));
     main.append(head, h('div', { class: 'tabs', role: 'tablist' }, tabBtns), lab, concept);
   }
   update(true);
-  return () => { cancelAnimationFrame(raf); charts.forEach(c => c.destroy()); observers.forEach(o => o.disconnect()); };
+  return () => { cancelAnimationFrame(raf); charts.forEach(c => c.destroy()); observers.forEach(o => o.disconnect()); if (sceneView) sceneView.destroy(); };
 }

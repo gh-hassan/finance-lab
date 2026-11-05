@@ -5,7 +5,8 @@ import '../src/modules/m3.js';
 import '../src/modules/m4.js';
 import '../src/modules/m5.js';
 import { MODS, type Values } from '../src/lib/registry';
-import { BEGINNER, keyCard } from '../src/ui/beginner.js';
+import { BEGINNER, keyCard, easyCard } from '../src/ui/beginner.js';
+import { SCENES } from '../src/ui/scenes.js';
 
 const defaults = (m: (typeof MODS)[number]): Values => Object.fromEntries(m.fields.map(f => [f.id, f.v]));
 const get = (id: string) => MODS.find(m => m.id === id)!;
@@ -34,6 +35,47 @@ describe('calculator registry', () => {
       expect(typeof headline, m.id).toBe('string');
       expect(headline.length, m.id).toBeGreaterThan(5);
     }
+  });
+});
+
+describe('beginner layer', () => {
+  const raw = BEGINNER as Record<string, any>;
+  const sc = SCENES as Record<string, any>;
+  it('only references real input fields', () => {
+    for (const m of MODS) {
+      const b = raw[m.id], ids = new Set(m.fields.map(f => f.id));
+      for (const id of b.essential ?? []) expect(ids.has(id), `${m.id}.${id}`).toBe(true);
+      for (const id of Object.keys(b.labels ?? {})) expect(ids.has(id), `${m.id} label ${id}`).toBe(true);
+      for (const id of Object.keys(b.tips ?? {})) expect(ids.has(id), `${m.id} tip ${id}`).toBe(true);
+      for (const id of Object.keys(b.force ?? {})) expect(ids.has(id), `${m.id} force ${id}`).toBe(true);
+    }
+  });
+  it('gives every essential field a plain-English tip', () => {
+    for (const m of MODS) {
+      const b = raw[m.id];
+      const fields = b.simple ? b.simple.fields : (b.essential ?? []).map((id: string) => ({ id }));
+      for (const f of fields) expect(f.tip || b.tips?.[f.id], `${m.id}.${f.id}`).toBeTruthy();
+    }
+  });
+  it('drives a real scene from the calculator numbers without NaN', () => {
+    for (const m of MODS) {
+      const b = raw[m.id];
+      if (!b.scene) continue;
+      const base = b.simple ? Object.fromEntries(b.simple.fields.map((f: { id: string; v: number }) => [f.id, f.v])) : null;
+      const eff = b.simple ? { ...defaults(m), ...b.simple.map(base) } : { ...defaults(m), ...(b.force ?? {}) };
+      const out = m.calc(eff);
+      const params = b.scene.map(base ?? eff, out);
+      expect(sc[b.scene.id], m.id).toBeDefined();
+      for (const t of [0, 0.5, 1]) {
+        const d = sc[b.scene.id].draw(t, { seed: 3, ...Object.fromEntries(sc[b.scene.id].params.map((q: { id: string; v: number }) => [q.id, q.v])), ...params });
+        expect(d.svg + d.cap, `${m.id} scene @${t}`).not.toMatch(/NaN|undefined|Infinity/);
+      }
+    }
+  });
+  it('relabels result cards in plain words', () => {
+    const c = easyCard(raw.loan, { label: 'Total interest', value: '$1', sub: 'x' });
+    expect(c.label).toBe('Total fees to the bank');
+    expect(easyCard(raw.loan, { label: 'Unknown', value: '$1' }).label).toBe('Unknown');
   });
 });
 
