@@ -15,7 +15,7 @@ const seg = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
 const f1 = x => x.toFixed(1);
 
 /* ----- drawing primitives (y of text is its vertical centre) ----- */
-const T = (x, y, s, o = {}) => `<text x="${f1(x)}" y="${f1(y)}" dy=".35em" text-anchor="${o.a || 'middle'}" font-size="${o.z || 14}" font-weight="${o.w || 700}" fill="${o.c || 'var(--ink)'}"${o.halo ? ' stroke="var(--panel-solid)" stroke-width="4" paint-order="stroke" stroke-linejoin="round"' : ''}${o.op != null ? ` opacity="${o.op}"` : ''}>${esc(s)}</text>`;
+const T = (x, y, s, o = {}) => `<text x="${f1(x)}" y="${f1(y)}" dy=".35em" text-anchor="${o.a || 'middle'}" font-size="${o.z || 14}" font-weight="${o.w || 700}"${o.f ? ` font-family="var(--display)" letter-spacing="-.03em"` : ''} fill="${o.c || 'var(--ink)'}"${o.halo ? ' stroke="var(--panel-solid)" stroke-width="4" paint-order="stroke" stroke-linejoin="round"' : ''}${o.op != null ? ` opacity="${o.op}"` : ''}>${esc(s)}</text>`;
 const R = (x, y, w, hh, f, o = {}) => (w <= 0.2 || hh <= 0.2 ? '' : `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(hh)}" rx="${f1(Math.min(o.r == null ? 8 : o.r, w / 2, hh / 2))}" fill="${f}"${o.stroke ? ` stroke="${o.stroke}" stroke-width="${o.sw || 1.5}"` : ''}${o.dash ? ' stroke-dasharray="5 4"' : ''}${o.op != null ? ` opacity="${o.op}"` : ''}/>`);
 const L = (x1, y1, x2, y2, c = 'var(--line)', w = 2, dash) => `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"${dash ? ' stroke-dasharray="5 5"' : ''}/>`;
 const C = (x, y, r, f, o = {}) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(Math.max(0, r))}" fill="${f}"${o.stroke ? ` stroke="${o.stroke}" stroke-width="${o.sw || 2}"` : ''}${o.op != null ? ` opacity="${o.op}"` : ''}/>`;
@@ -485,12 +485,13 @@ export const SCENES = {
       const ext = !!(p.xs && p.xs.length > 2), N = ext ? Math.min(p.xs.length, p.ys.length) : 45, z1 = series((p.seed || 1) * 5 + 1, N), z2 = series((p.seed || 1) * 5 + 2, N), rr = clamp(p.r == null ? 0 : p.r, -1, 1);
       const xs0 = ext ? p.xs.slice(0, N) : z1, ys0 = ext ? p.ys.slice(0, N) : z1.map((z, i) => rr * z + Math.sqrt(1 - rr * rr) * z2[i]), sx = stdev(xs0) || 1, sy = stdev(ys0) || 1, mx = mean(xs0), my = mean(ys0), xs = xs0.map(v => (v - mx) / sx), ys = ys0.map(v => (v - my) / sy);
       const r = corr(xs0, ys0), size = Math.min(H - 70, W * 0.54), x0 = Math.max(18, W * 0.05), y0 = 18, S = v => clamp(v, -3, 3), X = v => x0 + size * (S(v) + 3.2) / 6.4, Y = v => y0 + size - size * (S(v) + 3.2) / 6.4, k = Math.ceil(t * N);
-      let g = R(x0, y0, size, size, 'var(--soft)', { r: 14, op: 0.7 }) + L(X(0), y0 + 6, X(0), y0 + size - 6, 'var(--line)', 1.5) + L(x0 + 6, Y(0), x0 + size - 6, Y(0), 'var(--line)', 1.5);
-      for (let i = 0; i < k; i++) g += C(X(xs[i]), Y(ys[i]), 4.5, 'var(--c2)', { op: 0.85 });
-      const fa = ease(seg(t, 0.7, 1)); if (fa > 0 && Number.isFinite(r)) g += L(X(-3), Y(-3 * r), X(3), Y(3 * r), 'var(--c1)', 3).replace('stroke-linecap="round"', `stroke-linecap="round" opacity="${fa}"`);
+      let g = R(x0, y0, size, size, 'var(--card)', { r: 18, stroke: 'var(--line)' }) + L(X(0), y0 + 14, X(0), y0 + size - 14, 'var(--line)', 1.5, true) + L(x0 + 14, Y(0), x0 + size - 14, Y(0), 'var(--line)', 1.5, true) + T(x0 + 16, y0 + 18, 'B ↑', { a: 'start', z: 12, w: 600, c: 'var(--mute)' });
+      for (let i = 0; i < k; i++) g += C(X(xs[i]), Y(ys[i]), 5, 'var(--c1)', { stroke: '#fff', sw: 1.5, op: 0.88 });
+      const fa = ease(seg(t, 0.7, 1)); if (fa > 0 && Number.isFinite(r)) g += L(X(-2.9), Y(-2.9 * r), X(2.9), Y(2.9 * r), 'var(--c4)', 3.5).replace('stroke-linecap="round"', `stroke-linecap="round" opacity="${fa}"`);
       g += T(x0 + size / 2, y0 + size + 22, 'A moves →', { z: 12.5, w: 600, c: 'var(--mute)' });
       const tx0 = x0 + size + Math.max(16, W * 0.04), room = W - tx0 - 8, bigZ = room < 125 ? 26 : 34, lab = Math.abs(r) > 0.7 ? 'strong' : Math.abs(r) > 0.3 ? 'moderate' : 'weak', dir = r > 0.1 ? (room < 125 ? 'together' : 'move together') : r < -0.1 ? (room < 125 ? 'opposite' : 'move opposite') : 'unrelated';
-      g += T(tx0, y0 + 40, 'Score', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(tx0, y0 + 74, (r >= 0 ? '+' : '−') + nf(Math.abs(r), 2), { a: 'start', z: bigZ, c: r >= 0 ? 'var(--c3)' : 'var(--c4)' }) + T(tx0, y0 + 112, Math.abs(r) < 0.1 ? 'none' : lab, { a: 'start', z: 15 }) + T(tx0, y0 + 134, dir, { a: 'start', z: 14, w: 600, c: 'var(--mute)' });
+      const yc = y0 + size / 2 - 62;
+      g += T(tx0, yc, 'Score', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(tx0, yc + 38, (r >= 0 ? '+' : '−') + nf(Math.abs(r), 2), { a: 'start', z: bigZ - 4, f: 1, c: r >= 0 ? 'var(--c1)' : 'var(--c4)' }) + T(tx0, yc + 80, Math.abs(r) < 0.1 ? 'none' : lab, { a: 'start', z: 16 }) + T(tx0, yc + 102, dir, { a: 'start', z: 14, w: 500, c: 'var(--mute)' });
       return { svg: g, cap: `A correlation of ${r >= 0 ? '+' : '−'}${nf(Math.abs(r), 2)}: the two ${dir}. ${Math.abs(r) > 0.6 ? (r > 0 ? 'Mixing them gives little diversification.' : 'Mixing them calms the ride a lot.') : 'Mixing them helps calm the ride.'}` };
     }
   },
@@ -503,15 +504,16 @@ export const SCENES = {
       const ext = !!(p.xs && p.xs.length > 2), N = ext ? Math.min(p.xs.length, p.ys.length) : 40, z1 = series((p.seed || 1) * 9 + 1, N), z2 = series((p.seed || 1) * 9 + 2, N);
       const xs = ext ? p.xs.slice(0, N) : z1.map(z => 3.5 * z), ys = ext ? p.ys.slice(0, N) : z1.map((z, i) => p.beta * 3.5 * z + 2.5 * z2[i]), fit = linreg(xs, ys), m = Math.max(1e-6, ...xs.map(Math.abs), ...ys.map(Math.abs)) * 1.1;
       const size = Math.min(H - 76, W * 0.54), x0 = Math.max(18, W * 0.05), y0 = 14, X = v => x0 + size * (clamp(v, -m, m) + m) / (2 * m), Y = v => y0 + size - size * (clamp(v, -m, m) + m) / (2 * m), k = Math.ceil(seg(t, 0, 0.7) * N);
-      let g = R(x0, y0, size, size, 'var(--soft)', { r: 14, op: 0.7 }) + L(X(0), y0 + 6, X(0), y0 + size - 6, 'var(--line)', 1.5) + L(x0 + 6, Y(0), x0 + size - 6, Y(0), 'var(--line)', 1.5);
-      for (let i = 0; i < k; i++) g += C(X(xs[i]), Y(ys[i]), 4.5, 'var(--c2)', { op: 0.85 });
+      let g = R(x0, y0, size, size, 'var(--card)', { r: 18, stroke: 'var(--line)' }) + L(X(0), y0 + 14, X(0), y0 + size - 14, 'var(--line)', 1.5, true) + L(x0 + 14, Y(0), x0 + size - 14, Y(0), 'var(--line)', 1.5, true) + T(x0 + 16, y0 + 18, 'Stock ↑', { a: 'start', z: 12, w: 600, c: 'var(--mute)' });
+      for (let i = 0; i < k; i++) g += C(X(xs[i]), Y(ys[i]), 5, 'var(--c1)', { stroke: '#fff', sw: 1.5, op: 0.88 });
       const fa = ease(seg(t, 0.72, 0.95)), run = m * 0.6;
       if (fa > 0 && Number.isFinite(fit.slope)) {
-        const ex = m * 0.97; g += `<g opacity="${fa}">` + L(X(-ex), Y(fit.intercept - fit.slope * ex), X(ex), Y(fit.intercept + fit.slope * ex), 'var(--c1)', 3) + L(X(0), Y(fit.intercept), X(run), Y(fit.intercept), 'var(--ink)', 1.5, true) + L(X(run), Y(fit.intercept), X(run), Y(fit.intercept + fit.slope * run), 'var(--ink)', 1.5, true) + T(X(run) + 8, Y(fit.intercept + fit.slope * run / 2), 'rise', { a: 'start', z: 12, w: 600 }) + T(X(run / 2), Y(fit.intercept) + (fit.slope >= 0 ? 14 : -14), 'run', { z: 12, w: 600 }) + '</g>';
+        const ex = m * 0.97; g += `<g opacity="${fa}">` + L(X(-ex), Y(fit.intercept - fit.slope * ex), X(ex), Y(fit.intercept + fit.slope * ex), 'var(--c4)', 3.5) + L(X(0), Y(fit.intercept), X(run), Y(fit.intercept), 'var(--c2)', 1.6, true) + L(X(run), Y(fit.intercept), X(run), Y(fit.intercept + fit.slope * run), 'var(--c2)', 1.6, true) + chip(Math.min(X(run) + 30, x0 + size - 26), Y(fit.intercept + fit.slope * run / 2), 'rise', 'var(--panel-solid)', 'var(--ink)', 12) + chip(X(run / 2), Y(fit.intercept) + (fit.slope >= 0 ? 20 : -20), 'run', 'var(--panel-solid)', 'var(--ink)', 12) + '</g>';
       }
       g += T(x0 + size / 2, y0 + size + 20, 'Market moved →', { z: 12.5, w: 600, c: 'var(--mute)' });
       const tx0 = x0 + size + Math.max(16, W * 0.04);
-      g += T(tx0, y0 + 40, 'Slope = beta', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(tx0, y0 + 76, fa > 0 ? nf(fit.slope, 2) : '…', { a: 'start', z: 34, c: 'var(--c1)' }) + T(tx0, y0 + 112, 'rise ÷ run', { a: 'start', z: 14, w: 600, c: 'var(--mute)' });
+      const yc = y0 + size / 2 - 50;
+      g += T(tx0, yc, 'Slope = beta', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(tx0, yc + 40, fa > 0 ? nf(fit.slope, 2) : '…', { a: 'start', z: 30, f: 1, c: 'var(--c1)' }) + T(tx0, yc + 82, 'rise ÷ run', { a: 'start', z: 14, w: 500, c: 'var(--mute)' });
       return { svg: g, cap: fa > 0.5 ? `For every 1% the market moves, this stock tends to move ${nf(fit.slope, 2)}%. That slope is its beta.` : 'Each dot is one month: market move across, stock move up.' };
     }
   },
@@ -525,12 +527,12 @@ export const SCENES = {
       const finals = paths.map(a => a[N]), sorted = [...finals].sort((a, b) => a - b), q = f => sorted[Math.floor(f * (sorted.length - 1))], top = Math.max(150, q(0.95) * 1.15), pad = Math.max(16, W * 0.04), hw = Math.max(70, W * 0.2), cx0 = pad + 36, cx1 = W - pad - hw - 14, base = H - 70, ty = 36;
       const X = k => cx0 + (cx1 - cx0) * k / N, Y = v => base - (base - ty) * Math.min(v, top) / top, pos = t * N, k0 = Math.min(N - 1, Math.floor(pos));
       let g = T(pad, 14, 'Each line is one possible future', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + L(cx0, Y(100), cx1, Y(100), 'var(--mute)', 1.5, true) + T(cx0 - 6, Y(100), '$100', { a: 'end', z: 12, w: 600, c: 'var(--mute)' }) + L(cx0, base, cx1, base, 'var(--line)', 2);
-      paths.forEach(a => { let d = ''; for (let k = 0; k <= k0; k++) d += (k ? 'L' : 'M') + f1(X(k)) + ' ' + f1(Y(a[k])); d += `L${f1(X(pos))} ${f1(Y(lerp(a[k0], a[k0 + 1], pos - k0)))}`; g += `<path d="${d}" fill="none" stroke="var(--c2)" stroke-width="1.6" opacity=".35" stroke-linejoin="round"/>`; });
+      paths.forEach(a => { let d = ''; for (let k = 0; k <= k0; k++) d += (k ? 'L' : 'M') + f1(X(k)) + ' ' + f1(Y(a[k])); d += `L${f1(X(pos))} ${f1(Y(lerp(a[k0], a[k0 + 1], pos - k0)))}`; g += `<path d="${d}" fill="none" stroke="var(--c1)" stroke-width="1.5" opacity=".3" stroke-linejoin="round" stroke-linecap="round"/>`; });
       const bins = 14, hist = Array(bins).fill(0); finals.forEach(v => { hist[Math.min(bins - 1, Math.floor(Math.min(v, top - 1e-6) / top * bins))]++; });
       const hx = W - pad - hw, rev = ease(seg(t, 0.7, 1)), hmax = Math.max(...hist, 1);
       g += T(hx, 14, hw < 100 ? 'Ends' : 'Where they end', { a: 'start', z: 13, w: 600, c: 'var(--mute)' });
-      hist.forEach((c, i) => { const y1 = Y((i + 1) * top / bins), y2 = Y(i * top / bins); g += R(hx, y1 + 1, (hw - 6) * c / hmax * rev, Math.max(1, y2 - y1 - 2), 'var(--c2)', { r: 3 }); });
-      if (rev > 0.8) [[0.1, 'bad'], [0.5, 'typical'], [0.9, 'good']].forEach(([f, lab]) => { g += L(cx0, Y(q(f)), hx - 6, Y(q(f)), f === 0.5 ? 'var(--ink)' : 'var(--mute)', 1.4, true) + T(cx1 - 2, Y(q(f)) - 9, `${lab} ${M(q(f))}`, { a: 'end', z: 12, w: 700, halo: true }); });
+      hist.forEach((c, i) => { const y1 = Y((i + 1) * top / bins), y2 = Y(i * top / bins); g += R(hx, y1 + 1.5, (hw - 6) * c / hmax * rev, Math.max(1, y2 - y1 - 3), 'var(--c1)', { r: 4, op: 0.55 }); });
+      if (rev > 0.8) [[0.1, 'bad', 'var(--c4)'], [0.5, 'typical', 'var(--c2)'], [0.9, 'good', 'var(--c3)']].forEach(([f, lab, col]) => { const yy = Y(q(f)), s2 = `${lab} ${M(q(f))}`, cw = s2.length * 7.4 + 22; g += L(cx0, yy, hx - 6, yy, col, 1.4, true) + R(cx1 - cw - 4, yy - 13, cw, 26, 'var(--panel-solid)', { r: 13, stroke: col }) + T(cx1 - cw / 2 - 4, yy, s2, { z: 12, w: 700 }); });
       return { svg: g + prog(t, W, H, `Year ${Math.round(pos)} of ${N}`), cap: rev > 0.9 ? `${M_} random futures. After ${N} years a typical one ends near ${M(q(0.5))}, a bad one near ${M(q(0.1))}, a good one near ${M(q(0.9))}. That spread is the risk.` : 'Each line is one random future for $100 invested.' };
     }
   }

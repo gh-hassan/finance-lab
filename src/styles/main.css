@@ -671,3 +671,5 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 /* smooth cross-fade when switching day and night */
 .theme-fade,.theme-fade *,.theme-fade *::before,.theme-fade *::after{transition:background-color .5s ease,color .5s ease,border-color .5s ease,box-shadow .5s ease,fill .5s ease,stroke .5s ease!important}
 .theme-fade .bg{transition:background .5s ease!important}
+/* pictures use a softer blue than the heavy navy so they feel light */
+:root[data-theme="light"] .sv-stage{--c2:#4F8CBF}
