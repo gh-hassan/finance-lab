@@ -26,7 +26,12 @@ export function startApp(root) {
     pop.innerHTML = topics.map(g => `<div class="mg tint-${TOPICS[g].tint}"><h4><i class="dot"></i>${esc(TOPICS[g].label)}</h4>${MODS.filter(m => m.group === g).map(m => `<a href="/${m.id}" data-link>${esc((BEGINNER[m.id] || {}).ask || m.title)}</a>`).join('')}</div>`).join('');
     pop.hidden = false;
   });
-  document.addEventListener('click', e => { if (!e.target.closest('.menu') && !e.target.closest('[data-id="calc"]')) pop.hidden = true; });
+  /* close on any outside touch or press (iOS skips click on plain areas), Escape, scrolling and rotation */
+  const closeMenu = () => { pop.hidden = true; };
+  document.addEventListener('pointerdown', e => { if (!pop.hidden && !e.target.closest('.menu') && !e.target.closest('[data-id="calc"]')) closeMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+  addEventListener('scroll', () => { if (!pop.hidden) closeMenu(); }, { passive: true });
+  addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
   const navItems = [
     h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
     h('a', { class: 'pill', href: '/learn', 'data-link': true, 'data-id': 'learn' }, h('span', { html: ICONS.learn }), h('em', {}, 'Learn')),

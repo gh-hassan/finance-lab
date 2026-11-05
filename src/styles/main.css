@@ -664,3 +664,6 @@ details>summary h3{font-size:17px}
 /* the big answer must always fit its card */
 .answer{container-type:inline-size}
 .answer .big{display:block;max-width:100%;font-size:clamp(30px,13cqw,64px);padding-right:.1em;box-sizing:border-box}
+
+/* numbers keep a fixed width per digit so they tick in place instead of shifting */
+body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}

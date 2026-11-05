@@ -57,7 +57,7 @@ export const SCENES = {
       let g = L(pad, base, W - pad, base, 'var(--line)', 2);
       g += R(c1 - bw / 2, base - dep * sc, bw, dep * sc, 'var(--mute)', { r: 10, op: 0.5 });
       g += R(c2 - bw / 2, base - dep * sc, bw, dep * sc, 'var(--mute)', { r: 10, op: 0.5 }) + R(c2 - bw / 2, base - bank * sc, bw, Math.max(0, bank - dep) * sc, 'var(--c3)', { r: 10 });
-      g += T(c1, base - dep * sc - 16, M(dep), { z: 18 }) + T(c2, base - bank * sc - 16, M(bank), { z: 18, c: 'var(--c3)' });
+      g += T(c1, base - hmax - 16, M(dep), { z: 18 }) + T(c2, base - hmax - 16, M(bank), { z: 18, c: 'var(--c3)' });
       g += T(c1, base + 18, 'In a jar', { z: 15 }) + T(c1, base + 37, 'no interest', { z: 12.5, w: 600, c: 'var(--mute)' }) + T(c2, base + 18, 'In the bank', { z: 15 }) + T(c2, base + 37, `${M(Math.max(0, bank - dep))} from interest`, { z: 12.5, w: 600, c: 'var(--c3)' });
       g += prog(t, W, H, `Year ${Math.round(y)} of ${p.years}`);
       return { svg: g, cap: `Year ${Math.round(y)}: the jar has ${M(dep)}. The bank has ${M(bank)}. That is ${M(bank - dep)} of free money from interest.` };
@@ -104,9 +104,9 @@ export const SCENES = {
       const nominal = sum(flows.map(f => f.a)), maxCol = Math.max(nominal, ...flows.map(f => f.a), 1), sc = hmax / maxCol, slot = (W - 2 * pad) / (N + 1), bw = clamp(slot * 0.62, 6, 46);
       let g = L(pad, base, W - pad, base) + T(pad, 16, 'Dashed = promised. Solid = worth today.', { a: 'start', z: 12.5, w: 600, c: 'var(--mute)' });
       let now = 0, pv = 0; const few = flows.length <= 8;
-      flows.forEach(f => { const val = f.a / Math.pow(1 + r, f.y * u); now += val; pv += f.a / Math.pow(1 + r, f.y); const cx = pad + (f.y + 0.5) * slot; g += R(cx - bw / 2, base - f.a * sc, bw, f.a * sc, 'none', { r: 6, stroke: 'var(--mute)', dash: true }) + R(cx - bw / 2, base - val * sc, bw, val * sc, 'var(--c3)', { r: 6 }); if (few) g += T(cx, base - Math.max(f.a, val) * sc - 14, M(val), { z: 13.5 }); });
+      flows.forEach(f => { const val = f.a / Math.pow(1 + r, f.y * u); now += val; pv += f.a / Math.pow(1 + r, f.y); const cx = pad + (f.y + 0.5) * slot; g += R(cx - bw / 2, base - f.a * sc, bw, f.a * sc, 'none', { r: 6, stroke: 'var(--mute)', dash: true }) + R(cx - bw / 2, base - val * sc, bw, val * sc, 'var(--c3)', { r: 6 }); if (few) g += T(cx, base - f.a * sc - 14, M(val), { z: 13.5 }); });
       const px = pad + 0.5 * slot, pw = clamp(slot * 0.8, 10, 60);
-      g += R(px - pw / 2, base - now * sc, pw, now * sc, 'var(--c1)', { r: 6 }) + T(px, base - now * sc - 16, M(now), { z: 17, c: 'var(--c1)' }) + T(px, base + 16, 'Today', { z: 12, w: 700 });
+      g += R(px - pw / 2, base - now * sc, pw, now * sc, 'var(--c1)', { r: 6 }) + T(px, base - Math.max(pv, 1) * sc - 16, M(now), { z: 17, c: 'var(--c1)' }) + T(px, base + 16, 'Today', { z: 12, w: 700 });
       const step = Math.max(N <= 12 ? 1 : Math.ceil(N / 6), Math.ceil(40 / slot));
       for (let k = step; k <= N; k += step) g += T(pad + (k + 0.5) * slot, base + 16, slot * step > 50 ? 'Yr ' + k : '' + k, { z: 12, w: 600, c: 'var(--mute)' });
       const cap = u < 0.03 ? `These payments add up to ${M(nominal)} on paper.` : u < 0.999 ? `Bringing them back to today at ${p.rate}% a year, each one shrinks.` : `Worth ${p.result || M(pv)} today, not ${M(nominal)}. Waiting costs money.`;
@@ -124,7 +124,7 @@ export const SCENES = {
       const hv = lerp(A, home, b), av = lerp(A, abroad, b);
       let g = T(W / 2, 18, `Start: ${M(A)} = ${nf(fgn, 0)} foreign money at ${nf(p.S, 2)}`, { z: 14, w: 600, c: 'var(--mute)' }) + L(pad, base, W - pad, base);
       g += R(c1 - bw / 2, base - hv * sc, bw, hv * sc, 'var(--sky)', { r: 10 }) + R(c2 - bw / 2, base - av * sc, bw, av * sc, 'var(--pink)', { r: 10 });
-      g += T(c1, base - hv * sc - 16, M(hv), { z: 18 }) + T(c2, base - av * sc - 16, M(av), { z: 18 }) + T(c1, base + 18, 'Stay home', { z: 15 }) + T(c1, base + 37, `earns ${p.id}%`, { z: 12.5, w: 600, c: 'var(--mute)' }) + T(c2, base + 18, 'Swap, earn abroad, swap back', { z: 14 }) + T(c2, base + 37, `earns ${p.if}%, swaps back at ${nf(lerp(p.S, F, c), 3)}`, { z: 12.5, w: 600, c: 'var(--mute)' });
+      g += T(c1, base - home * sc - 16, M(hv), { z: 18 }) + T(c2, base - abroad * sc - 16, M(av), { z: 18 }) + T(c1, base + 18, 'Stay home', { z: 15 }) + T(c1, base + 37, `earns ${p.id}%`, { z: 12.5, w: 600, c: 'var(--mute)' }) + T(c2, base + 18, 'Swap, earn abroad, swap back', { z: 14 }) + T(c2, base + 37, `earns ${p.if}%, swaps back at ${nf(lerp(p.S, F, c), 3)}`, { z: 12.5, w: 600, c: 'var(--mute)' });
       return { svg: g, cap: t < 0.7 ? `Both piles grow: home at ${p.id}%, foreign at ${p.if}%.` : `After ${p.T} yr the foreign pile is swapped back at the fair future rate of ${nf(F, 3)}. Both end at about ${M(home)}: no free money.` };
     }
   },
@@ -153,14 +153,14 @@ export const SCENES = {
     words: [['Bond', 'A loan you make to a company or government.'], ['Coupon', 'The yearly payment the bond pays you.'], ['Maturity', 'The day you get your money back.']],
     params: [{ id: 'face', label: 'You lend', min: 500, max: 5000, step: 500, v: 1000, fmt: M }, { id: 'cr', label: 'Yearly payment rate', min: 1, max: 12, step: 0.5, v: 5, fmt: x => x + '%' }, { id: 'years', label: 'Years', min: 2, max: 10, step: 1, v: 5, fmt: x => x + ' yrs' }], link: '/bond',
     draw(t, p, W, H) {
-      const N = Math.round(p.years), c = p.face * p.cr / 100, cy = t * N, pad = Math.max(18, W * 0.06), pw = Math.min(100, W * 0.2), px = W - pad - pw, tlw = px - pad - 30, base = H - 78, hmax = base - 64, top = p.face + c * N, sc = hmax / top;
+      const N = Math.round(p.years), c = p.face * p.cr / 100, cy = t * N, pad = Math.max(18, W * 0.06), pw = Math.min(100, W * 0.2), px = W - pad - pw, tlw = px - pad - 100, base = H - 78, hmax = base - 64, top = p.face + c * N, sc = hmax / top;
       let got = 0; for (let k = 1; k <= N; k++) if (cy >= k) got += c + (k === N ? p.face : 0);
       const lineY = 120, X = k => pad + 24 + (tlw - 48) * (k - 1) / Math.max(1, N - 1);
-      let g = chip(pad + 70, 16, `You lend ${M(p.face)}`, 'color-mix(in srgb, var(--c4) 28%, transparent)') + L(pad + 10, lineY, px - 20, lineY, 'var(--line)', 4);
+      let g = chip(pad + 70, 16, `You lend ${M(p.face)}`, 'color-mix(in srgb, var(--c4) 28%, transparent)') + L(pad + 10, lineY, px - 90, lineY, 'var(--line)', 4);
       const gapX = (tlw - 48) / Math.max(1, N - 1), rr = clamp(gapX * 0.42, 13, 20), wide = gapX > 62;
-      for (let k = 1; k <= N; k++) { const a = clamp(cy - k + 1, 0, 1), last = k === N, r = last ? rr + 5 : rr; g += T(X(k), lineY + 40, wide ? (last ? 'Final year' : 'Year ' + k) : (last ? 'End' : 'Y' + k), { z: 12, w: 600, c: 'var(--mute)' }); if (a > 0) g += `<g opacity="${a}">` + C(X(k), lineY - (1 - ease(a)) * 40, r, GOLD, { stroke: '#E0A200', sw: 2 }) + T(X(k), lineY - (1 - ease(a)) * 40, last ? M(c + p.face) : M(c), { z: rr < 16 ? 10.5 : (last ? 11.5 : 12), c: GOLD_INK }) + '</g>'; else g += C(X(k), lineY, 4, 'var(--mute)'); }
+      for (let k = 1; k <= N; k++) { const a = clamp(cy - k + 1, 0, 1), last = k === N, r = last ? Math.max(rr + 5, M(c + p.face).length * 3.4 + 9) : rr; g += T(X(k), lineY + 40, wide ? (last ? 'Final year' : 'Year ' + k) : (last ? 'End' : 'Y' + k), { z: 12, w: 600, c: 'var(--mute)' }); if (a > 0) g += `<g opacity="${a}">` + C(X(k), lineY - (1 - ease(a)) * 40, r, GOLD, { stroke: '#E0A200', sw: 2 }) + T(X(k), lineY - (1 - ease(a)) * 40, last ? M(c + p.face) : M(c), { z: rr < 16 ? 10.5 : (last ? 11.5 : 12), c: GOLD_INK }) + '</g>'; else g += C(X(k), lineY, 4, 'var(--mute)'); }
       g += L(px - 8, base - p.face * sc, px + pw + 8, base - p.face * sc, 'var(--mute)', 1.5, true) + T(px - 12, base - p.face * sc, `lent ${M(p.face)}`, { a: 'end', z: 12, w: 600, c: 'var(--mute)' }) + R(px, base - got * sc, pw, got * sc, 'var(--c3)', { r: 10 });
-      g += T(px + pw / 2, base - got * sc - 16, M(got), { z: 17, c: 'var(--c3)', halo: true }) + T(px + pw / 2, base + 18, 'In your pocket', { z: 13 });
+      g += T(px + pw / 2, base - hmax - 16, M(got), { z: 17, c: 'var(--c3)', halo: true }) + T(px + pw / 2, base + 18, 'In your pocket', { z: 13 });
       return { svg: g + prog(t, W, H, `Year ${Math.min(N, Math.floor(cy))} of ${N}`), cap: cy < 0.05 ? `You lend ${M(p.face)} by buying the bond.` : cy < N - 0.02 ? `Year ${Math.floor(cy)}: another ${M(c)} drops into your pocket (${p.cr}% of ${M(p.face)}).` : `Finished. You got ${M(c * N)} in payments plus your ${M(p.face)} back = ${M(c * N + p.face)}.${p.result ? ' Today it is worth ' + p.result + ' to buyers.' : ''}` };
     }
   },
@@ -273,7 +273,7 @@ export const SCENES = {
       const rets = p.rets && p.rets.length ? p.rets : [p.swing, -p.swing], N = rets.length, start = p.start || 100; let v = start; const vals = [v]; rets.forEach(r => vals.push((v *= 1 + r / 100)));
       const pad = Math.max(18, W * 0.06), base = H - 70, top = Math.max(...vals) * 1.12, slot = (W - 2 * pad) / (N + 1), bw = clamp(slot * 0.6, 12, 80), pos = t * N, k0 = Math.min(N - 1, Math.floor(pos)), z = N > 6 ? 11.5 : 14;
       let g = L(pad, base, W - pad, base);
-      for (let k = 0; k <= N; k++) { if (k > k0 + 1) break; const part = k === k0 + 1 ? ease(pos - k0) : 1, val = k === k0 + 1 ? lerp(vals[k0], vals[k], part) : vals[k], hh = (base - 44) * val / top, cx = pad + (k + 0.5) * slot; g += R(cx - bw / 2, base - hh, bw, hh, k === 0 ? 'var(--sky)' : rets[k - 1] >= 0 ? 'var(--c3)' : 'var(--c4)', { r: 8 }); if (bw > 26 || N <= 6) g += T(cx, base - hh - 14, M(val), { z }); g += T(cx, base + 18, k === 0 ? 'Start' : (rets[k - 1] >= 0 ? '+' : '') + nf(rets[k - 1], 0) + '%', { z: 12.5, c: k === 0 ? 'var(--mute)' : rets[k - 1] >= 0 ? 'var(--c3)' : 'var(--c4)' }); }
+      for (let k = 0; k <= N; k++) { if (k > k0 + 1) break; const part = k === k0 + 1 ? ease(pos - k0) : 1, val = k === k0 + 1 ? lerp(vals[k0], vals[k], part) : vals[k], hh = (base - 44) * val / top, cx = pad + (k + 0.5) * slot; g += R(cx - bw / 2, base - hh, bw, hh, k === 0 ? 'var(--sky)' : rets[k - 1] >= 0 ? 'var(--c3)' : 'var(--c4)', { r: 8 }); if (bw > 26 || N <= 6) g += T(cx, base - (base - 44) * vals[k] / top - 14, M(val), { z }); g += T(cx, base + 18, k === 0 ? 'Start' : (rets[k - 1] >= 0 ? '+' : '') + nf(rets[k - 1], 0) + '%', { z: 12.5, c: k === 0 ? 'var(--mute)' : rets[k - 1] >= 0 ? 'var(--c3)' : 'var(--c4)' }); }
       const avg = sum(rets) / N, done = pos >= N - 0.02;
       return { svg: g, cap: done ? `Average return: ${nf(avg, 1)}% a period. But you went from ${M(start)} to ${M(vals[N])} (${nf((vals[N] / start - 1) * 100, 0)}%). Ups and downs cost you.` : `Period ${Math.min(N, k0 + 1)}: ${rets[k0] >= 0 ? 'a gain' : 'a loss'} of ${nf(Math.abs(rets[k0]), 0)}%.` };
     }
@@ -288,7 +288,7 @@ export const SCENES = {
       let g = L(pad, base, W - pad, base) + R(c1 - bw / 2, base - p.cost * sc, bw, p.cost * sc, 'var(--c4)', { r: 10 }) + T(c1, base - p.cost * sc - 16, M(p.cost), { z: 18, c: 'var(--c4)', halo: true }) + T(c1, base + 18, 'You pay today', { z: 14 });
       let y = base, landed = 0;
       pvs.forEach((pv, k) => { const a = ease(seg(t, k / (n + 0.6), (k + 1) / (n + 0.6))), hh = pv * sc * a; landed += pv * a; y -= hh; g += R(c2 - bw / 2, y, bw, hh, k % 2 ? 'var(--c3)' : 'color-mix(in srgb, var(--c3) 72%, var(--panel-solid))', { r: 4 }); if (hh > 18 && bw > 60) g += T(c2, y + hh / 2, `Year ${k + 1}`, { z: 11.5, c: '#fff' }); });
-      g += L(c1 - bw / 2 - 10, base - p.cost * sc, c2 + bw / 2 + 10, base - p.cost * sc, 'var(--ink)', 1.5, true) + T(c2, y - 16, M(landed), { z: 18, c: 'var(--c3)', halo: true }) + T(c2, base + 18, 'Worth today', { z: 14 }) + T(c2, base + 37, 'of what you get', { z: 12.5, w: 600, c: 'var(--mute)' });
+      g += L(c1 - bw / 2 - 10, base - p.cost * sc, c2 + bw / 2 + 10, base - p.cost * sc, 'var(--ink)', 1.5, true) + T(c2, base - sum(pvs) * sc - 16, M(landed), { z: 18, c: 'var(--c3)', halo: true }) + T(c2, base + 18, 'Worth today', { z: 14 }) + T(c2, base + 37, 'of what you get', { z: 12.5, w: 600, c: 'var(--mute)' });
       const done = t > 0.96, good = total > p.cost;
       if (done) g += chip(W / 2, 18, good ? `Worth it: +${M(total - p.cost)}` : `Not worth it: −${M(p.cost - total)}`, good ? 'var(--c3)' : 'var(--c4)', '#fff', 14);
       return { svg: g, cap: done ? (good ? `Worth ${M(total)} today for a cost of ${M(p.cost)}. You gain ${M(total - p.cost)}. Do it! (That gain is the NPV.)` : `Worth only ${M(total)} today for a cost of ${M(p.cost)}. You lose ${M(p.cost - total)}. Skip it. (Negative NPV.)`) : `Each payment is worth less today than on the day you get it. The green bar holds ${M(landed)} so far against ${M(p.cost)} paid.` };
@@ -303,7 +303,7 @@ export const SCENES = {
       const w = p.wE / 100, avg = w * p.ke + (1 - w) * p.kd, u = ease(seg(t, 0.05, 0.6)), a = ease(seg(t, 0.6, 0.95)), pad = Math.max(24, W * 0.08), BW = W - 2 * pad, base = H - 80, hmax = base - 58, hi = Math.max(p.ke, p.kd) * 1.1, sc = hmax / hi, gap = 4;
       const wE = BW * w - gap / 2, wD = BW * (1 - w) - gap / 2;
       let g = L(pad, base, W - pad, base) + R(pad, base - p.ke * sc * u, wE, p.ke * sc * u, 'var(--sky)', { r: 10 }) + R(pad + BW * w + gap / 2, base - p.kd * sc * u, wD, p.kd * sc * u, 'var(--sun)', { r: 10 });
-      g += T(pad + wE / 2, base - p.ke * sc * u - 16, `${nf(p.ke * u, 1)}%`, { z: 17 }) + (wD > 40 ? T(pad + BW * w + gap / 2 + wD / 2, base - p.kd * sc * u - 16, `${nf(p.kd * u, 1)}%`, { z: 17 }) : '');
+      g += T(pad + wE / 2, base - p.ke * sc - 16, `${nf(p.ke * u, 1)}%`, { z: 17 }) + (wD > 40 ? T(pad + BW * w + gap / 2 + wD / 2, base - p.kd * sc - 16, `${nf(p.kd * u, 1)}%`, { z: 17 }) : '');
       g += T(pad + wE / 2, base + 18, `Owners ${p.wE}%`, { z: 14 }) + (wD > 70 ? T(pad + BW * w + gap / 2 + wD / 2, base + 18, `Lenders ${100 - p.wE}%`, { z: 14 }) : '') + T(pad + wE / 2, base + 37, 'want this return', { z: 12.5, w: 600, c: 'var(--mute)' });
       g += L(pad - 6, base - avg * sc * a, W - pad + 6, base - avg * sc * a, 'var(--c4)', 2.5, true) + chip(W / 2, 18, `Company must earn ${nf(avg * a, 2)}%`, 'color-mix(in srgb, var(--c4) 25%, transparent)', 'var(--ink)', 14);
       return { svg: g, cap: a < 0.99 ? 'Owners and lenders each want a different return.' : `Blend: ${p.wE}% × ${nf(p.ke, 1)}% + ${100 - p.wE}% × ${nf(p.kd, 1)}% = ${nf(avg, 2)}%. A new project must earn more than this to be worth it.` };
@@ -345,7 +345,7 @@ export const SCENES = {
       const d = (k, v) => (p[k] != null ? p[k] : v), aNI = d('aNI', 500), aSh = d('aSh', 100), aPx = d('aPx', 60), tNI = d('tNI', 100), tSh = d('tSh', 40), tPx = d('tPx', 30), prem = d('prem', 30), rate = d('rate', 6), tax = d('tax', 25), syn = d('syn', 20), st = d('stock', 50) / 100;
       const price = tPx * (1 + prem / 100) * tSh, newSh = price * st / aPx, intAT = price * (1 - st) * rate / 100 * (1 - tax / 100), ni = aNI + tNI + syn * (1 - tax / 100) - intAT, sh = aSh + newSh, e0 = aNI / aSh, e1 = ni / sh;
       const pad = Math.max(16, W * 0.04), gap = 14, pw = (W - 2 * pad - 2 * gap) / 3, base = H - 76, hmax = base - 70;
-      const panel = (i, title, v0, v1, fmt, c1, a) => { const x = pad + i * (pw + gap), top = Math.max(v0, v1) * 1.1, bw = Math.min(50, pw * 0.3), h0 = hmax * v0 / top, h1 = hmax * v1 / top * a, x0 = x + pw * 0.27, x1 = x + pw * 0.73; return R(x, 30, pw, base - 12, 'var(--soft)', { r: 14, op: 0.6 }) + T(x + pw / 2, 46, title, { z: 13.5 }) + R(x0 - bw / 2, base - h0, bw, h0, 'var(--sky)', { r: 8 }) + R(x1 - bw / 2, base - h1, bw, h1, c1, { r: 8 }) + T(x0, base - h0 - 12, fmt(v0), { z: 12.5 }) + T(x1, base - h1 - 12, fmt(v1 * a), { z: 12.5 }) + T(x0, base + 16, 'Before', { z: 12, w: 600, c: 'var(--mute)' }) + T(x1, base + 16, 'After', { z: 12, w: 600, c: 'var(--mute)' }); };
+      const panel = (i, title, v0, v1, fmt, c1, a) => { const x = pad + i * (pw + gap), top = Math.max(v0, v1) * 1.1, bw = Math.min(50, pw * 0.3), h0 = hmax * v0 / top, h1 = hmax * v1 / top * a, x0 = x + pw * 0.27, x1 = x + pw * 0.73; return R(x, 30, pw, base + 2, 'var(--soft)', { r: 14, op: 0.6 }) + T(x + pw / 2, 46, title, { z: 13.5 }) + R(x0 - bw / 2, base - h0, bw, h0, 'var(--sky)', { r: 8 }) + R(x1 - bw / 2, base - h1, bw, h1, c1, { r: 8 }) + T(x0, base - h0 - 12, fmt(v0), { z: 12.5 }) + T(x1, base - hmax * v1 / top - 12, fmt(v1 * a), { z: 12.5 }) + T(x0, base + 16, 'Before', { z: 12, w: 600, c: 'var(--mute)' }) + T(x1, base + 16, 'After', { z: 12, w: 600, c: 'var(--mute)' }); };
       const a1 = ease(seg(t, 0.05, 0.4)), a2 = ease(seg(t, 0.35, 0.7)), a3 = ease(seg(t, 0.65, 0.98));
       const g = panel(0, 'Profit ($M)', aNI, ni, x => nf(x, 0), 'var(--c3)', a1) + panel(1, 'Shares (M)', aSh, sh, x => nf(x, 0), 'var(--c2)', a2) + panel(2, 'Profit per share', e0, e1, x => money(x, 2), e1 >= e0 ? 'var(--c3)' : 'var(--c4)', a3);
       return { svg: g + prog(t, W, H, 'Profit ÷ shares'), cap: a3 < 0.99 ? 'Profit grows when the two companies join, and new shares may be created to pay for the deal.' : `Profit per share moves from ${money(e0, 2)} to ${money(e1, 2)}: ${e1 >= e0 ? 'a good deal for existing owners (accretive)' : 'a bad deal for existing owners (dilutive)'}, ${nf((e1 / e0 - 1) * 100, 1)}%.` };
@@ -452,7 +452,7 @@ export const SCENES = {
       outs.forEach((o, i) => {
         const w = Math.max(10, (BW - gap * (outs.length - 1)) * o.prob), a = ease(seg(t, i * 0.18, i * 0.18 + 0.4)), hh = Math.abs(o.value) * sc * a, y = o.value >= 0 ? zero - hh : zero;
         g += R(x, y, w, hh, o.value >= 0 ? 'var(--c3)' : 'var(--c4)', { r: 8 });
-        if (a > 0.6) { g += T(x + w / 2, o.value >= 0 ? y - 26 : y + hh + 14, (o.value >= 0 ? '+' : '−') + M(Math.abs(o.value)), { z: 15 }) + T(x + w / 2, o.value >= 0 ? y - 10 : y + hh + 30, `${nf(o.prob * 100, 0)}% chance`, { z: 12.5, w: 600, c: 'var(--mute)' }); }
+        if (a > 0.6) { g += T(x + w / 2, o.value >= 0 ? zero - Math.abs(o.value) * sc - 26 : zero + Math.abs(o.value) * sc + 14, (o.value >= 0 ? '+' : '−') + M(Math.abs(o.value)), { z: 15 }) + T(x + w / 2, o.value >= 0 ? zero - Math.abs(o.value) * sc - 10 : zero + Math.abs(o.value) * sc + 30, `${nf(o.prob * 100, 0)}% chance`, { z: 12.5, w: 600, c: 'var(--mute)' }); }
         x += w + gap;
       });
       const u = ease(seg(t, 0.7, 0.95)), yEv = zero - ev * sc;
