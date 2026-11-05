@@ -3,6 +3,7 @@
    and Pro mode (every input, result, chart, step and table). */
 import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
 import { tick } from './ticker.js';
+import { UNIT_LIST, fieldsHaveUnits, isUnitField, unitFactor, unitize } from './units.js';
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
 import { rangeSlider } from './slider.js';
@@ -39,6 +40,8 @@ export function mountModule(m, main, onMode) {
   const topic = TOPICS[m.group] || { label: m.group, tint: 'coral' };
   const defaults = Object.fromEntries(m.fields.map(f => [f.id, f.v]));
   const key = 'fl:' + m.id, sKey = key + ':simple';
+  const unit = store.get('fl:unit') || 'M', hasUnits = fieldsHaveUnits(m.fields) || fieldsHaveUnits(B.simple && B.simple.fields);
+  const U = x => (hasUnits ? unitize(x, unit) : x);
   const moduleKey = () => m.id + (beginner ? 'b' : 'p');
   const clean = (fields, st) => { fields.forEach(f => { if (f.type !== 'select' && f.type !== 'text') st[f.id] = Number.isFinite(+st[f.id]) ? +st[f.id] : f.v; }); return st; };
   const v = clean(m.fields, { ...defaults, ...(store.get(key) || {}) });
@@ -56,7 +59,7 @@ export function mountModule(m, main, onMode) {
   const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => update(false)); };
   inputsEl.append(h('div', { class: 'ihead' }, h('h2', {}, beginner ? 'Play with these' : 'Inputs'), h('button', { class: 'btn small', type: 'button', onclick: () => { store.del(key); store.del(sKey); onMode(); } }, 'Reset')));
   fieldList.forEach(f => {
-    const id = `f_${m.id}_${f.id}`, wrap = h('div', { class: 'fld' }), label = (beginner && B.labels && B.labels[f.id]) || f.label, tip = beginner && (f.tip || (B.tips && B.tips[f.id]));
+    const id = `f_${m.id}_${f.id}`, wrap = h('div', { class: 'fld' }), label = U((beginner && B.labels && B.labels[f.id]) || f.label), tip = beginner && U(f.tip || (B.tips && B.tips[f.id]));
     const tipEl = tip ? h('small', { class: 'tip', hidden: true }, tip) : null;
     wrap.append(h('div', { class: 'lrow' }, h('label', { for: id }, label), tip ? h('button', { class: 'qbtn', type: 'button', 'aria-label': 'What does this mean?', onclick: () => { tipEl.hidden = !tipEl.hidden; } }, '?') : null));
     if (tipEl) wrap.append(tipEl);
@@ -92,7 +95,7 @@ export function mountModule(m, main, onMode) {
   function update(fresh) {
     const eff = effective();
     let out;
-    try { out = m.calc(eff); } catch (e) { out = { note: 'Something went wrong in this calculation: ' + e.message, cards: [], charts: [], steps: [] }; }
+    try { out = U(m.calc(eff)); } catch (e) { out = { note: 'Something went wrong in this calculation: ' + e.message, cards: [], charts: [], steps: [] }; }
     if (!beginner) {
       Object.values(refs).forEach(r => {
         const sh = m.show && m.show[r.f.id]; r.wrap.hidden = sh ? !sh(v) : false;
@@ -111,7 +114,7 @@ export function mountModule(m, main, onMode) {
     let list = (out.charts || []).filter(Boolean);
     if (beginner) {
       const ek = easyCard(B, k);
-      let plain; try { const fn = simple ? B.simple.plain : B.plain; plain = fn ? fn(simple ? b : eff, out, k) : [`${ek.label}: ${k.value}`, '']; } catch (e) { plain = [`${ek.label}: ${k.value}`, '']; }
+      let plain; try { const fn = simple ? B.simple.plain : B.plain; plain = fn ? U(fn(simple ? b : eff, out, k)) : [`${ek.label}: ${k.value}`, '']; } catch (e) { plain = [`${ek.label}: ${k.value}`, '']; }
       heroEl.hidden = !cards.length;
       heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>`;
       const big = heroEl.querySelector('[data-v]');
@@ -152,12 +155,24 @@ export function mountModule(m, main, onMode) {
 
   /* ----- page frame ----- */
   const modeBtn = (label, on) => h('button', { type: 'button', class: on ? 'on' : '', 'aria-pressed': String(on), onclick: () => { store.set('fl:mode', label === 'Pro' ? 'pro' : 'beginner'); onMode(); } }, label);
+  function unitSeg() {
+    const pick = next => {
+      if (next === unit) return;
+      const f = unitFactor(unit, next);
+      const conv = (fields, st, k) => { fields.filter(isUnitField).forEach(fd => { st[fd.id] = +(st[fd.id] * f).toPrecision(12); }); store.set(k, st); };
+      conv(m.fields, v, key);
+      if (b) conv(B.simple.fields, b, sKey);
+      store.set('fl:unit', next);
+      onMode();
+    };
+    return h('div', { class: 'seg units', title: 'Units for money and share counts' }, h('span', { class: 'ulab' }, 'Units'), UNIT_LIST.map(([id, txt, name]) => h('button', { type: 'button', class: id === unit ? 'on' : '', 'aria-pressed': String(id === unit), title: name, onclick: () => pick(id) }, txt)));
+  }
   const head = h('header', { class: 'vhead reveal' },
     h('div', { class: 'vtitle' },
       h('a', { class: `chip tint-${topic.tint}`, href: '/', 'data-link': true }, '← ' + topic.label),
       h('h1', { html: esc(beginner && B.ask ? B.ask : m.title).replace(/(\S+\??)$/, '<em>$1</em>') }),
       beginner ? null : h('p', { class: 'blurb' }, m.blurb)),
-    h('div', { class: 'seg', title: 'Beginner shows the simple version. Pro shows everything.' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner)));
+    h('div', { class: 'vctl' }, hasUnits ? unitSeg() : null, h('div', { class: 'seg', title: 'Beginner shows the simple version. Pro shows everything.' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner))));
   const lab = h('div', { class: 'lab' }, inputsEl, outEl);
   const concept = h('div', { class: 'concept card', html: m.concept, hidden: true });
   main.innerHTML = '';

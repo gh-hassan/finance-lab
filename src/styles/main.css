@@ -167,9 +167,9 @@ input[type=range]{width:100%;accent-color:var(--c1);height:24px}
 .vtitle h1{font:600 clamp(26px,4.2vw,46px)/1.08 var(--display);letter-spacing:-.04em;margin-bottom:10px}
 .vtitle h1 em{font:italic 400 1.14em/.9 var(--serif);letter-spacing:-.01em;background:linear-gradient(90deg,var(--c1),var(--c4));-webkit-background-clip:text;background-clip:text;color:transparent}
 .blurb{color:var(--mute);font-size:16px;max-width:62ch}
-.vhead>.seg{display:flex;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line);flex:none}
-.vhead>.seg button{border:0;background:transparent;padding:9px 18px;border-radius:12px;font:700 13.5px var(--body);cursor:pointer;transition:background .2s,color .2s}
-.vhead>.seg button.on{background:var(--pill-on);color:var(--pill-on-text)}
+.vhead .seg{display:flex;padding:4px;border-radius:16px;background:var(--card);border:1px solid var(--line);flex:none}
+.vhead .seg button{border:0;background:transparent;padding:9px 18px;border-radius:12px;font:700 13.5px var(--body);cursor:pointer;transition:background .2s,color .2s}
+.vhead .seg button.on{background:var(--pill-on);color:var(--pill-on-text)}
 .lab{display:grid;grid-template-columns:clamp(300px,21vw,380px) minmax(0,1fr);gap:20px;align-items:start}
 .lab[hidden]{display:none}
 .inputs{padding:18px;position:sticky;top:92px;max-height:calc(100vh - 110px);overflow-y:auto}
@@ -695,3 +695,8 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 .big .tk-d{--pd:.07em}
 /* rolling digits need normal inline flow so the spaces around numbers survive */
 .sv-cap,.headline{display:block}
+
+.vctl{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;align-items:center}
+.seg.units{align-items:center}
+.seg.units .ulab{padding:0 8px 0 12px;font:600 12.5px var(--body);color:var(--mute)}
+.vhead .seg.units button{padding:9px 14px;min-width:40px}
