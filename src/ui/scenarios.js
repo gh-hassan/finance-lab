@@ -52,7 +52,7 @@ export function renderScenarios(main) {
     tb.append(probTr);
     tableRes = h('tbody', { class: 'res' });
     t.append(tb, tableRes);
-    const sec1 = h('section', { class: 'card scsec reveal' }, h('div', { class: 'sec-h2' }, h('h2', {}, 'Three possible futures'), h('p', {}, 'Edit any number.')), h('div', { class: 'tw2' }, t));
+    const sec1 = h('section', { class: 'card scsec reveal' }, h('div', { class: 'sec-h2' }, h('h2', {}, 'Three possible futures'), h('p', {}, 'Edit any number.'), h('a', { class: 'learnlink', href: '/learn#idea-expected', 'data-link': true }, 'What does "Likely" mean?')), h('div', { class: 'tw2' }, t));
 
     /* measure picker */
     measureEl = h('div', { class: 'measure reveal' });
@@ -112,7 +112,7 @@ export function renderScenarios(main) {
     const m = model(), o = findOutput(m, outId());
     sim = monteCarlo(m, o.id, ranges(), 3000, st.seed);
     const bad = o.better === 'high' ? ['Bad day', sim.p10] : ['Bad day', sim.p90], good = o.better === 'high' ? ['Good day', sim.p90] : ['Good day', sim.p10];
-    riskEl.innerHTML = `<div class="sec-h2"><h2>How risky is it?</h2><p>3,000 what-ifs, each with random numbers inside your ranges.</p><button type="button" class="btn play" data-run>Run again</button></div>
+    riskEl.innerHTML = `<div class="sec-h2"><h2>How risky is it?</h2><p>3,000 what-ifs, each with random numbers inside your ranges.</p><a class="learnlink" href="/learn#idea-montecarlo" data-link>How does this work?</a><button type="button" class="btn play" data-run>Run again</button></div>
       <div class="hist"></div><div class="rcount"></div>
       <div class="rstats"><div><span>Typical</span><b>${esc(o.fmt(sim.p50))}</b></div><div><span>${bad[0]}</span><b class="bad">${esc(o.fmt(bad[1]))}</b></div><div><span>${good[0]}</span><b class="good">${esc(o.fmt(good[1]))}</b></div>${sim.probBad != null ? `<div class="chance"><span>Chance of ${esc(sim.riskText)}</span><b class="${sim.probBad > 0.25 ? 'bad' : sim.probBad > 0.1 ? 'warn' : 'good'}">${pct(sim.probBad, 0)}</b></div>` : ''}</div>`;
     riskEl.querySelector('[data-run]').addEventListener('click', () => { st.seed++; renderRisk(true); });

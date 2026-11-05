@@ -1,12 +1,13 @@
 # SmartWealth
 
-Nineteen finance calculators for MBA students and beginners. Every calculator has:
+Twenty-three finance and statistics calculators for MBA students and beginners. Every calculator has:
 
 - **Beginner mode:** one plain-English question, a few friendly inputs, a big answer, one animated chart, and a short glossary.
 - **Pro mode:** every input, all results, step-by-step workings with your numbers, tables and the formulas behind it.
 
 - **Scenarios:** pick a situation (project, company, loan, savings, small business, stock), set worst/base/best numbers, then see the three futures, what matters most, a two-way what-if grid and a 3,000-run risk simulation.
-- **Learn:** 21 short animations of the basic ideas.
+- **Learn:** 30 short animations of the basic ideas, including a "Chance and numbers" chapter (averages, spread, the bell curve, probability, correlation, beta, risk simulation).
+- **Stats toolkit:** describe a list of numbers, correlation and beta, chance of a big move (Value at Risk), and expected value of a bet.
 
 Calculators: time value of money, interest rates, annuities, loan amortization, bonds, stock valuation (DDM), DCF, capital budgeting, WACC, capital structure, break-even, working capital, CAPM, portfolio theory, return statistics, options (Black-Scholes), ratios and DuPont, FX and parity, M&A accretion/dilution.
 

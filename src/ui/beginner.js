@@ -10,7 +10,8 @@ export const TOPICS = {
   Investments: { label: 'Investing', tint: 'mint', blurb: 'Risk, return and portfolios' },
   Derivatives: { label: 'Options', tint: 'sky', blurb: 'Tickets on future prices' },
   International: { label: 'Global money', tint: 'pink', blurb: 'Exchange rates' },
-  Analysis: { label: 'Company health', tint: 'peach', blurb: 'Report cards for companies' }
+  Analysis: { label: 'Company health', tint: 'peach', blurb: 'Report cards for companies' },
+  Statistics: { label: 'Chance and numbers', tint: 'teal', blurb: 'Averages, spread and probability' }
 };
 
 const cardBy = (o, label) => (o.cards || []).find(c => c.label === label) || { value: '—' };
@@ -194,6 +195,39 @@ export const BEGINNER = {
     easy: [['EPS accretion', 'Change in profit per share', 'Plus means the deal helps'], ['EPS dilution', 'Change in profit per share', 'Minus means the deal hurts'], ['Purchase price', 'Price paid for the target', ''], ['New shares issued', 'New shares created', 'Share the pie among more owners'], ['New debt raised', 'Money borrowed to pay', '']],
     plain: (v, o, k) => [`${k.label.startsWith('EPS acc') || k.label.startsWith('Change') && k.value.startsWith('+') ? 'Profit per share rises' : 'Profit per share falls'} by ${k.value.replace(/[+−-]/, '')}.`, `The deal needs ${cardBy(o, 'Break-even synergies').value} of yearly savings to leave profit per share unchanged.`],
     words: [['Accretive', 'Raises profit per share.'], ['Dilutive', 'Lowers profit per share.'], ['Synergies', 'Savings from joining two companies.']]
+  },
+  stats: {
+    ask: 'What do my numbers say?', essential: ['data'], labels: { data: 'Your numbers' }, tips: { data: 'Type or paste numbers, separated by commas. Use a minus sign for negatives.' },
+    scene: { id: 'average', map: v => ({ data: parseList(v.data).slice(0, 40) }) },
+    easy: [['Average', 'Average', 'Add up, divide by how many'], ['Middle (median)', 'Middle value', 'Half are below, half above'], ['Spread (std. deviation)', 'How bumpy they are', 'A typical distance from the average']],
+    plain: (v, o, k) => [`The average is ${k.value}. The middle value is ${cardBy(o, 'Middle (median)').value}.`, ''],
+    words: [['Average', 'Add up, divide by how many.'], ['Median', 'The middle value when sorted.'], ['Spread', 'How far values stray from the average.']]
+  },
+  corr: {
+    ask: 'Do these two things move together?', essential: ['xs', 'ys'], labels: { xs: 'First list (for example, the market)', ys: 'Second list (for example, your stock)' },
+    tips: { xs: 'Type numbers separated by commas, such as monthly returns.', ys: 'The same number of values, in the same order.' },
+    scene: { id: 'correlation', map: v => ({ xs: parseList(v.xs), ys: parseList(v.ys) }) },
+    easy: [['Correlation (r)', 'Do they move together?', 'A score from −1 to +1'], ['Slope (beta)', 'How much the second moves', 'For each 1 the first moves'], ['Share explained (R²)', 'How tight the link is', '']],
+    plain: (v, o, k) => [`${k.sub.charAt(0).toUpperCase() + k.sub.slice(1)}. Score ${k.value}.`, ''],
+    words: [['Correlation', 'A score from −1 to +1 for moving together.'], ['Beta', 'The slope of the best-fit line.'], ['R-squared', 'How tightly the dots hug the line.']]
+  },
+  normal: {
+    ask: 'How likely is a bad year?', essential: ['mean', 'sd', 'cut', 'amount'], force: { conf: '95' },
+    labels: { mean: 'Average yearly return', sd: 'How bumpy (spread)', cut: 'A loss you worry about', amount: 'Money invested' },
+    tips: { mean: 'What you expect to earn in a typical year.', sd: 'How much a year can differ from the average. Stocks are often around 15 to 20%.', cut: 'Type a loss as a negative number, such as −20.', amount: 'Used to turn the loss into dollars.' },
+    scene: { id: 'tail', map: v => ({ mean: v.mean, sd: v.sd, cut: v.cut }) },
+    easy: [['Chance of any loss', 'Chance of losing money this year', ''], ['Bad-year line (95%)', 'A 1-in-20 bad year', 'Only 5 years in 100 are worse'], ['Loss to plan for', 'Loss to plan for', 'In a bad year']],
+    plain: (v, o, k) => [`About ${k.value} chance of a year worse than ${nf(v.cut, 0)}%.`, ''],
+    words: [['Probability', 'How likely something is.'], ['Value at Risk', 'The loss you should only exceed a few times in 100.'], ['Bell curve', 'The pattern most results follow.']]
+  },
+  prob: {
+    ask: 'Is this bet worth taking?', essential: ['win', 'pwin', 'lose', 'tries'],
+    labels: { win: 'What you win', pwin: 'Chance of winning', lose: 'What you lose', tries: 'How many times you play' },
+    tips: { win: 'The amount you gain if it works.', pwin: 'Out of 100 tries, how many win.', lose: 'The amount you lose if it does not.', tries: 'Repeating it makes the result more predictable.' },
+    scene: { id: 'expected', map: v => ({ pwin: v.pwin, win: v.win, lose: v.lose }) },
+    easy: [['Chance of winning one try', 'Chance of winning', ''], ['Typical swing', 'How much results swing', 'One try can be far from the average']],
+    plain: (v, o, k) => [`On average each try ${k.tone === 'good' ? 'gains' : 'loses'} ${k.value.replace(/^[+−]/, '')}.`, ''],
+    words: [['Expected value', 'Each result × its chance, added up.'], ['Probability', 'How likely an outcome is.'], ['Law of large numbers', 'More tries, more predictable.']]
   }
 };
 

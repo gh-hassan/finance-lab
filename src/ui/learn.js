@@ -8,7 +8,8 @@ const CHAPTERS = [
   ['Borrowing and lending', 'What happens when money changes hands', 'sky'],
   ['Owning things', 'Shares, and what borrowing does to results', 'mint'],
   ['Risk', 'Why returns jump around and how to calm them', 'lav'],
-  ['Making decisions', 'How to tell if something is worth doing', 'sun']
+  ['Making decisions', 'How to tell if something is worth doing', 'sun'],
+  ['Chance and numbers', 'The ideas behind risk and return', 'pink']
 ];
 
 export function renderLearn(main) {

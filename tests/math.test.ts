@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { annF, bondPrice, bs, compact, findRoot, fvF, irr, money, nf, npv, parseList, pct, range } from '../src/lib/math';
+import { annF, bondPrice, bs, compact, corr, findRoot, fvF, irr, linreg, mean, median, money, ncdf, nf, ninv, npv, parseList, pct, percentile, range, stdev } from '../src/lib/math';
 
 describe('formatting', () => {
   it('formats money, numbers and percents', () => {
@@ -49,5 +49,42 @@ describe('bonds and options', () => {
     expect(o.c).toBeCloseTo(11.84, 2);
     expect(o.c - o.p).toBeCloseTo(100 - 100 * Math.exp(-0.04), 6);
     expect(bs(110, 100, 0, 0.04, 0, 0.25).c).toBeCloseTo(110 - 100, 0);
+  });
+});
+
+describe('statistics helpers', () => {
+  it('computes mean, median and sample standard deviation', () => {
+    expect(mean([2, 4, 6])).toBe(4);
+    expect(median([5, 1, 3])).toBe(3);
+    expect(median([1, 2, 3, 4])).toBe(2.5);
+    expect(stdev([2, 4, 4, 4, 5, 5, 7, 9])).toBeCloseTo(2.13809, 4);
+    expect(stdev([5])).toBeNaN();
+    expect(mean([])).toBeNaN();
+  });
+  it('shows one huge value drags the mean but not the median', () => {
+    const base = [32, 35, 38, 40, 42, 45, 48, 52, 55];
+    expect(median([...base, 400])).toBeCloseTo(43.5, 6);
+    expect(mean([...base, 400])).toBeGreaterThan(75);
+  });
+  it('interpolates percentiles', () => {
+    expect(percentile([1, 2, 3, 4, 5], 0.5)).toBe(3);
+    expect(percentile([1, 2, 3, 4, 5], 0.1)).toBeCloseTo(1.4, 6);
+    expect(percentile([1, 2, 3, 4, 5], 2)).toBe(5);
+  });
+  it('measures correlation and the best-fit line', () => {
+    const x = [1, 2, 3, 4, 5], y = [2, 4, 6, 8, 10];
+    expect(corr(x, y)).toBeCloseTo(1, 10);
+    expect(corr(x, [10, 8, 6, 4, 2])).toBeCloseTo(-1, 10);
+    expect(corr(x, [3, 3, 3, 3, 3])).toBeNaN();
+    const f = linreg(x, y);
+    expect(f.slope).toBeCloseTo(2, 10); expect(f.intercept).toBeCloseTo(0, 10); expect(f.r2).toBeCloseTo(1, 10);
+  });
+  it('inverts the normal CDF', () => {
+    expect(ninv(0.5)).toBeCloseTo(0, 8);
+    expect(ninv(0.975)).toBeCloseTo(1.959964, 5);
+    expect(ninv(0.05)).toBeCloseTo(-1.644854, 5);
+    expect(ncdf(ninv(0.3))).toBeCloseTo(0.3, 6);
+    expect(ninv(0)).toBe(-Infinity);
+    expect(ninv(1.5)).toBeNaN();
   });
 });

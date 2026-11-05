@@ -3,7 +3,7 @@
    draw(t, p, W, H): t runs 0..1, p holds the parameters, and W x H is the real pixel size of the stage,
    so text is never scaled. Design rules: no characters, only proportional bars and lines, one accent per idea,
    labels centred on what they describe. */
-import { money, nf, sum } from '../lib/math';
+import { corr, linreg, mean, median, money, ncdf, nf, stdev, sum } from '../lib/math';
 import { esc, h, reduced } from './visuals.js';
 
 const M = x => money(x, 0);
@@ -360,9 +360,178 @@ export const SCENES = {
       return { svg: g + prog(t, W, H, 'Stock price at the end'), cap: S <= p.K ? `The stock is at ${M(S)}, below the strike of ${M(p.K)}. The ticket is worthless. You lose only the ${M(p.prem)} fee.` : `The stock is at ${M(S)}. Your ticket lets you buy at ${M(p.K)}, worth ${M(S - p.K)}. After the ${M(p.prem)} fee, you ${profit >= 0 ? 'profit' : 'lose'} ${M(Math.abs(profit))}.` };
     }
   }
+  ,
+  average: {
+    chapter: 'Chance and numbers', title: 'Average vs typical', plain: 'One very large number can drag the average far from what is typical. The middle value hardly moves.',
+    how: ['Ten values, each shown as a dot on a line.', 'The average (coral) is the total shared out equally.', 'The middle value (blue) is the one in the exact centre. Make the biggest dot bigger: only the average runs away.'],
+    words: [['Average (mean)', 'Add everything up, divide by how many.'], ['Median', 'The middle value when sorted.'], ['Outlier', 'A value far away from the rest.']],
+    params: [{ id: 'big', label: 'The biggest value', min: 55, max: 500, step: 5, v: 400, fmt: x => '$' + x + 'k' }], link: '/stats',
+    draw(t, p, W, H) {
+      const own = !!(p.data && p.data.length), data = own ? p.data : [32, 35, 38, 40, 42, 45, 48, 52, 55, p.big], pre = own ? (p.pre || '') : '$', post = own ? (p.post || '') : 'k';
+      const fmt = x => pre + nf(x, !own || Number.isInteger(x) ? 0 : Math.abs(x) < 10 ? 2 : 1) + post, n = data.length, mu = mean(data), md = median(data), lo = Math.min(...data), hi = Math.max(...data), pad = Math.max(30, W * 0.08), sp = (hi - lo) || 1;
+      const X = v => pad + (W - 2 * pad) * (v - lo + sp * 0.04) / (sp * 1.08), baseY = H * 0.74, shown = Math.ceil(seg(t, 0.02, 0.6) * n), u = ease(seg(t, 0.62, 0.92));
+      const stack = rr => { const placed = [], out = []; [...data].sort((a, b) => a - b).forEach(v => { const x = X(v); let k = 0; placed.forEach(q => { if (Math.abs(q - x) < 2 * rr) k++; }); placed.push(x); out.push({ x, k }); }); return out; };
+      let r = 9; while (r > 4 && Math.max(...stack(r).map(o => o.k + 1)) * (2 * r + 1) > H * 0.4) r -= 1;
+      let g = L(pad - 6, baseY, W - pad + 6, baseY, 'var(--line)', 3) + T(pad, baseY + 20, fmt(lo), { a: 'start', z: 12.5, w: 600, c: 'var(--mute)' }) + T(W - pad, baseY + 20, fmt(hi), { a: 'end', z: 12.5, w: 600, c: 'var(--mute)' });
+      stack(r).forEach((o, i) => { if (i < shown) g += C(o.x, baseY - r - 3 - o.k * (2 * r + 1), r, 'var(--c2)'); });
+      const mark = (v, label, c, y) => { const x = clamp(X(v), pad + 40, W - pad - 40); return `<g opacity="${u}">` + L(X(v), y + 16, X(v), baseY, c, 2, true) + chip(x, y, `${label} ${fmt(v)}`, c, '#fff', 12.5) + '</g>'; };
+      if (u > 0) g += mark(md, 'Middle', 'var(--c3)', H * 0.2) + mark(mu, 'Average', 'var(--c1)', H * 0.07);
+      const gap = Math.abs(mu - md) / (Math.abs(md) || 1);
+      return { svg: g, cap: u < 0.5 ? 'Each dot is one value.' : gap > 0.2 ? `The average is ${fmt(mu)} but the middle value is ${fmt(md)}. One big value drags the average. The middle is a better picture of what is typical.` : `The average (${fmt(mu)}) and the middle (${fmt(md)}) are close, so the values are fairly even.` };
+    }
+  },
+  spread: {
+    chapter: 'Chance and numbers', title: 'Spread: how bumpy is it?', plain: 'Two things can have the same average and feel completely different. The spread (standard deviation) tells you how bumpy.',
+    how: ['Two investments both average 7% a year.', 'Each dot is one year. The shaded band is one spread either side of the average.', 'The bumpy lane has a wide band: results land far from the average.'],
+    words: [['Standard deviation', 'A typical distance from the average. Bigger means bumpier.'], ['Volatility', 'Finance word for spread in returns.'], ['Variance', 'The spread, squared.']],
+    params: [{ id: 'wild', label: 'How wild the bumpy lane is', min: 6, max: 30, step: 1, v: 18, fmt: x => '±' + x + '%' }], seeded: true, link: '/stats',
+    draw(t, p, W, H) {
+      const lanes = [['Calm', 4, 'var(--c3)'], ['Bumpy', p.wild, 'var(--c1)']], N = 20, avg = 7, pad = Math.max(24, W * 0.07), lh = (H - 96) / 2, k = Math.floor(t * N + 1e-9), sc = (lh / 2 - 8) / (Math.max(4, p.wild) * 2.4);
+      let g = '';
+      lanes.forEach(([name, sd, c], i) => {
+        const top = 14 + i * (lh + 34), mid = top + 22 + lh / 2, z = series((p.seed || 1) * 11 + i * 7, N), X = j => pad + (W - 2 * pad) * (j + 0.5) / N, Y = v => mid - (v - avg) * sc;
+        g += T(pad, top + 6, name, { a: 'start', z: 15 }) + T(W - pad, top + 6, `Spread ±${sd}%`, { a: 'end', z: 14, c: c }) + R(pad, Y(avg + sd), W - 2 * pad, Math.max(2, 2 * sd * sc), `color-mix(in srgb, ${c} 18%, transparent)`, { r: 8 }) + L(pad, Y(avg), W - pad, Y(avg), 'var(--mute)', 1.5, true);
+        let d = ''; for (let j = 0; j < Math.min(N, k + 1); j++) { const v = avg + sd * z[j]; d += (j ? 'L' : 'M') + f1(X(j)) + ' ' + f1(clamp(Y(v), top + 20, top + 24 + lh)); }
+        g += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2" opacity=".45" stroke-linejoin="round"/>`;
+        for (let j = 0; j < Math.min(N, k + 1); j++) g += C(X(j), clamp(Y(avg + sd * z[j]), top + 20, top + 24 + lh), 4.5, c);
+      });
+      g += prog(t, W, H, `Year ${Math.min(N, k + 1)} of ${N}`);
+      return { svg: g, cap: `Both average ${avg}% a year. The calm lane stays near it (±4%). The bumpy lane lands anywhere from ${nf(avg - p.wild, 0)}% to ${nf(avg + p.wild, 0)}% in a typical year. Spread is the bumpiness.` };
+    }
+  },
+  bell: {
+    chapter: 'Chance and numbers', title: 'The bell curve: 68, 95, 99.7', plain: 'Many things follow a bell shape. Knowing the average and the spread tells you how likely any result is.',
+    how: ['Most results land near the average, in the middle of the bell.', 'About 68 in 100 land within one spread of the average.', 'About 95 within two spreads, and almost all (99.7) within three.'],
+    words: [['Normal distribution', 'The bell-shaped pattern of chance.'], ['Average (mean)', 'The centre of the bell.'], ['Standard deviation', 'How wide the bell is.']],
+    params: [{ id: 'mean', label: 'Average yearly return', min: 0, max: 15, step: 1, v: 8, fmt: x => x + '%' }, { id: 'sd', label: 'Spread', min: 5, max: 30, step: 1, v: 15, fmt: x => '±' + x + '%' }], link: '/normal',
+    draw(t, p, W, H) {
+      const pad = Math.max(24, W * 0.06), base = H - 62, top = 48, X = z => pad + (W - 2 * pad) * (z + 4) / 8, Y = z => base - (base - top) * Math.exp(-z * z / 2);
+      const curve = (a, b) => { let d = `M${f1(X(a))} ${f1(base)}`; for (let z = a; z <= b + 1e-9; z += 0.05) d += `L${f1(X(z))} ${f1(Y(z))}`; return d + `L${f1(X(b))} ${f1(base)}Z`; };
+      let g = '';
+      [[3, 'var(--lav)', 0.5, '99.7%'], [2, 'var(--sky)', 0.65, '95%'], [1, 'var(--c3)', 0.85, '68%']].forEach(([k, c, op, lab], i) => { const a = ease(seg(t, (2 - i) / 3, (3 - i) / 3)); if (a > 0) g += `<path d="${curve(-k, k)}" fill="${c}" opacity="${(op * a).toFixed(2)}"/>`; });
+      let d = ''; for (let z = -4; z <= 4.001; z += 0.05) d += (z > -4 ? 'L' : 'M') + f1(X(z)) + ' ' + f1(Y(z));
+      g += `<path d="${d}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>` + L(pad, base, W - pad, base, 'var(--mute)', 1.5);
+      for (let z = -3; z <= 3; z++) g += L(X(z), base, X(z), base + 6, 'var(--mute)', 1.5) + T(X(z), base + 22, nf(p.mean + z * p.sd, 0) + '%', { z: 12.5, w: z === 0 ? 700 : 500, c: z === 0 ? 'var(--ink)' : 'var(--mute)' });
+      const ph = t < 0.33 ? 1 : t < 0.66 ? 2 : 3, lab = ['68%', '95%', '99.7%'][ph - 1];
+      g += chip(W / 2, 20, `${lab} of years land between ${nf(p.mean - ph * p.sd, 0)}% and ${nf(p.mean + ph * p.sd, 0)}%`, 'var(--soft)', 'var(--ink)', 13.5);
+      return { svg: g, cap: `Average ${p.mean}%, spread ±${p.sd}%. About ${['68 in 100', '95 in 100', '997 in 1,000'][ph - 1]} years land within ${ph} spread${ph > 1 ? 's' : ''} of the average, between ${nf(p.mean - ph * p.sd, 0)}% and ${nf(p.mean + ph * p.sd, 0)}%.` };
+    }
+  },
+  tail: {
+    chapter: 'Chance and numbers', title: 'The chance of a big loss', plain: 'With the average and the spread you can estimate how likely a bad year is. This is how banks measure risk.',
+    how: ['The bell shows how likely each yearly return is.', 'Slide the line to a loss you worry about.', 'The shaded area to its left is the chance of a year that bad, or worse.'],
+    words: [['Probability', 'How likely something is, from 0% to 100%.'], ['Tail risk', 'The chance of a very bad result.'], ['Value at Risk', 'The loss you should only exceed a few times in 100.']],
+    params: [{ id: 'mean', label: 'Average yearly return', min: 0, max: 15, step: 1, v: 7, fmt: x => x + '%' }, { id: 'sd', label: 'Spread', min: 5, max: 30, step: 1, v: 16, fmt: x => '±' + x + '%' }, { id: 'cut', label: 'A loss that worries you', min: -50, max: -5, step: 5, v: -20, fmt: x => x + '%' }], link: '/normal',
+    draw(t, p, W, H) {
+      const pad = Math.max(24, W * 0.06), base = H - 62, top = 66, lo = p.mean - 4 * p.sd, hi = p.mean + 4 * p.sd, X = v => pad + (W - 2 * pad) * (v - lo) / (hi - lo), Y = v => base - (base - top) * Math.exp(-Math.pow((v - p.mean) / p.sd, 2) / 2), cutNow = lerp(p.mean, p.cut, ease(t));
+      const lowEnd = Math.max(lo, Math.min(cutNow, hi)), prob = ncdf((cutNow - p.mean) / p.sd);
+      let g = '', d = `M${f1(X(lo))} ${f1(base)}`; for (let v = lo; v <= lowEnd + 1e-9; v += (hi - lo) / 160) d += `L${f1(X(v))} ${f1(Y(v))}`;
+      g += `<path d="${d}L${f1(X(lowEnd))} ${f1(base)}Z" fill="var(--bad)" opacity=".5"/>`;
+      let c = ''; for (let v = lo; v <= hi + 1e-9; v += (hi - lo) / 160) c += (v > lo ? 'L' : 'M') + f1(X(v)) + ' ' + f1(Y(v));
+      g += `<path d="${c}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>` + L(pad, base, W - pad, base, 'var(--mute)', 1.5);
+      for (let k = -3; k <= 3; k++) { const v = p.mean + k * p.sd; g += L(X(v), base, X(v), base + 6, 'var(--mute)', 1.5) + T(X(v), base + 22, nf(v, 0) + '%', { z: 12.5, w: 500, c: 'var(--mute)' }); }
+      if (0 > lo && 0 < hi) g += L(X(0), top - 8, X(0), base, 'var(--mute)', 1.5, true) + T(X(0), top - 18, 'break-even', { z: 12, w: 600, c: 'var(--mute)' });
+      g += L(X(cutNow), top - 4, X(cutNow), base, 'var(--bad)', 2.5) + chip(clamp(X(cutNow), pad + 46, W - pad - 46), 22, `Chance: ${prob < 0.001 ? '<0.1' : nf(prob * 100, prob < 0.1 ? 1 : 0)}%`, 'var(--bad)', '#fff', 14);
+      return { svg: g, cap: prob > 0.0005 ? `About ${nf(prob * 100, 1)}% chance of a year worse than ${nf(cutNow, 0)}%, roughly 1 year in ${nf(1 / prob, 0)}.` : 'Almost no chance of a year this bad.' };
+    }
+  },
+  expected: {
+    chapter: 'Chance and numbers', title: 'Expected value: the fair price of a bet', plain: 'Weigh each possible result by its chance and add them up. That is what a bet, a stock or a project is worth on average.',
+    how: ['Each bar is one outcome. Wider means more likely, taller means bigger.', 'Green is a gain, rose is a loss.', 'The dashed line is the expected value: the average per try if you could repeat it many times.'],
+    words: [['Probability', 'The chance of one outcome.'], ['Expected value', 'Each result × its chance, added up.'], ['Risk', 'Real results can differ a lot from the expected value.']],
+    params: [{ id: 'pwin', label: 'Chance of winning', min: 10, max: 90, step: 5, v: 40, fmt: x => x + '%' }, { id: 'win', label: 'Win amount', min: 20, max: 200, step: 10, v: 100, fmt: M }, { id: 'lose', label: 'Loss amount', min: 10, max: 100, step: 10, v: 50, fmt: M }], link: '/prob',
+    draw(t, p, W, H) {
+      const outs = p.outcomes && p.outcomes.length ? p.outcomes : [{ label: 'Win', prob: p.pwin / 100, value: p.win }, { label: 'Lose', prob: 1 - p.pwin / 100, value: -p.lose }], ev = sum(outs.map(o => o.prob * o.value)), maxA = Math.max(...outs.map(o => Math.abs(o.value)), 1);
+      const pad = Math.max(24, W * 0.07), BW = W - 2 * pad, gap = 6, hasNeg = outs.some(o => o.value < 0), zero = hasNeg ? H * 0.52 : H - 70, up = zero - 44, down = H - 60 - zero, sc = Math.min(up / maxA, hasNeg ? down / maxA : 1e9);
+      let x = pad, g = L(pad, zero, W - pad, zero, 'var(--mute)', 1.5);
+      outs.forEach((o, i) => {
+        const w = Math.max(10, (BW - gap * (outs.length - 1)) * o.prob), a = ease(seg(t, i * 0.18, i * 0.18 + 0.4)), hh = Math.abs(o.value) * sc * a, y = o.value >= 0 ? zero - hh : zero;
+        g += R(x, y, w, hh, o.value >= 0 ? 'var(--c3)' : 'var(--c4)', { r: 8 });
+        if (a > 0.6) { g += T(x + w / 2, o.value >= 0 ? y - 26 : y + hh + 14, (o.value >= 0 ? '+' : '−') + M(Math.abs(o.value)), { z: 15 }) + T(x + w / 2, o.value >= 0 ? y - 10 : y + hh + 30, `${nf(o.prob * 100, 0)}% chance`, { z: 12.5, w: 600, c: 'var(--mute)' }); }
+        x += w + gap;
+      });
+      const u = ease(seg(t, 0.7, 0.95)), yEv = zero - ev * sc;
+      g += `<g opacity="${u}">` + L(pad - 6, yEv, W - pad + 6, yEv, 'var(--ink)', 2.5, true) + chip(W - pad - 60, clamp(yEv, 22, H - 22) + (ev >= 0 ? -22 : 22), `Expected ${ev >= 0 ? '+' : '−'}${M(Math.abs(ev))}`, 'var(--ink)', 'var(--panel-solid)', 13) + '</g>';
+      return { svg: g, cap: u < 0.5 ? 'Each bar is one possible outcome. Wider means more likely.' : `Weighing each result by its chance gives ${ev >= 0 ? '+' : '−'}${M(Math.abs(ev))} per try on average. ${ev >= 0 ? 'Worth taking on average.' : 'A losing bet on average.'} Individual tries can still go either way.` };
+    }
+  },
+  lawlarge: {
+    chapter: 'Chance and numbers', title: 'More tries, more predictable', plain: 'A few flips can be lucky or unlucky. Over many tries, the result settles on the true chance.',
+    how: ['Each flip is heads or tails. The line shows the share of heads so far.', 'At first it swings wildly.', 'After many flips it settles near the true chance (dashed line).'],
+    words: [['Law of large numbers', 'More tries bring the result close to the true chance.'], ['Sample size', 'How many tries you have.'], ['Luck', 'Short-run noise that evens out over time.']],
+    params: [{ id: 'p', label: 'True chance of heads', min: 10, max: 90, step: 5, v: 50, fmt: x => x + '%' }], seeded: true, link: '/prob',
+    draw(t, p, W, H) {
+      const N = 300, r = rng((p.seed || 1) * 13), flips = Array.from({ length: N }, () => (r() < p.p / 100 ? 1 : 0)), k = Math.max(1, Math.round(Math.pow(t, 1.7) * N)), pad = Math.max(34, W * 0.08), base = H - 74, top = 58;
+      let cum = 0, d = ''; const X = j => pad + (W - 2 * pad - 8) * Math.log(j + 1) / Math.log(N + 1), Y = v => base - (base - top) * v;
+      for (let j = 1; j <= k; j++) { cum += flips[j - 1]; d += (j > 1 ? 'L' : 'M') + f1(X(j)) + ' ' + f1(Y(cum / j)); }
+      const heads = cum, share = heads / k;
+      let g = L(pad, base, W - pad, base, 'var(--line)', 2) + L(pad, Y(p.p / 100), W - pad, Y(p.p / 100), 'var(--mute)', 1.5, true) + T(W - pad, Y(p.p / 100) - 12, `true chance ${p.p}%`, { a: 'end', z: 12.5, w: 600, c: 'var(--mute)' });
+      [1, 10, 100, 300].forEach(v => { g += L(X(v), base, X(v), base + 5, 'var(--mute)', 1.5) + T(X(v), base + 20, String(v), { z: 12, w: 600, c: 'var(--mute)' }); });
+      g += `<path d="${d}" fill="none" stroke="var(--c1)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>` + C(X(k), Y(share), 5, 'var(--c1)', { stroke: 'var(--panel-solid)', sw: 2 }) + T(pad, 22, `After ${k} flips: ${heads} heads = ${nf(share * 100, 0)}%`, { a: 'start', z: 16 }) + T(W / 2, H - 14, 'number of flips', { z: 12, w: 600, c: 'var(--mute)' });
+      return { svg: g, cap: k < 20 ? `After only ${k} flips, ${nf(share * 100, 0)}% heads is mostly luck.` : `After ${k} flips, ${nf(share * 100, 0)}% heads. The true chance is ${p.p}%. More flips, closer it gets.` };
+    }
+  },
+  correlation: {
+    chapter: 'Chance and numbers', title: 'Correlation: do two things move together?', plain: 'Correlation is a score from −1 to +1. It tells you whether two things rise and fall together, or not at all.',
+    how: ['Each dot is one moment: the value of A (across) and B (up).', 'Dots in a tight rising line mean +1: they move together.', 'A shapeless cloud means 0, and a falling line means −1: opposite.'],
+    words: [['Correlation', 'A score from −1 to +1 for moving together.'], ['Positive', 'Both rise and fall together.'], ['Diversify', 'Mix things with low correlation to calm the ride.']],
+    params: [{ id: 'r', label: 'How much they move together', min: -1, max: 1, step: 0.1, v: 0.7, fmt: x => nf(x, 1) }], seeded: true, link: '/corr',
+    draw(t, p, W, H) {
+      const ext = !!(p.xs && p.xs.length > 2), N = ext ? Math.min(p.xs.length, p.ys.length) : 45, z1 = series((p.seed || 1) * 5 + 1, N), z2 = series((p.seed || 1) * 5 + 2, N), rr = clamp(p.r == null ? 0 : p.r, -1, 1);
+      const xs0 = ext ? p.xs.slice(0, N) : z1, ys0 = ext ? p.ys.slice(0, N) : z1.map((z, i) => rr * z + Math.sqrt(1 - rr * rr) * z2[i]), sx = stdev(xs0) || 1, sy = stdev(ys0) || 1, mx = mean(xs0), my = mean(ys0), xs = xs0.map(v => (v - mx) / sx), ys = ys0.map(v => (v - my) / sy);
+      const r = corr(xs0, ys0), size = Math.min(H - 70, W * 0.54), x0 = Math.max(18, W * 0.05), y0 = 18, S = v => clamp(v, -3, 3), X = v => x0 + size * (S(v) + 3.2) / 6.4, Y = v => y0 + size - size * (S(v) + 3.2) / 6.4, k = Math.ceil(t * N);
+      let g = R(x0, y0, size, size, 'var(--soft)', { r: 14, op: 0.7 }) + L(X(0), y0 + 6, X(0), y0 + size - 6, 'var(--line)', 1.5) + L(x0 + 6, Y(0), x0 + size - 6, Y(0), 'var(--line)', 1.5);
+      for (let i = 0; i < k; i++) g += C(X(xs[i]), Y(ys[i]), 4.5, 'var(--c2)', { op: 0.85 });
+      const fa = ease(seg(t, 0.7, 1)); if (fa > 0 && Number.isFinite(r)) g += L(X(-3), Y(-3 * r), X(3), Y(3 * r), 'var(--c1)', 3).replace('stroke-linecap="round"', `stroke-linecap="round" opacity="${fa}"`);
+      g += T(x0 + size / 2, y0 + size + 22, 'A moves →', { z: 12.5, w: 600, c: 'var(--mute)' });
+      const tx0 = x0 + size + Math.max(16, W * 0.04), room = W - tx0 - 8, bigZ = room < 125 ? 26 : 34, lab = Math.abs(r) > 0.7 ? 'strong' : Math.abs(r) > 0.3 ? 'moderate' : 'weak', dir = r > 0.1 ? (room < 125 ? 'together' : 'move together') : r < -0.1 ? (room < 125 ? 'opposite' : 'move opposite') : 'unrelated';
+      g += T(tx0, y0 + 40, 'Score', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(tx0, y0 + 74, (r >= 0 ? '+' : '−') + nf(Math.abs(r), 2), { a: 'start', z: bigZ, c: r >= 0 ? 'var(--c3)' : 'var(--c4)' }) + T(tx0, y0 + 112, Math.abs(r) < 0.1 ? 'none' : lab, { a: 'start', z: 15 }) + T(tx0, y0 + 134, dir, { a: 'start', z: 14, w: 600, c: 'var(--mute)' });
+      return { svg: g, cap: `A correlation of ${r >= 0 ? '+' : '−'}${nf(Math.abs(r), 2)}: the two ${dir}. ${Math.abs(r) > 0.6 ? (r > 0 ? 'Mixing them gives little diversification.' : 'Mixing them calms the ride a lot.') : 'Mixing them helps calm the ride.'}` };
+    }
+  },
+  regression: {
+    chapter: 'Chance and numbers', title: 'Beta is a slope', plain: 'Plot a stock\'s moves against the market\'s. The slope of the line through the dots is the stock\'s beta.',
+    how: ['Each dot is one month: how far the market moved (across) and the stock (up).', 'The best-fit line runs through the middle of the dots.', 'Its slope is beta: how much the stock moves for each 1% the market moves.'],
+    words: [['Beta', 'The slope of stock moves against market moves.'], ['Regression', 'Fitting the best straight line through dots.'], ['R-squared', 'How tightly the dots hug the line.']],
+    params: [{ id: 'beta', label: 'The stock\'s beta', min: -0.5, max: 2.5, step: 0.1, v: 1.5, fmt: x => nf(x, 1) }], seeded: true, link: '/corr',
+    draw(t, p, W, H) {
+      const ext = !!(p.xs && p.xs.length > 2), N = ext ? Math.min(p.xs.length, p.ys.length) : 40, z1 = series((p.seed || 1) * 9 + 1, N), z2 = series((p.seed || 1) * 9 + 2, N);
+      const xs = ext ? p.xs.slice(0, N) : z1.map(z => 3.5 * z), ys = ext ? p.ys.slice(0, N) : z1.map((z, i) => p.beta * 3.5 * z + 2.5 * z2[i]), fit = linreg(xs, ys), m = Math.max(1e-6, ...xs.map(Math.abs), ...ys.map(Math.abs)) * 1.1;
+      const size = Math.min(H - 76, W * 0.54), x0 = Math.max(18, W * 0.05), y0 = 14, X = v => x0 + size * (clamp(v, -m, m) + m) / (2 * m), Y = v => y0 + size - size * (clamp(v, -m, m) + m) / (2 * m), k = Math.ceil(seg(t, 0, 0.7) * N);
+      let g = R(x0, y0, size, size, 'var(--soft)', { r: 14, op: 0.7 }) + L(X(0), y0 + 6, X(0), y0 + size - 6, 'var(--line)', 1.5) + L(x0 + 6, Y(0), x0 + size - 6, Y(0), 'var(--line)', 1.5);
+      for (let i = 0; i < k; i++) g += C(X(xs[i]), Y(ys[i]), 4.5, 'var(--c2)', { op: 0.85 });
+      const fa = ease(seg(t, 0.72, 0.95)), run = m * 0.6;
+      if (fa > 0 && Number.isFinite(fit.slope)) {
+        const ex = m * 0.97; g += `<g opacity="${fa}">` + L(X(-ex), Y(fit.intercept - fit.slope * ex), X(ex), Y(fit.intercept + fit.slope * ex), 'var(--c1)', 3) + L(X(0), Y(fit.intercept), X(run), Y(fit.intercept), 'var(--ink)', 1.5, true) + L(X(run), Y(fit.intercept), X(run), Y(fit.intercept + fit.slope * run), 'var(--ink)', 1.5, true) + T(X(run) + 8, Y(fit.intercept + fit.slope * run / 2), 'rise', { a: 'start', z: 12, w: 600 }) + T(X(run / 2), Y(fit.intercept) + (fit.slope >= 0 ? 14 : -14), 'run', { z: 12, w: 600 }) + '</g>';
+      }
+      g += T(x0 + size / 2, y0 + size + 20, 'Market moved →', { z: 12.5, w: 600, c: 'var(--mute)' });
+      const tx0 = x0 + size + Math.max(16, W * 0.04);
+      g += T(tx0, y0 + 40, 'Slope = beta', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(tx0, y0 + 76, fa > 0 ? nf(fit.slope, 2) : '…', { a: 'start', z: 34, c: 'var(--c1)' }) + T(tx0, y0 + 112, 'rise ÷ run', { a: 'start', z: 14, w: 600, c: 'var(--mute)' });
+      return { svg: g, cap: fa > 0.5 ? `For every 1% the market moves, this stock tends to move ${nf(fit.slope, 2)}%. That slope is its beta.` : 'Each dot is one month: market move across, stock move up.' };
+    }
+  },
+  montecarlo: {
+    chapter: 'Chance and numbers', title: 'Risk simulation: try 1,000 futures', plain: 'Nobody knows the future, so we try many random ones and look at where they end up. That is a Monte Carlo simulation.',
+    how: ['Each line is one possible future for $100 invested.', 'Every year gets a random result, using the average and spread.', 'The pile of end points on the right shows the range of what could happen.'],
+    words: [['Simulation', 'Running many made-up futures on a computer.'], ['Monte Carlo', 'Simulation using random numbers.'], ['Range of outcomes', 'From a bad future to a good one.']],
+    params: [{ id: 'vol', label: 'How bumpy (spread)', min: 5, max: 35, step: 1, v: 18, fmt: x => '±' + x + '%' }], seeded: true, link: '/scenarios',
+    draw(t, p, W, H) {
+      const M_ = 50, N = 20, mu = 7, paths = Array.from({ length: M_ }, (_, i) => { const z = series((p.seed || 1) * 101 + i * 17, N); let v = 100; return [100, ...z.map(zz => (v *= Math.max(0.05, 1 + (mu + p.vol * zz) / 100)))]; });
+      const finals = paths.map(a => a[N]), sorted = [...finals].sort((a, b) => a - b), q = f => sorted[Math.floor(f * (sorted.length - 1))], top = Math.max(150, q(0.95) * 1.15), pad = Math.max(16, W * 0.04), hw = Math.max(70, W * 0.2), cx0 = pad + 36, cx1 = W - pad - hw - 14, base = H - 70, ty = 36;
+      const X = k => cx0 + (cx1 - cx0) * k / N, Y = v => base - (base - ty) * Math.min(v, top) / top, pos = t * N, k0 = Math.min(N - 1, Math.floor(pos));
+      let g = T(pad, 14, 'Each line is one possible future', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + L(cx0, Y(100), cx1, Y(100), 'var(--mute)', 1.5, true) + T(cx0 - 6, Y(100), '$100', { a: 'end', z: 12, w: 600, c: 'var(--mute)' }) + L(cx0, base, cx1, base, 'var(--line)', 2);
+      paths.forEach(a => { let d = ''; for (let k = 0; k <= k0; k++) d += (k ? 'L' : 'M') + f1(X(k)) + ' ' + f1(Y(a[k])); d += `L${f1(X(pos))} ${f1(Y(lerp(a[k0], a[k0 + 1], pos - k0)))}`; g += `<path d="${d}" fill="none" stroke="var(--c2)" stroke-width="1.6" opacity=".35" stroke-linejoin="round"/>`; });
+      const bins = 14, hist = Array(bins).fill(0); finals.forEach(v => { hist[Math.min(bins - 1, Math.floor(Math.min(v, top - 1e-6) / top * bins))]++; });
+      const hx = W - pad - hw, rev = ease(seg(t, 0.7, 1)), hmax = Math.max(...hist, 1);
+      g += T(hx, 14, hw < 100 ? 'Ends' : 'Where they end', { a: 'start', z: 13, w: 600, c: 'var(--mute)' });
+      hist.forEach((c, i) => { const y1 = Y((i + 1) * top / bins), y2 = Y(i * top / bins); g += R(hx, y1 + 1, (hw - 6) * c / hmax * rev, Math.max(1, y2 - y1 - 2), 'var(--c2)', { r: 3 }); });
+      if (rev > 0.8) [[0.1, 'bad'], [0.5, 'typical'], [0.9, 'good']].forEach(([f, lab]) => { g += L(cx0, Y(q(f)), hx - 6, Y(q(f)), f === 0.5 ? 'var(--ink)' : 'var(--mute)', 1.4, true) + T(cx1 - 2, Y(q(f)) - 9, `${lab} ${M(q(f))}`, { a: 'end', z: 12, w: 700, halo: true }); });
+      return { svg: g + prog(t, W, H, `Year ${Math.round(pos)} of ${N}`), cap: rev > 0.9 ? `${M_} random futures. After ${N} years a typical one ends near ${M(q(0.5))}, a bad one near ${M(q(0.1))}, a good one near ${M(q(0.9))}. That spread is the risk.` : 'Each line is one random future for $100 invested.' };
+    }
+  }
 };
 
-export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present', 'exchange', 'loan', 'bond', 'stock', 'leverage', 'risk', 'diversify', 'beta', 'mix2', 'journey', 'npv', 'blend', 'breakeven', 'cycle', 'merge', 'option'];
+export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present', 'exchange', 'loan', 'bond', 'stock', 'leverage', 'risk', 'diversify', 'beta', 'mix2', 'journey', 'npv', 'blend', 'breakeven', 'cycle', 'merge', 'option', 'average', 'spread', 'bell', 'tail', 'expected', 'lawlarge', 'correlation', 'regression', 'montecarlo'];
 
 /** Animated scene player: play, scrub, speed, parameter sliders. Draws at the stage's real pixel size. */
 export class SceneView {

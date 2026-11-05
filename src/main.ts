@@ -4,6 +4,7 @@ import './modules/m2.js';
 import './modules/m3.js';
 import './modules/m4.js';
 import './modules/m5.js';
+import './modules/m6.js';
 import { startApp } from './ui/shell.js';
 
 const root = document.getElementById('root');

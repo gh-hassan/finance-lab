@@ -133,7 +133,7 @@ export class XY {
       const pts = trim(S).filter(p => isFinite(p[1]));
       if (!pts.length || isBar(S)) return;
       if (S.type === 'dots') {
-        pts.forEach(p => { const x = X(p[0]), y = Y(p[1]); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="${col(S.color)}" stroke="var(--panel-solid)" stroke-width="2.5"/>`; if (p[2]) g += `<text class="dl" x="${Math.min(W - M.r - 4, x + 9).toFixed(1)}" y="${(y - 9).toFixed(1)}" ${x > W - 90 ? 'text-anchor="end" dx="-16"' : ''}>${esc(p[2])}</text>`; });
+        pts.forEach(p => { const x = X(p[0]), y = Y(p[1]); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${S.r || 6}" fill="${col(S.color)}" stroke="var(--panel-solid)" stroke-width="2.5"/>`; if (p[2]) g += `<text class="dl" x="${Math.min(W - M.r - 4, x + 9).toFixed(1)}" y="${(y - 9).toFixed(1)}" ${x > W - 90 ? 'text-anchor="end" dx="-16"' : ''}>${esc(p[2])}</text>`; });
         return;
       }
       if (S.type === 'area') {

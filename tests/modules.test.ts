@@ -4,6 +4,7 @@ import '../src/modules/m2.js';
 import '../src/modules/m3.js';
 import '../src/modules/m4.js';
 import '../src/modules/m5.js';
+import '../src/modules/m6.js';
 import { MODS, type Values } from '../src/lib/registry';
 import { BEGINNER, keyCard, easyCard } from '../src/ui/beginner.js';
 import { SCENES } from '../src/ui/scenes.js';
@@ -12,9 +13,9 @@ const defaults = (m: (typeof MODS)[number]): Values => Object.fromEntries(m.fiel
 const get = (id: string) => MODS.find(m => m.id === id)!;
 
 describe('calculator registry', () => {
-  it('registers 19 calculators with unique ids', () => {
-    expect(MODS).toHaveLength(19);
-    expect(new Set(MODS.map(m => m.id)).size).toBe(19);
+  it('registers 23 calculators with unique ids', () => {
+    expect(MODS).toHaveLength(23);
+    expect(new Set(MODS.map(m => m.id)).size).toBe(23);
   });
   it('every calculator runs on its defaults without NaN in charts', () => {
     for (const m of MODS) {
@@ -96,6 +97,17 @@ describe('known answers', () => {
   it('computes M&A accretion and the FX parity forward', () => {
     expect(get('merger').calc(defaults(get('merger'))).cards![0].value).toBe('+2.64%');
     expect(get('fx').calc(defaults(get('fx'))).cards![0].value).toBe('1.1010');
+  });
+  it('computes the statistics toolkit', () => {
+    expect(get('stats').calc(defaults(get('stats'))).cards![0].value).toBe('6.08');
+    expect(get('corr').calc(defaults(get('corr'))).cards![0].value).toMatch(/^\+0\.9/);
+    expect(get('normal').calc(defaults(get('normal'))).cards![0].value).toBe('4.6%');
+    expect(get('prob').calc(defaults(get('prob'))).cards![0].value).toBe('+$10.00');
+  });
+  it('explains what is wrong with unusable statistics input', () => {
+    expect(get('stats').calc({ data: '5' }).note).toMatch(/at least two/);
+    expect(get('corr').calc({ xs: '1,2', ys: '1,2' }).note).toMatch(/three pairs/);
+    expect(get('corr').calc({ xs: '1,1,1', ys: '1,2,3' }).note).toMatch(/never changes/);
   });
   it('reports a clear note for impossible inputs', () => {
     expect(get('breakeven').calc({ ...defaults(get('breakeven')), p: 10, vc: 20 }).note).toMatch(/Price must be above/);
