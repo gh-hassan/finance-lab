@@ -3,6 +3,7 @@
 import { MODELS, defaultRanges, findOutput, grid, histogram, monteCarlo, outcome, tornado, valuesAt } from '../lib/scenarios';
 import { isNum, nf, pct } from '../lib/math';
 import { h, esc, store, reduced } from './visuals.js';
+import { tick } from './ticker.js';
 
 const fmtDriver = (d, v) => (d.pre || '') + nf(v, d.step < 1 ? (d.step < 0.5 ? 2 : 1) : 0) + (d.unit === '%' ? '%' : d.unit ? ' ' + d.unit : '');
 const delta = (x, b) => (isNum(x) && isNum(b) && b !== 0 ? (x - b) / Math.abs(b) : null);
@@ -79,6 +80,7 @@ export function renderScenarios(main) {
       const cell = (x, cls) => `<td class="${cls || ''}"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</td>`;
       const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
       tableRes.append(tr);
+      tr.querySelectorAll('td > b').forEach((el, i) => tick(el, el.textContent, `sc:${st.id}:${o.id}:${i}`));
     });
   }
 

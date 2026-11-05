@@ -6,6 +6,7 @@
 import { corr, linreg, mean, median, money, ncdf, nf, stdev, sum } from '../lib/math';
 import { esc, h, reduced } from './visuals.js';
 import { rangeSlider } from './slider.js';
+import { tick } from './ticker.js';
 
 const M = x => money(x, 0);
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -641,7 +642,7 @@ export class SceneView {
     try { out = this.sc.draw(this.t, this.p, W, H); } catch (e) { out = { svg: '', cap: 'Could not draw this scene.' }; }
     this.stage.style.height = H + 'px';
     this.stage.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" class="sv-svg">${out.svg}</svg>`;
-    this.cap.textContent = out.cap;
+    if (this.cap._txt !== out.cap) { this.cap._txt = out.cap; tick(this.cap, out.cap); }
   }
   /** Reserve the height of the longest caption so the box never jumps while the story changes. */
   fitCaption() {

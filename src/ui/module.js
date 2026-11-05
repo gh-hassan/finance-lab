@@ -2,6 +2,7 @@
 /* Calculator page: Beginner mode (question, friendly inputs, one big answer, a teaching animation)
    and Pro mode (every input, result, chart, step and table). */
 import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
+import { tick } from './ticker.js';
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
 import { rangeSlider } from './slider.js';
@@ -38,6 +39,7 @@ export function mountModule(m, main, onMode) {
   const topic = TOPICS[m.group] || { label: m.group, tint: 'coral' };
   const defaults = Object.fromEntries(m.fields.map(f => [f.id, f.v]));
   const key = 'fl:' + m.id, sKey = key + ':simple';
+  const moduleKey = () => m.id + (beginner ? 'b' : 'p');
   const clean = (fields, st) => { fields.forEach(f => { if (f.type !== 'select' && f.type !== 'text') st[f.id] = Number.isFinite(+st[f.id]) ? +st[f.id] : f.v; }); return st; };
   const v = clean(m.fields, { ...defaults, ...(store.get(key) || {}) });
   const b = simple ? clean(B.simple.fields, { ...Object.fromEntries(B.simple.fields.map(f => [f.id, f.v])), ...(store.get(sKey) || {}) }) : null;
@@ -113,9 +115,11 @@ export function mountModule(m, main, onMode) {
       heroEl.hidden = !cards.length;
       heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>`;
       const big = heroEl.querySelector('[data-v]');
-      if (fresh) { countUp(big, k.value || '—'); if (k.tone === 'good') setTimeout(() => burst(big), 500); } else big.textContent = k.value || '—';
+      tick(big, k.value || '—', 'big:' + moduleKey()); if (fresh && k.tone === 'good') setTimeout(() => burst(big), 900);
+      const hl = heroEl.querySelector('.headline'); if (hl) tick(hl, plain[0] || '', 'hl:' + moduleKey());
       const extra = cards.filter(c => !c.head && c !== k).slice(0, 2).map(c => easyCard(B, c));
-      cardsEl.innerHTML = extra.map(c => `<div class="stat ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv">${esc(c.value)}</b></div>`).join('');
+      cardsEl.innerHTML = extra.map(c => `<div class="stat ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv"></b></div>`).join('');
+      cardsEl.querySelectorAll('.sv').forEach((el, i) => tick(el, extra[i].value, `sv:${moduleKey()}:${i}`));
       wordsEl.innerHTML = (B.words || []).length ? `<details><summary>Words to know</summary><div class="wgrid">${B.words.map(([t, d]) => `<div class="word"><b>${esc(t)}</b><span>${esc(d)}</span></div>`).join('')}</div></details>` : '';
       /* teaching animation driven by the user's numbers */
       if (B.scene && SCENES[B.scene.id] && cards.length) {
@@ -129,8 +133,8 @@ export function mountModule(m, main, onMode) {
       } else sceneCard.hidden = true;
       if (list.length) list = list.slice(0, 1);
     } else {
-      cardsEl.innerHTML = cards.map(c => (c.head ? `<h3 class="grp">${esc(c.head)}</h3>` : `<div class="stat ${c.key ? 'key' : ''} ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv">${esc(c.value)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div>`)).join('');
-      if (fresh) cardsEl.querySelectorAll('.sv').forEach(el => countUp(el, el.textContent, 550));
+      cardsEl.innerHTML = cards.map(c => (c.head ? `<h3 class="grp">${esc(c.head)}</h3>` : `<div class="stat ${c.key ? 'key' : ''} ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv"></b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div>`)).join('');
+      cardsEl.querySelectorAll('.sv').forEach((el, i) => tick(el, cards.filter(c => !c.head)[i].value, `sv:${moduleKey()}:${i}`));
     }
     const nsig = list.map(c => (c.type || 'xy') + '|' + c.title).join('~');
     let fr = fresh;
