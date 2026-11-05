@@ -620,3 +620,33 @@ details>summary h3{font-size:17px}
 .headline{font:400 clamp(20px,1.9vw,26px)/1.4 var(--body);letter-spacing:-.005em}
 .sub{font-size:16px;line-height:1.55}
 .chap-h p{font-size:16.5px}
+
+/* ===== custom range slider: coral-to-pink fill, springy thumb, flowing shine while dragging ===== */
+.rs{position:relative;height:44px;display:flex;align-items:center;--p:0;--sx:1;--sy:1;--rot:0deg;touch-action:pan-y;margin:2px 0}
+.rs-track{position:absolute;left:0;right:0;top:50%;height:12px;margin-top:-6px;border-radius:999px;background:var(--soft);box-shadow:inset 0 1px 3px rgba(40,20,10,.14)}
+.rs-fill{position:absolute;left:0;top:0;bottom:0;width:calc(14px + var(--p) * (100% - 28px));border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c4));overflow:hidden;transition:width .34s cubic-bezier(.34,1.56,.64,1),filter .25s;box-shadow:0 2px 8px -2px color-mix(in srgb,var(--c1) 60%,transparent)}
+.rs-shine{display:none}
+.rs.drag .rs-fill{filter:saturate(1.12) brightness(1.04)}
+.rs-thumb{position:absolute;top:50%;left:calc(var(--p) * (100% - 28px));width:28px;height:28px;margin-top:-14px;box-sizing:border-box;border-radius:50%;border:3px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,var(--c1),var(--c4)) border-box;box-shadow:0 6px 14px -5px color-mix(in srgb,var(--c1) 75%,transparent);transform:rotate(var(--rot)) scale(var(--sx),var(--sy));transition:left .34s cubic-bezier(.34,1.56,.64,1),transform .4s cubic-bezier(.34,1.8,.64,1),box-shadow .2s;pointer-events:none}
+.rs-thumb::after{content:'';position:absolute;inset:6px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c4));transition:transform .25s cubic-bezier(.34,1.8,.64,1)}
+.rs:hover .rs-thumb::after{transform:scale(1.18)}
+.rs.drag .rs-thumb{box-shadow:0 0 0 7px color-mix(in srgb,var(--c1) 22%,transparent),0 10px 20px -6px color-mix(in srgb,var(--c1) 80%,transparent)}
+.rs-bubble{position:absolute;bottom:calc(50% + 24px);left:calc(var(--p) * (100% - 28px) + 14px);transform:translateX(-50%) translateY(8px) scale(.7);transform-origin:50% 100%;opacity:0;padding:5px 11px;border-radius:999px;background:var(--pill-on);color:var(--pill-on-text);font:500 13px var(--mono);white-space:nowrap;pointer-events:none;transition:left .34s cubic-bezier(.34,1.56,.64,1),opacity .2s,transform .38s cubic-bezier(.34,1.8,.64,1);z-index:2}
+.rs-bubble::after{content:'';position:absolute;left:50%;bottom:-4px;width:8px;height:8px;margin-left:-4px;background:inherit;transform:rotate(45deg);border-radius:2px}
+.rs.drag .rs-bubble,.rs:hover .rs-bubble,.rs:focus-within .rs-bubble{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.rs .rs-input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:grab;z-index:3}
+.rs.drag .rs-input{cursor:grabbing}
+.sv-p{display:grid;gap:4px}
+.tslider{display:grid;gap:6px;margin-bottom:10px}
+.tslider>span{display:flex;justify-content:space-between;font:500 15px var(--body);color:var(--mute)}
+.tslider>span b{font:500 15px var(--mono);color:var(--ink)}
+.sv-params{gap:14px 28px}
+.rs .rs-bubble{color:var(--pill-on-text);font:500 13px var(--mono)}
+
+/* small screens: single column (must come after the roomier-layout override above) */
+@media (max-width:1100px){
+  .lab{grid-template-columns:minmax(0,1fr);gap:28px}
+  .inputs{position:static;max-height:none}
+}
+.fld>*{min-width:0}
+.inp input{width:100%}

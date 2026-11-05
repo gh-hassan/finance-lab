@@ -5,6 +5,7 @@ import { money, nf, range } from '../lib/math';
 import { h, esc, sparkline, countUp } from './visuals.js';
 import { BEGINNER, TOPICS, keyCard } from './beginner.js';
 import { ICONS } from './icons.js';
+import { rangeSlider } from './slider.js';
 import { SCENE_ORDER } from './scenes.js';
 
 const POPULAR = ['tvm', 'loan', 'bond', 'capbud', 'portfolio', 'options'];
@@ -67,7 +68,7 @@ export function renderHome(main, go) {
     out.textContent = money(fv, 0); sub.innerHTML = `You put in <b>${money(put, 0)}</b>. Growth added <b>${money(fv - put, 0)}</b>.`;
     spark.innerHTML = sparkline(range(0, yrsN, yrsN / 24).map(t => [t, sav * ((Math.pow(1 + r, t * 12) - 1) / r)]), { w: 360, h: 90, color: 'var(--c1)' }).replace('class="sp-line"', 'class="sp-line static"');
   };
-  const slider = (label, min, max, step, val, fmt, on) => { const o = h('b', {}, fmt(val)); const i = h('input', { type: 'range', min, max, step, value: val, 'aria-label': label }); i.addEventListener('input', () => { on(+i.value); o.textContent = fmt(+i.value); calc(); }); return h('label', { class: 'tslider' }, h('span', {}, label, o), i); };
+  const slider = (label, min, max, step, val, fmt, on) => { const o = h('b', {}, fmt(val)); const rs = rangeSlider({ min, max, step, value: val, label, fmt }), i = rs.input; i.addEventListener('input', () => { on(+i.value); o.textContent = fmt(+i.value); calc(); }); return h('div', { class: 'tslider' }, h('span', {}, label, o), rs.el); };
   const tryIt = h('section', { class: 'card try tint-lav' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Try it live'), h('small', {}, 'Investing monthly at 7% a year')), slider('Save each month', 25, 1000, 25, sav, v => '$' + v, v => (sav = v)), slider('For how long', 5, 40, 1, yrsN, v => v + ' yrs', v => (yrsN = v)), out, sub, spark);
   calc();
 

@@ -4,6 +4,8 @@
 import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
+import { rangeSlider } from './slider.js';
+import { nf } from '../lib/math';
 
 const stepsHtml = steps => `<ol class="steps">${steps.map(s => `<li><b>${esc(s[0])}</b><code>${esc(s[1])}</code></li>`).join('')}</ol>`;
 function tableHtml(t) {
@@ -63,9 +65,11 @@ export function mountModule(m, main, onMode) {
     const box = f.type === 'select' ? input : h('div', { class: 'inp' }, f.pre && h('span', { class: 'u' }, f.pre), input, f.unit && h('span', { class: 'u' }, f.unit));
     wrap.append(box);
     if (f.slider) {
-      slider = h('input', { type: 'range', min: f.slider[0], max: f.slider[1], step: f.slider[2], value: state[f.id], 'aria-label': label + ' slider' });
+      const decs = String(f.slider[2]).includes('.') ? Math.min(2, String(f.slider[2]).split('.')[1].length) : 0;
+      const rs = rangeSlider({ min: f.slider[0], max: f.slider[1], step: f.slider[2], value: state[f.id], label: label + ' slider', fmt: x => (f.pre || '') + nf(x, decs) + (f.unit ? (f.unit === '%' ? '%' : ' ' + f.unit) : '') });
+      slider = rs.input;
       slider.addEventListener('input', () => { input.value = slider.value; read(f); });
-      wrap.append(slider);
+      wrap.append(rs.el);
     }
     if (f.help && !beginner) wrap.append(h('small', { class: 'help' }, f.help));
     input.addEventListener('input', () => { read(f); if (slider) slider.value = input.value; });

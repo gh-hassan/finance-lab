@@ -5,6 +5,7 @@
    labels centred on what they describe. */
 import { corr, linreg, mean, median, money, ncdf, nf, stdev, sum } from '../lib/math';
 import { esc, h, reduced } from './visuals.js';
+import { rangeSlider } from './slider.js';
 
 const M = x => money(x, 0);
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -549,9 +550,9 @@ export class SceneView {
     if (this.sc.seeded) ctl.append(h('button', { class: 'btn small', type: 'button', onclick: () => { this.p.seed = (this.p.seed || 1) + 1; this.fitCaption(); if (this.mode === 'watch') this.startWatch(); else this.draw(); } }, 'Roll again'));
     this.sl = h('div', { class: 'sv-params', hidden: true });
     if (!external) this.sc.params.forEach(q => {
-      const val = h('b', {}, q.fmt(this.p[q.id])), inp = h('input', { type: 'range', min: q.min, max: q.max, step: q.step, value: this.p[q.id], 'aria-label': q.label });
+      const val = h('b', {}, q.fmt(this.p[q.id])), rs = rangeSlider({ min: q.min, max: q.max, step: q.step, value: this.p[q.id], label: q.label, fmt: q.fmt }), inp = rs.input;
       inp.addEventListener('input', () => { this.p[q.id] = +inp.value; val.textContent = q.fmt(+inp.value); this.draw(); clearTimeout(this.timer); this.timer = setTimeout(() => this.fitCaption(), 200); });
-      this.sl.append(h('label', { class: 'sv-p' }, h('span', {}, q.label, val), inp));
+      this.sl.append(h('div', { class: 'sv-p' }, h('span', {}, q.label, val), rs.el));
     });
     if (!this.sc.params.length || external) this.sl.hidden = true;
     host.append(this.stage, this.cap, ctl, this.sl);
