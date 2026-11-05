@@ -18,7 +18,7 @@ export function renderLearn(main) {
   const hero = h('header', { class: 'learn-hero reveal' },
     h('p', { class: 'eyebrow' }, 'Start here'),
     h('h1', { html: 'Money, explained <em>in motion</em>' }),
-    h('p', { class: 'lead' }, 'Hover over a picture to play it. On a phone, tap it.'));
+    h('p', { class: 'lead' }, 'Short pictures of the basic ideas, in plain words. Pick any one and watch it play.'));
   const toc = h('nav', { class: 'toc reveal', 'aria-label': 'Chapters' }, h('p', { class: 'eyebrow' }, 'Chapters'), CHAPTERS.map(([c, , tint]) => h('a', { class: `tint-${tint}`, href: '#' + slug(c) }, h('i', { class: 'dot' }), c)));
   const body = h('div', { class: 'chapters' }, CHAPTERS.map(([c, sub, tint], ci) => {
     const ids = SCENE_ORDER.filter(id => SCENES[id].chapter === c);
