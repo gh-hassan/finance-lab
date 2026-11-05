@@ -595,3 +595,11 @@ details>summary h3{font-size:17px}
 .learnlink{font:500 15px var(--body);color:var(--c1);text-decoration:underline;text-underline-offset:4px;margin-left:auto}
 .learnlink+.btn{margin-left:0}
 .lcard{scroll-margin-top:110px}
+
+/* simpler scene controls: one Replay button, scrub on the picture */
+.sv-stage.scrub{touch-action:pan-y;cursor:ew-resize}
+.sv-ctl{gap:16px}
+.sv-hint{color:var(--mute);font-size:14.5px;transition:opacity .4s}
+.sv-hint.gone{opacity:0}
+.sv-ctl .btn.play{min-width:0}
+@media (hover:none){.sv-hint{font-size:0}.sv-hint::after{content:'Drag across the picture to explore';font-size:14.5px}}

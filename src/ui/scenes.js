@@ -511,7 +511,7 @@ export const SCENES = {
     }
   },
   montecarlo: {
-    chapter: 'Chance and numbers', title: 'Risk simulation: try 1,000 futures', plain: 'Nobody knows the future, so we try many random ones and look at where they end up. That is a Monte Carlo simulation.',
+    chapter: 'Chance and numbers', title: 'Risk simulation: try many futures', plain: 'Nobody knows the future, so we try many random ones and look at where they end up. That is a Monte Carlo simulation.',
     how: ['Each line is one possible future for $100 invested.', 'Every year gets a random result, using the average and spread.', 'The pile of end points on the right shows the range of what could happen.'],
     words: [['Simulation', 'Running many made-up futures on a computer.'], ['Monte Carlo', 'Simulation using random numbers.'], ['Range of outcomes', 'From a bad future to a good one.']],
     params: [{ id: 'vol', label: 'How bumpy (spread)', min: 5, max: 35, step: 1, v: 18, fmt: x => '±' + x + '%' }], seeded: true, link: '/scenarios',
@@ -533,27 +533,37 @@ export const SCENES = {
 
 export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present', 'exchange', 'loan', 'bond', 'stock', 'leverage', 'risk', 'diversify', 'beta', 'mix2', 'journey', 'npv', 'blend', 'breakeven', 'cycle', 'merge', 'option', 'average', 'spread', 'bell', 'tail', 'expected', 'lawlarge', 'correlation', 'regression', 'montecarlo'];
 
-/** Animated scene player: play, scrub, speed, parameter sliders. Draws at the stage's real pixel size. */
+/** Animated scene player. One Replay button; plays once when it scrolls into view, then moving across the
+ *  picture (mouse) or dragging (touch) scrubs through the story. Draws at the stage's real pixel size. */
 export class SceneView {
   constructor(host, id, { params = {}, external = false, autoplay = true } = {}) {
-    this.sc = SCENES[id]; this.id = id; this.external = external; this.t = autoplay ? 0 : 1; this.speed = 1; this.raf = 0; this.timer = 0; this.playing = false;
+    this.sc = SCENES[id]; this.id = id; this.external = external; this.t = autoplay ? 0 : 1; this.raf = 0; this.timer = 0; this.playing = false; this.touched = false;
     this.p = { seed: 3, ...Object.fromEntries(this.sc.params.map(q => [q.id, q.v])), ...params };
     host.innerHTML = '';
-    this.stage = h('div', { class: 'sv-stage', role: 'img', 'aria-label': this.sc.title });
+    this.stage = h('div', { class: 'sv-stage scrub', role: 'img', 'aria-label': this.sc.title });
     this.cap = h('p', { class: 'sv-cap', 'aria-live': 'polite' });
-    this.btn = h('button', { class: 'btn play', type: 'button', onclick: () => (this.playing ? this.pause() : this.play()) }, 'Play');
-    this.range = h('input', { type: 'range', min: 0, max: 1000, value: autoplay ? 0 : 1000, 'aria-label': 'Move through the animation', class: 'sv-t' });
-    this.range.addEventListener('input', () => { this.playing = false; this.stop(); this.t = this.range.value / 1000; this.draw(); });
-    this.spd = h('button', { class: 'btn small', type: 'button', onclick: () => { this.speed = this.speed === 1 ? 2 : 1; this.spd.textContent = this.speed + '×'; } }, '1×');
-    const ctl = h('div', { class: 'sv-ctl' }, this.btn, this.range, this.spd);
+    this.btn = h('button', { class: 'btn play', type: 'button', onclick: () => { this.t = 0; this.play(); } }, 'Replay');
+    this.hint = h('span', { class: 'sv-hint' }, 'Move across the picture to explore');
+    const ctl = h('div', { class: 'sv-ctl' }, this.btn, this.hint);
     if (this.sc.seeded) ctl.append(h('button', { class: 'btn small', type: 'button', onclick: () => { this.p.seed = (this.p.seed || 1) + 1; this.t = 0; this.play(); } }, 'Roll again'));
     const sl = h('div', { class: 'sv-params' });
     if (!external) this.sc.params.forEach(q => {
       const val = h('b', {}, q.fmt(this.p[q.id])), inp = h('input', { type: 'range', min: q.min, max: q.max, step: q.step, value: this.p[q.id], 'aria-label': q.label });
-      inp.addEventListener('input', () => { this.p[q.id] = +inp.value; val.textContent = q.fmt(+inp.value); this.draw(); clearTimeout(this.timer); this.timer = setTimeout(() => this.play(), 350); });
+      inp.addEventListener('input', () => { this.p[q.id] = +inp.value; val.textContent = q.fmt(+inp.value); this.draw(); clearTimeout(this.timer); this.timer = setTimeout(() => { this.t = 0; this.play(); }, 350); });
       sl.append(h('label', { class: 'sv-p' }, h('span', {}, q.label, val), inp));
     });
     host.append(this.stage, this.cap, ctl, sl);
+    /* scrub by moving across the picture (touch: drag sideways) */
+    const scrub = e => {
+      if (this.playing && e.pointerType === 'mouse') return;
+      if (e.pointerType !== 'mouse' && e.buttons === 0 && e.type === 'pointermove') return;
+      const r = this.stage.getBoundingClientRect(), u = clamp(((e.clientX - r.left) / r.width - 0.04) / 0.92, 0, 1);
+      if (this.playing) { this.playing = false; cancelAnimationFrame(this.raf); }
+      this.t = u; this.draw();
+      if (!this.touched) { this.touched = true; this.hint.classList.add('gone'); }
+    };
+    this.stage.addEventListener('pointermove', scrub);
+    this.stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { try { this.stage.setPointerCapture(e.pointerId); } catch (err) { /* not supported */ } } scrub(e); });
     if (typeof ResizeObserver !== 'undefined') { this.ob = new ResizeObserver(() => { const w = Math.floor(this.stage.clientWidth); if (w !== this.lastW) { this.lastW = w; requestAnimationFrame(() => this.draw()); } }); this.ob.observe(this.stage); }
     this.draw();
     if (autoplay) this.whenVisible(host);
@@ -563,7 +573,7 @@ export class SceneView {
     this.io = new IntersectionObserver(es => { if (es[0].isIntersecting) { this.io.disconnect(); setTimeout(() => this.play(), 250); } }, { threshold: 0.4 });
     this.io.observe(host);
   }
-  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); if (replay) { clearTimeout(this.timer); this.timer = setTimeout(() => this.play(), 300); } }
+  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); if (replay) { clearTimeout(this.timer); this.timer = setTimeout(() => { this.t = 0; this.play(); }, 300); } }
   draw() {
     const W = Math.max(280, Math.floor(this.stage.clientWidth) || 520), H = Math.round(clamp(W * 0.6, 270, 340));
     let out;
@@ -571,21 +581,17 @@ export class SceneView {
     this.stage.style.height = H + 'px';
     this.stage.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" class="sv-svg">${out.svg}</svg>`;
     this.cap.textContent = out.cap;
-    this.range.value = Math.round(this.t * 1000);
   }
-  stop() { cancelAnimationFrame(this.raf); this.btn.textContent = this.t >= 1 ? 'Replay' : 'Play'; }
-  pause() { this.playing = false; this.stop(); this.btn.textContent = 'Resume'; }
   play() {
     cancelAnimationFrame(this.raf);
-    if (reduced()) { this.t = 1; this.draw(); this.btn.textContent = 'Replay'; return; }
-    const dur = (this.sc.dur || 6500) / this.speed, from = this.t >= 0.999 ? 0 : this.t, t0 = performance.now();
-    this.btn.textContent = 'Pause';
+    if (reduced()) { this.t = 1; this.draw(); return; }
+    const dur = this.sc.dur || 6500, from = this.t >= 0.999 ? 0 : this.t, t0 = performance.now();
     this.playing = true;
     const step = now => {
       const u = clamp(from + Math.max(0, now - t0) / dur * (1 - from), 0, 1);
       this.t = u; this.draw();
       if (u < 1 && this.playing) this.raf = requestAnimationFrame(step);
-      else if (u >= 1) { this.playing = false; this.btn.textContent = 'Replay'; }
+      else if (u >= 1) this.playing = false;
     };
     this.raf = requestAnimationFrame(step);
   }
