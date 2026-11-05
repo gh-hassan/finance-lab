@@ -2,7 +2,7 @@
 /* Calculator page: Beginner mode (question, friendly inputs, one big answer, a teaching animation)
    and Pro mode (every input, result, chart, step and table). */
 import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
-import { tick, tickText } from './ticker.js';
+import { tick } from './ticker.js';
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
 import { rangeSlider } from './slider.js';
@@ -39,7 +39,6 @@ export function mountModule(m, main, onMode) {
   const topic = TOPICS[m.group] || { label: m.group, tint: 'coral' };
   const defaults = Object.fromEntries(m.fields.map(f => [f.id, f.v]));
   const key = 'fl:' + m.id, sKey = key + ':simple';
-  const heads = {}; const tickTextKeyed = (el, text, k) => { el._tt = heads[k]; tickText(el, text); heads[k] = el._tt; };
   const moduleKey = () => m.id + (beginner ? 'b' : 'p');
   const clean = (fields, st) => { fields.forEach(f => { if (f.type !== 'select' && f.type !== 'text') st[f.id] = Number.isFinite(+st[f.id]) ? +st[f.id] : f.v; }); return st; };
   const v = clean(m.fields, { ...defaults, ...(store.get(key) || {}) });
@@ -117,7 +116,7 @@ export function mountModule(m, main, onMode) {
       heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>`;
       const big = heroEl.querySelector('[data-v]');
       tick(big, k.value || '—', 'big:' + moduleKey());
-      const hl = heroEl.querySelector('.headline'); if (hl) { hl.textContent = ''; tickTextKeyed(hl, plain[0] || '', 'hl:' + moduleKey()); } if (fresh && k.tone === 'good') setTimeout(() => burst(big), 900);
+      const hl = heroEl.querySelector('.headline'); if (hl) tick(hl, plain[0] || '', 'hl:' + moduleKey()); if (fresh && k.tone === 'good') setTimeout(() => burst(big), 900);
       const extra = cards.filter(c => !c.head && c !== k).slice(0, 2).map(c => easyCard(B, c));
       cardsEl.innerHTML = extra.map(c => `<div class="stat ${c.tone || ''}"><span class="sl">${esc(c.label)}</span><b class="sv"></b></div>`).join('');
       cardsEl.querySelectorAll('.sv').forEach((el, i) => tick(el, extra[i].value, `sv:${moduleKey()}:${i}`));

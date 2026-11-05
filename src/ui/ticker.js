@@ -1,56 +1,63 @@
 // @ts-nocheck
-/* Odometer numbers. Every digit sits in a column of 0-9 that slides to the new digit, so figures roll like a clock
-   ticker instead of jumping. Elements are rebuilt on each render, so the last digits are remembered by key. */
+/* Odometer numbers. Each digit sits on a wheel that turns the short way round to the new digit, so figures roll like a
+   clock ticker. The wheel box keeps the width and baseline of an ordinary digit, so it works inside sentences too. The
+   DOM is kept between updates (same shape of text), so a number that changes every frame keeps rolling smoothly. */
 import { reduced } from './visuals.js';
 
 const last = new Map();
-const COLUMN = '0123456789'.split('').map(d => `<i>${d}</i>`).join('');
+const DUR = 700;
+const WHEEL = Array.from({ length: 40 }, (_, i) => `<i>${i % 10}</i>`).join('');
+const isD = c => c >= '0' && c <= '9';
+const TOKEN = /[$€£−+-]?\d[\d,.]*\d%?|[$€£−+-]?\d%?/g;
+
+function spin(col, d, delay = 0) {
+  const cur = col._idx % 10, delta = ((d - cur + 14) % 10) - 4; /* shortest way round, ties roll forward */
+  let next = col._idx + delta;
+  clearTimeout(col._snap);
+  if (next < 4 || next > 35) { col.style.transition = 'none'; col._idx = 10 + d; col.style.transform = `translateY(-${col._idx * 2.5}%)`; return; }
+  col._idx = next;
+  col.style.transition = ''; col.style.transitionDelay = delay + 'ms';
+  col.style.transform = `translateY(-${next * 2.5}%)`;
+  col._snap = setTimeout(() => { col._idx = 10 + (col._idx % 10); col.style.transition = 'none'; col.style.transform = `translateY(-${col._idx * 2.5}%)`; }, DUR + delay + 80);
+}
+
+function wheel(from) {
+  const box = document.createElement('span'); box.className = 'tk-d'; box.setAttribute('aria-hidden', 'true');
+  const s = document.createElement('span'); s.className = 'tk-s'; s.textContent = '0';
+  const col = document.createElement('span'); col.className = 'tk-c'; col.innerHTML = WHEEL;
+  col._idx = 10 + from; col.style.transition = 'none'; col.style.transform = `translateY(-${col._idx * 2.5}%)`;
+  box.append(s, col); return [box, col];
+}
 
 /** Show `text` in `el`. `key` links this spot to the same spot on the previous render so digits roll from the old value. */
 export function tick(el, text, key) {
   text = String(text == null ? '' : text);
-  const prev = key ? last.get(key) : el._digits;
-  const digits = [...text].filter(c => c >= '0' && c <= '9').map(Number);
-  if (reduced() || !digits.length) { el.textContent = text; if (key) last.set(key, digits); el._digits = digits; return; }
+  const digits = [...text].filter(isD).map(Number), sig = text.replace(/\d/g, '#');
+  if (reduced() || !digits.length) { el.textContent = text; el._tk = null; if (key) last.set(key, digits); return; }
   el.setAttribute('aria-label', text);
+  const st = el._tk;
+  if (st && st.sig === sig) { st.cols.forEach((c, i) => spin(c, digits[i], Math.min(i, 8) * 16)); if (key) last.set(key, digits); return; }
+  const prev = key ? last.get(key) : st && st.digits;
   el.textContent = '';
-  const cols = []; let run = '', di = 0;
-  const flush = () => { if (run) { const s = document.createElement('span'); s.className = 'tk-t'; s.setAttribute('aria-hidden', 'true'); s.textContent = run; el.append(s); run = ''; } };
-  [...text].forEach(ch => {
-    if (ch >= '0' && ch <= '9') {
-      flush();
-      const box = document.createElement('span'); box.className = 'tk-d'; box.setAttribute('aria-hidden', 'true');
-      const col = document.createElement('span'); col.className = 'tk-c'; col.innerHTML = COLUMN;
-      /* right-align with the previous number so the ones, tens, hundreds keep their own wheels */
-      const from = prev && prev[prev.length - (digits.length - di)] != null ? prev[prev.length - (digits.length - di)] : 0;
-      col.style.transition = 'none'; col.style.transform = `translateY(-${from * 10}%)`;
-      box.append(col); el.append(box); cols.push([col, digits[di]]); di++;
-    } else run += ch;
-  });
-  flush();
+  const cols = []; let di = 0, tok = null;
+  const addTextRun = (parent, s) => { if (!s) return; const t = document.createElement('span'); t.className = 'tk-t'; t.setAttribute('aria-hidden', 'true'); t.textContent = s; parent.append(t); };
+  let pos = 0;
+  for (const m of text.matchAll(TOKEN)) {
+    addTextRun(el, text.slice(pos, m.index)); pos = m.index + m[0].length;
+    tok = document.createElement('span'); tok.className = 'tk-n'; tok.setAttribute('aria-hidden', 'true');
+    let run = '';
+    [...m[0]].forEach(ch => {
+      if (isD(ch)) {
+        addTextRun(tok, run); run = '';
+        const pd = prev && prev[prev.length - (digits.length - di)];
+        const [box, col] = wheel(pd == null ? 0 : pd); tok.append(box); cols.push(col); di++;
+      } else run += ch;
+    });
+    addTextRun(tok, run); el.append(tok);
+  }
+  addTextRun(el, text.slice(pos));
+  el._tk = { sig, cols, digits };
   void el.offsetWidth; /* commit the starting positions, then roll */
-  cols.forEach(([col, d], i) => { col.style.transition = ''; col.style.transitionDelay = `${Math.min(i, 8) * 18}ms`; col.style.transform = `translateY(-${d * 10}%)`; });
-  if (key) last.set(key, digits); el._digits = digits;
-}
-
-const NUM = /\d[\d,]*(?:\.\d+)?/g;
-const fmtLike = (v, sample) => { const dec = (sample.split('.')[1] || '').length; return sample.includes(',') || v >= 1000 ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec); };
-
-/** Sentences: the figures inside count smoothly from their old value to the new one, the words stay put. */
-export function tickText(el, text, dur = 650) {
-  text = String(text == null ? '' : text);
-  const from = el._tt, skeleton = text.replace(NUM, '#'), nums = text.match(NUM) || [];
-  cancelAnimationFrame(el._raf);
-  el._tt = { skeleton, nums: nums.map(n => parseFloat(n.replace(/,/g, ''))), shown: null };
-  const start = from && from.skeleton === skeleton && from.nums.length === nums.length && !reduced() ? (from.shown || from.nums) : null;
-  if (!start || !nums.length || start.every((v, i) => v === el._tt.nums[i])) { el.textContent = text; return; }
-  const t0 = performance.now(), to = el._tt.nums;
-  const step = now => {
-    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
-    const cur = to.map((v, i) => start[i] + (v - start[i]) * e); el._tt.shown = cur;
-    let i = 0; el.textContent = p >= 1 ? text : skeleton.replace(/#/g, () => { const s = nums_[i]; const v = cur[i++]; return fmtLike(Math.abs(v) < 1e-9 ? 0 : v, s); });
-    if (p < 1 && el.isConnected) el._raf = requestAnimationFrame(step);
-  };
-  const nums_ = nums;
-  el._raf = requestAnimationFrame(step);
+  cols.forEach((c, i) => spin(c, digits[i], Math.min(i, 8) * 16));
+  if (key) last.set(key, digits);
 }
