@@ -67,7 +67,7 @@ describe('beginner layer', () => {
       const params = b.scene.map(base ?? eff, out);
       expect(sc[b.scene.id], m.id).toBeDefined();
       for (const t of [0, 0.5, 1]) {
-        const d = sc[b.scene.id].draw(t, { seed: 3, ...Object.fromEntries(sc[b.scene.id].params.map((q: { id: string; v: number }) => [q.id, q.v])), ...params });
+        const d = sc[b.scene.id].draw(t, { seed: 3, ...Object.fromEntries(sc[b.scene.id].params.map((q: { id: string; v: number }) => [q.id, q.v])), ...params }, 420, 300);
         expect(d.svg + d.cap, `${m.id} scene @${t}`).not.toMatch(/NaN|undefined|Infinity/);
       }
     }

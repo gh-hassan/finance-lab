@@ -374,7 +374,7 @@ details>summary h3{margin:0}
 /* concept scenes */
 .sv-wrap{display:grid;gap:10px;min-width:0}
 .sv-stage{background:linear-gradient(180deg,color-mix(in srgb,var(--t,var(--sky)) 16%,var(--panel-solid)),var(--panel-solid));border:1px solid var(--line);border-radius:20px;overflow:hidden}
-.sv-svg{display:block;width:100%;height:auto}
+.sv-svg{display:block;max-width:100%}
 .sv-cap{margin:0;padding:12px 16px;border-radius:16px;background:var(--soft);font:600 15px/1.45 var(--body);min-height:4.4em;display:flex;align-items:center}
 .sv-ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .sv-ctl .btn.play{min-width:104px;justify-content:center}
