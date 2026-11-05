@@ -533,67 +533,90 @@ export const SCENES = {
 
 export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present', 'exchange', 'loan', 'bond', 'stock', 'leverage', 'risk', 'diversify', 'beta', 'mix2', 'journey', 'npv', 'blend', 'breakeven', 'cycle', 'merge', 'option', 'average', 'spread', 'bell', 'tail', 'expected', 'lawlarge', 'correlation', 'regression', 'montecarlo'];
 
-/** Animated scene player. One Replay button; plays once when it scrolls into view, then moving across the
- *  picture (mouse) or dragging (touch) scrubs through the story. Draws at the stage's real pixel size. */
+/** Animated scene player. By default the scene loops on its own while visible. One button switches on an
+ *  interactive mode: move across the picture (mouse) or drag (touch) to scrub, and sliders appear.
+ *  Draws at the stage's real pixel size; the caption box reserves the height of its longest caption. */
 export class SceneView {
-  constructor(host, id, { params = {}, external = false, autoplay = true } = {}) {
-    this.sc = SCENES[id]; this.id = id; this.external = external; this.t = autoplay ? 0 : 1; this.raf = 0; this.timer = 0; this.playing = false; this.touched = false;
+  constructor(host, id, { params = {}, external = false } = {}) {
+    this.sc = SCENES[id]; this.id = id; this.external = external; this.t = 0; this.mode = 'watch'; this.raf = 0; this.timer = 0; this.loopT = 0; this.playing = false; this.visible = false; this.touched = false;
     this.p = { seed: 3, ...Object.fromEntries(this.sc.params.map(q => [q.id, q.v])), ...params };
-    host.innerHTML = '';
-    this.stage = h('div', { class: 'sv-stage scrub', role: 'img', 'aria-label': this.sc.title });
+    host.innerHTML = ''; host.classList.add('sv-wrap');
+    this.stage = h('div', { class: 'sv-stage', role: 'img', 'aria-label': this.sc.title });
     this.cap = h('p', { class: 'sv-cap', 'aria-live': 'polite' });
-    this.btn = h('button', { class: 'btn play', type: 'button', onclick: () => { this.t = 0; this.play(); } }, 'Replay');
-    this.hint = h('span', { class: 'sv-hint' }, 'Move across the picture to explore');
+    this.btn = h('button', { class: 'btn play', type: 'button', onclick: () => this.setMode(this.mode === 'watch' ? 'explore' : 'watch') }, 'Make it interactive');
+    this.hint = h('span', { class: 'sv-hint', hidden: true }, 'Move across the picture to explore');
     const ctl = h('div', { class: 'sv-ctl' }, this.btn, this.hint);
-    if (this.sc.seeded) ctl.append(h('button', { class: 'btn small', type: 'button', onclick: () => { this.p.seed = (this.p.seed || 1) + 1; this.t = 0; this.play(); } }, 'Roll again'));
-    const sl = h('div', { class: 'sv-params' });
+    if (this.sc.seeded) ctl.append(h('button', { class: 'btn small', type: 'button', onclick: () => { this.p.seed = (this.p.seed || 1) + 1; this.fitCaption(); if (this.mode === 'watch') this.startWatch(); else this.draw(); } }, 'Roll again'));
+    this.sl = h('div', { class: 'sv-params', hidden: true });
     if (!external) this.sc.params.forEach(q => {
       const val = h('b', {}, q.fmt(this.p[q.id])), inp = h('input', { type: 'range', min: q.min, max: q.max, step: q.step, value: this.p[q.id], 'aria-label': q.label });
-      inp.addEventListener('input', () => { this.p[q.id] = +inp.value; val.textContent = q.fmt(+inp.value); this.draw(); clearTimeout(this.timer); this.timer = setTimeout(() => { this.t = 0; this.play(); }, 350); });
-      sl.append(h('label', { class: 'sv-p' }, h('span', {}, q.label, val), inp));
+      inp.addEventListener('input', () => { this.p[q.id] = +inp.value; val.textContent = q.fmt(+inp.value); this.draw(); clearTimeout(this.timer); this.timer = setTimeout(() => this.fitCaption(), 200); });
+      this.sl.append(h('label', { class: 'sv-p' }, h('span', {}, q.label, val), inp));
     });
-    host.append(this.stage, this.cap, ctl, sl);
-    /* scrub by moving across the picture (touch: drag sideways) */
+    if (!this.sc.params.length || external) this.sl.hidden = true;
+    host.append(this.stage, this.cap, ctl, this.sl);
     const scrub = e => {
-      if (this.playing && e.pointerType === 'mouse') return;
+      if (this.mode !== 'explore') return;
       if (e.pointerType !== 'mouse' && e.buttons === 0 && e.type === 'pointermove') return;
       const r = this.stage.getBoundingClientRect(), u = clamp(((e.clientX - r.left) / r.width - 0.04) / 0.92, 0, 1);
-      if (this.playing) { this.playing = false; cancelAnimationFrame(this.raf); }
       this.t = u; this.draw();
       if (!this.touched) { this.touched = true; this.hint.classList.add('gone'); }
     };
     this.stage.addEventListener('pointermove', scrub);
-    this.stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { try { this.stage.setPointerCapture(e.pointerId); } catch (err) { /* not supported */ } } scrub(e); });
-    if (typeof ResizeObserver !== 'undefined') { this.ob = new ResizeObserver(() => { const w = Math.floor(this.stage.clientWidth); if (w !== this.lastW) { this.lastW = w; requestAnimationFrame(() => this.draw()); } }); this.ob.observe(this.stage); }
+    this.stage.addEventListener('pointerdown', e => { if (this.mode === 'explore' && e.pointerType !== 'mouse') { try { this.stage.setPointerCapture(e.pointerId); } catch (err) { /* not supported */ } } scrub(e); });
+    if (typeof ResizeObserver !== 'undefined') { this.ob = new ResizeObserver(() => { const w = Math.floor(this.stage.clientWidth); if (w !== this.lastW) { this.lastW = w; requestAnimationFrame(() => { this.draw(); this.fitCaption(); }); } }); this.ob.observe(this.stage); }
     this.draw();
-    if (autoplay) this.whenVisible(host);
+    requestAnimationFrame(() => this.fitCaption());
+    if ('IntersectionObserver' in window) {
+      this.io = new IntersectionObserver(es => {
+        const vis = es[0].isIntersecting; if (vis === this.visible) return;
+        this.visible = vis;
+        if (vis) { if (this.mode === 'watch') setTimeout(() => this.startWatch(), 250); } else this.halt();
+      }, { threshold: 0.35 });
+      this.io.observe(host);
+    } else { this.visible = true; this.startWatch(); }
   }
-  whenVisible(host) {
-    if (!('IntersectionObserver' in window)) { this.play(); return; }
-    this.io = new IntersectionObserver(es => { if (es[0].isIntersecting) { this.io.disconnect(); setTimeout(() => this.play(), 250); } }, { threshold: 0.4 });
-    this.io.observe(host);
+  setMode(m) {
+    this.mode = m; this.halt();
+    const ex = m === 'explore';
+    this.btn.textContent = ex ? 'Back to watching' : 'Make it interactive';
+    this.hint.hidden = !ex; this.stage.classList.toggle('scrub', ex);
+    this.sl.hidden = !ex || this.external || !this.sc.params.length;
+    if (ex) { this.t = reduced() ? 1 : Math.max(this.t, 0.001); this.draw(); } else this.startWatch();
   }
-  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); if (replay) { clearTimeout(this.timer); this.timer = setTimeout(() => { this.t = 0; this.play(); }, 300); } }
+  halt() { cancelAnimationFrame(this.raf); clearTimeout(this.loopT); this.playing = false; }
+  startWatch() {
+    this.halt();
+    if (this.mode !== 'watch' || !this.visible) return;
+    if (reduced()) { this.t = 1; this.draw(); return; }
+    const dur = this.sc.dur || 6500, t0 = performance.now(); this.t = 0; this.playing = true;
+    const step = now => {
+      const u = clamp((now - t0) / dur, 0, 1);
+      this.t = u; this.draw();
+      if (u < 1 && this.playing) this.raf = requestAnimationFrame(step);
+      else if (u >= 1) { this.playing = false; this.loopT = setTimeout(() => this.startWatch(), 1800); }
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); this.fitCaption(); if (replay && this.mode === 'watch') { clearTimeout(this.timer); this.timer = setTimeout(() => this.startWatch(), 300); } }
+  size() { const W = Math.max(280, Math.floor(this.stage.clientWidth) || 520); return { W, H: Math.round(clamp(W * 0.6, 270, 340)) }; }
   draw() {
-    const W = Math.max(280, Math.floor(this.stage.clientWidth) || 520), H = Math.round(clamp(W * 0.6, 270, 340));
+    const { W, H } = this.size();
     let out;
     try { out = this.sc.draw(this.t, this.p, W, H); } catch (e) { out = { svg: '', cap: 'Could not draw this scene.' }; }
     this.stage.style.height = H + 'px';
     this.stage.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" class="sv-svg">${out.svg}</svg>`;
     this.cap.textContent = out.cap;
   }
-  play() {
-    cancelAnimationFrame(this.raf);
-    if (reduced()) { this.t = 1; this.draw(); return; }
-    const dur = this.sc.dur || 6500, from = this.t >= 0.999 ? 0 : this.t, t0 = performance.now();
-    this.playing = true;
-    const step = now => {
-      const u = clamp(from + Math.max(0, now - t0) / dur * (1 - from), 0, 1);
-      this.t = u; this.draw();
-      if (u < 1 && this.playing) this.raf = requestAnimationFrame(step);
-      else if (u >= 1) this.playing = false;
-    };
-    this.raf = requestAnimationFrame(step);
+  /** Reserve the height of the longest caption so the box never jumps while the story changes. */
+  fitCaption() {
+    const w = this.cap.clientWidth; if (!w || !this.cap.parentNode) return;
+    const m = this.measure || (this.measure = h('p', { class: 'sv-cap sv-measure', 'aria-hidden': 'true' }));
+    if (!m.isConnected) this.cap.parentNode.append(m);
+    m.style.width = w + 'px';
+    const { W, H } = this.size(); let max = 0;
+    [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1].forEach(t => { let c = ''; try { c = this.sc.draw(t, this.p, W, H).cap; } catch (e) { /* ignore */ } m.textContent = c; max = Math.max(max, m.offsetHeight); });
+    this.cap.style.minHeight = max + 'px';
   }
-  destroy() { cancelAnimationFrame(this.raf); clearTimeout(this.timer); if (this.io) this.io.disconnect(); if (this.ob) this.ob.disconnect(); this.playing = false; }
+  destroy() { this.halt(); clearTimeout(this.timer); if (this.io) this.io.disconnect(); if (this.ob) this.ob.disconnect(); if (this.measure) this.measure.remove(); }
 }

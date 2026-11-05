@@ -603,3 +603,20 @@ details>summary h3{font-size:17px}
 .sv-hint.gone{opacity:0}
 .sv-ctl .btn.play{min-width:0}
 @media (hover:none){.sv-hint{font-size:0}.sv-hint::after{content:'Drag across the picture to explore';font-size:14.5px}}
+
+/* animation player: loop by default, interactive on request */
+.sv-wrap{position:relative}
+.sv-cap{min-height:0;font-weight:400;font-size:17px;line-height:1.55}
+.sv-measure{position:absolute;left:0;top:0;visibility:hidden;pointer-events:none;margin:0;z-index:-1}
+.sv-stage{cursor:default}
+.sv-stage.scrub{cursor:ew-resize;touch-action:pan-y}
+.sv-ctl{gap:14px;flex-wrap:wrap}
+.sv-ctl .btn.play::before{display:none}
+.sv-ctl .btn.play{padding:11px 20px;font-weight:500;font-size:15px}
+.sv-hint[hidden]{display:none}
+
+/* sentence text in Outfit (same body font as the cadtri site) */
+.lcard .plain{font:400 18px/1.55 var(--body);color:var(--ink)}
+.headline{font:400 clamp(20px,1.9vw,26px)/1.4 var(--body);letter-spacing:-.005em}
+.sub{font-size:16px;line-height:1.55}
+.chap-h p{font-size:16.5px}
