@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* Learn page: every fundamental idea, explained as a short animation in very simple words. */
+/* Learn page: every fundamental idea, explained in very simple words with a picture that plays on hover. */
 import { h, esc } from './visuals.js';
 import { SCENES, SCENE_ORDER, SceneView } from './scenes.js';
 
@@ -18,7 +18,7 @@ export function renderLearn(main) {
   const hero = h('header', { class: 'learn-hero reveal' },
     h('p', { class: 'eyebrow' }, 'Start here'),
     h('h1', { html: 'Money, explained <em>in motion</em>' }),
-    h('p', { class: 'lead' }, `${SCENE_ORDER.length} big ideas, each one a short animation. Press play.`));
+    h('p', { class: 'lead' }, 'Hover over a picture to play it. On a phone, tap it.'));
   const toc = h('nav', { class: 'toc reveal', 'aria-label': 'Chapters' }, h('p', { class: 'eyebrow' }, 'Chapters'), CHAPTERS.map(([c, , tint]) => h('a', { class: `tint-${tint}`, href: '#' + slug(c) }, h('i', { class: 'dot' }), c)));
   const body = h('div', { class: 'chapters' }, CHAPTERS.map(([c, sub, tint], ci) => {
     const ids = SCENE_ORDER.filter(id => SCENES[id].chapter === c);
@@ -34,7 +34,7 @@ export function renderLearn(main) {
               h('div', {}, h('h4', {}, 'How it works'), h('ol', { class: 'how' }, s.how.map(x => h('li', {}, x)))),
               h('div', {}, h('h4', {}, 'Words to know'), h('dl', { class: 'wl' }, s.words.flatMap(([t, d]) => [h('dt', {}, t), h('dd', {}, d)]))))),
           s.link ? h('a', { class: 'btn lbtn', href: s.link, 'data-link': true }, 'Try it with real numbers →') : null);
-        requestAnimationFrame(() => views.push(new SceneView(host, id)));
+        requestAnimationFrame(() => views.push(new SceneView(host, id, { mode: 'hover' })));
         return card;
       })));
   }));

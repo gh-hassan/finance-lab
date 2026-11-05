@@ -6,7 +6,6 @@ import { h, esc, sparkline, countUp } from './visuals.js';
 import { BEGINNER, TOPICS, keyCard } from './beginner.js';
 import { ICONS } from './icons.js';
 import { rangeSlider } from './slider.js';
-import { SCENE_ORDER } from './scenes.js';
 
 const POPULAR = ['tvm', 'loan', 'bond', 'capbud', 'portfolio', 'options'];
 const QUESTIONS = ['tvm', 'loan', 'bond', 'ddm', 'capbud', 'breakeven', 'portfolio', 'options', 'fx', 'merger', 'wacc', 'ratios'];
@@ -30,7 +29,7 @@ export function renderHome(main, go) {
     h('div', { class: 'hero-copy' },
       h('p', { class: 'eyebrow' }, 'A free finance playground'),
       h('h1', { class: 'split', html: `${split('Money math,')}<br><em>${split('made playful.', 2)}</em>` }),
-      h('p', { class: 'lead' }, `${MODS.length} calculators that explain themselves in plain words. Change a number and watch the answer and a little animation update.`),
+      h('p', { class: 'lead' }, 'Calculators that explain themselves in plain words. Change a number and watch the answer update.'),
       h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },
       h('div', { class: 'float f1' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
@@ -39,7 +38,7 @@ export function renderHome(main, go) {
       h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));
 
   const learnBand = h('a', { class: 'learnband tilt reveal', href: '/learn', 'data-link': true },
-    h('div', {}, h('p', { class: 'eyebrow' }, 'New to money? Start here'), h('h2', { html: `${SCENE_ORDER.length} big ideas, each one <em>an animation</em>` }), h('p', {}, 'Interest, risk, loans, stocks and more. Press play.')),
+    h('div', {}, h('p', { class: 'eyebrow' }, 'New to money? Start here'), h('h2', { html: 'Start with the <em>basics</em>' }), h('p', {}, 'Interest, risk, loans, stocks and more, in plain words.')),
     h('span', { class: 'go', html: ICONS.arrow }));
   const scBand = h('a', { class: 'learnband sc tilt reveal', href: '/scenarios', 'data-link': true },
     h('div', {}, h('p', { class: 'eyebrow' }, 'Test your plan'), h('h2', { html: 'Run <em>what-if</em> scenarios' }), h('p', {}, 'Best case, worst case and risk, in one place.')),

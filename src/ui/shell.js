@@ -47,7 +47,7 @@ export function startApp(root) {
   let sel = 0, shown = [], extra = [];
   const renderList = () => {
     const q = input.value.trim().toLowerCase();
-    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'animated lessons' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
+    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
     shown = [...extra, ...MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q))];
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${m.blurb && !BEGINNER[m.id] ? esc(m.blurb) : esc(m.title) + ' · ' + esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';

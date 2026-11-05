@@ -202,7 +202,7 @@ export const SCENES = {
   },
   risk: {
     chapter: 'Risk', title: 'More risk, bumpier ride', plain: 'Investments that can earn more also jump around more. Safe ones are steady but grow slowly.',
-    how: ['Three roads, each starting with $100.', 'Savings are smooth and slow. Stocks swing a lot but usually climb higher over 20 years.', 'Press "Roll again" for a different future. The bumps change, the pattern stays.'],
+    how: ['Three roads, each starting with $100.', 'Savings are smooth and slow. Stocks swing a lot but usually climb higher over 20 years.', 'Every time you play it you get a different future. The bumps change, the pattern stays.'],
     words: [['Risk', 'How much the value can jump around.'], ['Return', 'How much it grows on average.'], ['Volatility', 'A fancy word for how bumpy the ride is.']],
     params: [], seeded: true, link: '/returns',
     draw(t, p, W, H) {
@@ -218,20 +218,24 @@ export const SCENES = {
   },
   diversify: {
     chapter: 'Risk', title: 'Do not put all your eggs in one basket', plain: 'If you spread your money across many things, one bad thing cannot ruin you.',
-    how: ['Your $1,000 is split equally between companies. Choose how many.', 'Then one company goes bust and its block is wiped out.', 'With more companies, the loss is a much smaller slice.'],
+    how: ['Both rows start with the same $1,000, split equally into blocks.', 'The top row puts everything in one company. The bottom row spreads it over six.', 'Then one company goes bust. The top row loses everything. The bottom row loses one small block.'],
     words: [['Diversification', 'Spreading money across many investments.'], ['Portfolio', 'All your investments together.'], ['Bankruptcy', 'When a company fails and its stock becomes worthless.']],
-    params: [{ id: 'n', label: 'Number of companies', min: 0, max: 5, step: 1, v: 0, fmt: x => [1, 2, 3, 4, 6, 12][x] }], link: '/portfolio',
+    params: [{ id: 'n', label: 'Companies in the bottom row', min: 1, max: 5, step: 1, v: 4, fmt: x => [1, 2, 3, 4, 6, 12][x] }], link: '/portfolio',
     draw(t, p, W, H) {
-      const n = [1, 2, 3, 4, 6, 12][Math.round(p.n)], pad = Math.max(24, W * 0.08), bw = W - 2 * pad, gap = n > 6 ? 3 : 6, cw = (bw - gap * (n - 1)) / n, y0 = H * 0.2, bh = 64, crash = ease(seg(t, 0.4, 0.75)), left = 1000 - 1000 / n * crash;
-      let g = T(W / 2, 16, `Your $1,000, split between ${n} ${n === 1 ? 'company' : 'companies'}`, { z: 14, w: 600, c: 'var(--mute)' });
-      for (let k = 0; k < n; k++) { const x = pad + k * (cw + gap), dead = k === 0 && crash > 0; g += R(x, y0 + (dead ? bh * crash : 0), cw, bh * (dead ? 1 - crash : 1), dead ? 'var(--c4)' : 'var(--c3)', { r: 8, op: dead ? 1 - crash * 0.4 : 1 }) + R(x, y0, cw, bh, 'none', { r: 8, stroke: 'var(--line)', sw: 1.5 }); if (cw > 44) g += T(x + cw / 2, y0 + bh / 2, dead && crash > 0.5 ? '✕' : 'Co. ' + (k + 1), { z: 13, c: dead && crash > 0.5 ? 'var(--c4)' : '#fff' }); }
-      g += T(W / 2, H * 0.55, crash > 0.05 ? 'One company goes bust!' : 'Everything is fine so far', { z: 17, c: crash > 0.05 ? 'var(--c4)' : 'var(--mute)' }) + T(W / 2, H * 0.7, M(left), { z: 34, c: left < 1000 ? 'var(--c4)' : 'var(--c3)' }) + T(W / 2, H * 0.83, 'your money', { z: 13, w: 600, c: 'var(--mute)' });
-      return { svg: g, cap: crash < 0.05 ? `You split ${M(1000)} equally across ${n} ${n === 1 ? 'company' : 'companies'}.` : `One company fails. That is 1 of ${n}, so you lose ${nf(100 / n, 0)}% of your money and still have ${M(1000 - 1000 / n)}.` };
+      const nb = [1, 2, 3, 4, 6, 12][Math.round(p.n)], pad = Math.max(24, W * 0.08), bw = W - 2 * pad, crash = ease(seg(t, 0.4, 0.75)), laneH = (H - 70) / 2;
+      const lane = (n, top, label) => {
+        const gap = n > 6 ? 3 : 6, cw = (bw - gap * (n - 1)) / n, y0 = top + 30, bh = 46, left = 1000 - 1000 / n * crash;
+        let g = T(pad, top + 8, label, { a: 'start', z: 14 }) + T(W - pad, top + 8, M(left), { a: 'end', z: 17, c: left < 1000 ? 'var(--c4)' : 'var(--c3)' });
+        for (let k = 0; k < n; k++) { const x = pad + k * (cw + gap), dead = k === 0 && crash > 0; g += R(x, y0 + (dead ? bh * crash : 0), cw, bh * (dead ? 1 - crash : 1), dead ? 'var(--c4)' : 'var(--c3)', { r: 8, op: dead ? 1 - crash * 0.4 : 1 }) + R(x, y0, cw, bh, 'none', { r: 8, stroke: 'var(--line)', sw: 1.5 }); if (cw > 40) g += T(x + cw / 2, y0 + bh / 2, dead && crash > 0.5 ? '✕' : 'Co. ' + (k + 1), { z: 12.5, c: dead && crash > 0.5 ? 'var(--c4)' : '#fff' }); }
+        return g;
+      };
+      const g = lane(1, 10, 'All in one company') + lane(nb, 10 + laneH + 8, `Spread over ${nb} companies`) + T(W / 2, H - 22, crash > 0.05 ? 'One company goes bust' : 'Same $1,000 in both rows', { z: 15, c: crash > 0.05 ? 'var(--c4)' : 'var(--mute)' });
+      return { svg: g, cap: crash < 0.05 ? `The same $1,000, either all in one company or spread over ${nb}.` : `One company fails. Top row: you lose 100% of your money. Bottom row: you lose ${nf(100 / nb, 0)}% and keep ${M(1000 - 1000 / nb)}.` };
     }
   },
   beta: {
     chapter: 'Risk', title: 'Beta: how jumpy is a stock?', plain: 'Beta tells you how much a stock moves when the whole market moves. Beta 2 means it jumps twice as much.',
-    how: ['The grey line is the whole stock market.', 'The coloured line is one stock with the beta you choose.', 'Beta 1 copies the market. Above 1 exaggerates it. Below 1 calms it.'],
+    how: ['The grey line is the whole stock market.', 'The coloured line is one stock with a beta of 1.5, so it moves 1.5 times as much.', 'Beta 1 copies the market. Above 1 exaggerates it. Below 1 calms it.'],
     words: [['Beta', 'How much a stock moves compared with the market.'], ['Market', 'All stocks together.'], ['Defensive stock', 'A stock with beta below 1.']],
     params: [{ id: 'beta', label: 'Beta of the stock', min: 0, max: 2.5, step: 0.1, v: 1.5, fmt: x => nf(x, 1) }], seeded: true, link: '/capm',
     draw(t, p, W, H) {
@@ -246,7 +250,7 @@ export const SCENES = {
   },
   mix2: {
     chapter: 'Risk', title: 'Mixing investments calms the ride', plain: 'When one investment drops while the other rises, blending them smooths the bumps. That is why mixing works.',
-    how: ['Two investments, A (jumpy) and B (calmer).', 'The "together" slider says if they move in step (+1) or in opposite directions (−1).', 'The dark line is your mix. The less they move together, the calmer it gets.'],
+    how: ['Two investments, A (jumpy) and B (calmer).', 'Here they are unrelated (0): sometimes one rises while the other falls.', 'The dark line is your mix. The less they move together, the calmer it gets.'],
     words: [['Correlation', 'Do two things move together? +1 yes, −1 opposite.'], ['Blend', 'Putting money in both.'], ['Standard deviation', 'A number for how bumpy something is.']],
     params: [{ id: 'rho', label: 'How much A and B move together', min: -1, max: 1, step: 0.1, v: 0, fmt: x => nf(x, 1) }, { id: 'wA', label: 'Share in A', min: 0, max: 100, step: 10, v: 50, fmt: x => x + '%' }], seeded: true, link: '/portfolio',
     draw(t, p, W, H) {
@@ -364,7 +368,7 @@ export const SCENES = {
   ,
   average: {
     chapter: 'Chance and numbers', title: 'Average vs typical', plain: 'One very large number can drag the average far from what is typical. The middle value hardly moves.',
-    how: ['Ten values, each shown as a dot on a line.', 'The average (coral) is the total shared out equally.', 'The middle value (blue) is the one in the exact centre. Make the biggest dot bigger: only the average runs away.'],
+    how: ['Ten values, each shown as a dot on a line.', 'The average (coral) is the total shared out equally.', 'The middle value (green) is the one in the exact centre. One dot is far bigger than the rest, so only the average gets dragged.'],
     words: [['Average (mean)', 'Add everything up, divide by how many.'], ['Median', 'The middle value when sorted.'], ['Outlier', 'A value far away from the rest.']],
     params: [{ id: 'big', label: 'The biggest value', min: 55, max: 500, step: 5, v: 400, fmt: x => '$' + x + 'k' }], link: '/stats',
     draw(t, p, W, H) {
@@ -420,7 +424,7 @@ export const SCENES = {
   },
   tail: {
     chapter: 'Chance and numbers', title: 'The chance of a big loss', plain: 'With the average and the spread you can estimate how likely a bad year is. This is how banks measure risk.',
-    how: ['The bell shows how likely each yearly return is.', 'Slide the line to a loss you worry about.', 'The shaded area to its left is the chance of a year that bad, or worse.'],
+    how: ['The bell shows how likely each yearly return is.', 'The red line slides toward a bad loss.', 'The shaded area to its left is the chance of a year that bad, or worse.'],
     words: [['Probability', 'How likely something is, from 0% to 100%.'], ['Tail risk', 'The chance of a very bad result.'], ['Value at Risk', 'The loss you should only exceed a few times in 100.']],
     params: [{ id: 'mean', label: 'Average yearly return', min: 0, max: 15, step: 1, v: 7, fmt: x => x + '%' }, { id: 'sd', label: 'Spread', min: 5, max: 30, step: 1, v: 16, fmt: x => '±' + x + '%' }, { id: 'cut', label: 'A loss that worries you', min: -50, max: -5, step: 5, v: -20, fmt: x => x + '%' }], link: '/normal',
     draw(t, p, W, H) {
@@ -534,27 +538,50 @@ export const SCENES = {
 
 export const SCENE_ORDER = ['rent', 'growth', 'snowball', 'inflation', 'present', 'exchange', 'loan', 'bond', 'stock', 'leverage', 'risk', 'diversify', 'beta', 'mix2', 'journey', 'npv', 'blend', 'breakeven', 'cycle', 'merge', 'option', 'average', 'spread', 'bell', 'tail', 'expected', 'lawlarge', 'correlation', 'regression', 'montecarlo'];
 
-/** Animated scene player. By default the scene loops on its own while visible. One button switches on an
- *  interactive mode: move across the picture (mouse) or drag (touch) to scrub, and sliders appear.
+/** Animated scene player with two modes.
+ *  - mode "hover" (Learn page): sits still on its finished frame, plays while the pointer is over it (tap on touch).
+ *  - mode "loop" (calculator pages): loops on its own while visible; one button switches on scrubbing and sliders.
  *  Draws at the stage's real pixel size; the caption box reserves the height of its longest caption. */
 export class SceneView {
-  constructor(host, id, { params = {}, external = false } = {}) {
-    this.sc = SCENES[id]; this.id = id; this.external = external; this.t = 0; this.mode = 'watch'; this.raf = 0; this.timer = 0; this.loopT = 0; this.playing = false; this.visible = false; this.touched = false;
+  constructor(host, id, { params = {}, external = false, mode = 'loop' } = {}) {
+    this.sc = SCENES[id]; this.id = id; this.external = external; this.hover = mode === 'hover'; this.t = this.hover ? 1 : 0; this.mode = 'watch';
+    this.raf = 0; this.timer = 0; this.loopT = 0; this.playing = false; this.visible = this.hover; this.touched = false; this.active = false; this.plays = 0;
     this.p = { seed: 3, ...Object.fromEntries(this.sc.params.map(q => [q.id, q.v])), ...params };
     host.innerHTML = ''; host.classList.add('sv-wrap');
     this.stage = h('div', { class: 'sv-stage', role: 'img', 'aria-label': this.sc.title });
     this.cap = h('p', { class: 'sv-cap', 'aria-live': 'polite' });
+    if (this.hover) this.buildHover(host); else this.buildLoop(host);
+    if (typeof ResizeObserver !== 'undefined') { this.ob = new ResizeObserver(() => { const w = Math.floor(this.stage.clientWidth); if (w !== this.lastW) { this.lastW = w; requestAnimationFrame(() => { this.draw(); this.fitCaption(); }); } }); this.ob.observe(this.stage); }
+    this.draw();
+    requestAnimationFrame(() => this.fitCaption());
+  }
+  buildHover(host) {
+    this.badge = h('span', { class: 'sv-badge' }, 'Hover to play');
+    this.stage.tabIndex = 0; this.stage.classList.add('hoverable');
+    host.append(h('div', { class: 'sv-frame' }, this.stage, this.badge), this.cap);
+    const start = () => {
+      if (this.active) return; this.active = true; this.badge.hidden = true;
+      if (this.sc.seeded && this.plays++ > 0) { this.p.seed = (this.p.seed || 1) + 1; this.fitCaption(); }
+      this.startWatch();
+    };
+    const stop = () => { if (!this.active) return; this.active = false; this.halt(); this.t = 1; this.draw(); this.badge.hidden = false; };
+    this.stage.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') start(); });
+    this.stage.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') stop(); });
+    this.stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') (this.active ? stop() : start()); });
+    this.stage.addEventListener('focus', start);
+    this.stage.addEventListener('blur', stop);
+  }
+  buildLoop(host) {
     this.btn = h('button', { class: 'btn play', type: 'button', onclick: () => this.setMode(this.mode === 'watch' ? 'explore' : 'watch') }, 'Make it interactive');
     this.hint = h('span', { class: 'sv-hint', hidden: true }, 'Move across the picture to explore');
     const ctl = h('div', { class: 'sv-ctl' }, this.btn, this.hint);
     if (this.sc.seeded) ctl.append(h('button', { class: 'btn small', type: 'button', onclick: () => { this.p.seed = (this.p.seed || 1) + 1; this.fitCaption(); if (this.mode === 'watch') this.startWatch(); else this.draw(); } }, 'Roll again'));
     this.sl = h('div', { class: 'sv-params', hidden: true });
-    if (!external) this.sc.params.forEach(q => {
+    if (!this.external) this.sc.params.forEach(q => {
       const val = h('b', {}, q.fmt(this.p[q.id])), rs = rangeSlider({ min: q.min, max: q.max, step: q.step, value: this.p[q.id], label: q.label, fmt: q.fmt }), inp = rs.input;
       inp.addEventListener('input', () => { this.p[q.id] = +inp.value; val.textContent = q.fmt(+inp.value); this.draw(); clearTimeout(this.timer); this.timer = setTimeout(() => this.fitCaption(), 200); });
       this.sl.append(h('div', { class: 'sv-p' }, h('span', {}, q.label, val), rs.el));
     });
-    if (!this.sc.params.length || external) this.sl.hidden = true;
     host.append(this.stage, this.cap, ctl, this.sl);
     const scrub = e => {
       if (this.mode !== 'explore') return;
@@ -565,9 +592,6 @@ export class SceneView {
     };
     this.stage.addEventListener('pointermove', scrub);
     this.stage.addEventListener('pointerdown', e => { if (this.mode === 'explore' && e.pointerType !== 'mouse') { try { this.stage.setPointerCapture(e.pointerId); } catch (err) { /* not supported */ } } scrub(e); });
-    if (typeof ResizeObserver !== 'undefined') { this.ob = new ResizeObserver(() => { const w = Math.floor(this.stage.clientWidth); if (w !== this.lastW) { this.lastW = w; requestAnimationFrame(() => { this.draw(); this.fitCaption(); }); } }); this.ob.observe(this.stage); }
-    this.draw();
-    requestAnimationFrame(() => this.fitCaption());
     if ('IntersectionObserver' in window) {
       this.io = new IntersectionObserver(es => {
         const vis = es[0].isIntersecting; if (vis === this.visible) return;
@@ -599,7 +623,7 @@ export class SceneView {
     };
     this.raf = requestAnimationFrame(step);
   }
-  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); this.fitCaption(); if (replay && this.mode === 'watch') { clearTimeout(this.timer); this.timer = setTimeout(() => this.startWatch(), 300); } }
+  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); this.fitCaption(); if (replay && !this.hover && this.mode === 'watch') { clearTimeout(this.timer); this.timer = setTimeout(() => this.startWatch(), 300); } }
   size() { const W = Math.max(280, Math.floor(this.stage.clientWidth) || 520); return { W, H: Math.round(clamp(W * 0.6, 270, 340)) }; }
   draw() {
     const { W, H } = this.size();
