@@ -34,7 +34,7 @@ export function startApp(root) {
     h('a', { class: 'pill', href: '/scenarios', 'data-link': true, 'data-id': 'scenarios' }, h('span', { html: ICONS.scenarios }), h('em', {}, 'Scenarios'))
   ];
 
-  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<i></i><i></i><i></i>' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop);
+  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<img src="/logo.png" alt="" width="38" height="38">' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop);
   view = h('main', { id: 'view', tabindex: '-1' });
   const foot = h('footer', { class: 'foot' }, h('p', {}, 'For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice.'));
   const shell = h('div', { class: 'shell' }, bar, view, foot);
