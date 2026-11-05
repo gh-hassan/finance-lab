@@ -14,8 +14,8 @@ let view;
 
 export function startApp(root) {
   const topics = Object.keys(TOPICS);
-  const theme = () => document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  const themeBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Toggle dark mode', html: theme() === 'dark' ? ICONS.sun : ICONS.moon, onclick: () => { const t = theme() === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; store.set('fl:theme', t); themeBtn.innerHTML = t === 'dark' ? ICONS.sun : ICONS.moon; } });
+  const theme = () => document.documentElement.dataset.theme || 'light';
+  const themeBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Toggle dark mode', html: theme() === 'dark' ? ICONS.sun : ICONS.moon, onclick: () => { const t = theme() === 'dark' ? 'light' : 'dark'; const root = document.documentElement; root.classList.add('theme-fade'); document.documentElement.dataset.theme = t; setTimeout(() => root.classList.remove('theme-fade'), 600); store.set('fl:theme', t); themeBtn.innerHTML = t === 'dark' ? ICONS.sun : ICONS.moon; } });
   const searchBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Search calculators (press /)', 'data-open-search': true, html: ICONS.search });
 
   const pop = h('div', { class: 'menu mega', hidden: true });
