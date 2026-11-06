@@ -756,3 +756,11 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 .stats>.grp{flex:1 1 100%}
 .stat .sv{overflow-wrap:normal}
 .stat{container-type:normal}
+
+/* the Scenarios dropdown (Scenarios, Compare, Glossary) */
+.menu.more{width:320px;padding:10px}
+.menu.more a{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.menu.more .mi{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--soft);flex:none}
+.menu.more .mi svg{width:20px;height:20px}
+.menu.more b{display:block;font:600 15px var(--body)}
+.menu.more small{display:block;color:var(--mute);font:400 13px var(--body)}

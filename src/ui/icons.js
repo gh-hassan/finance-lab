@@ -5,6 +5,8 @@ export const ICONS = {
   learn: svg('<path d="M4 5.5A2.500 2.500 0 016.500 3H20v15H6.500A2.500 2.500 0 004 20.500z"/><path d="M4 20.500A2.500 2.500 0 016.500 18H20v3H6.500"/><path d="M9 8h7"/>'),
   scenarios: svg('<path d="M4 18l5-6 4 3 7-9"/><path d="M4 6v12h16"/><circle cx="9" cy="12" r="1.2"/><circle cx="13" cy="15" r="1.2"/>'),
   Statistics: svg('<path d="M4 20V12M9 20V5M14 20v-9M19 20V9"/><path d="M3 20h18"/>'),
+  compare: svg('<path d="M7 8h12l-3-3M17 16H5l3 3"/>'),
+  glossary: svg('<path d="M4 19L8.500 6 13 19M6 15h5"/><path d="M16 8h4M16 12h4M16 16h4"/>'),
   search: svg('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>'),
   arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
   sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>'),
