@@ -1009,3 +1009,62 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .ba-guide{grid-template-columns:minmax(0,1fr)}
 .kk{white-space:normal}.kk .kb{margin-bottom:2px}
 @media (max-width:420px){.kh{display:block;margin:0 0 0 2px}}
+
+/* ---- Decide pages on a phone: stacked cards instead of wide tables ---- */
+@media (max-width:640px){
+  /* situation picker: one swipeable row of pills */
+  .picker:not(.vid-chips){display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;margin:0 -4px 22px;padding:2px 4px 8px;scrollbar-width:none}
+  .picker:not(.vid-chips)::-webkit-scrollbar{display:none}
+  .picker:not(.vid-chips) .pick{flex:0 0 auto;scroll-snap-align:start;padding:11px 18px;border-radius:999px;min-height:44px;display:flex;align-items:center;white-space:nowrap}
+  .picker:not(.vid-chips) .pick b{font:600 15px var(--body)}
+  .picker:not(.vid-chips) .pick small{display:none}
+  /* three possible futures: each driver becomes a card, worst / base / best side by side */
+  .tw2:has(.sct){overflow:visible;border:0;max-height:none}
+  .sct{min-width:0;display:block;width:100%;border-spacing:0}
+  .sct thead{display:none}
+  .sct tbody{display:grid;gap:12px}
+  .sct tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 8px;padding:14px;border-radius:18px;background:var(--soft);border:1px solid var(--line)}
+  .sct th{grid-column:1/-1;display:block;padding:0 0 2px!important;font:600 15px var(--body)!important;text-align:left}
+  .sct td{display:block;padding:0!important;min-width:0}
+  .sct td[data-label]:not([data-label=""])::before{content:attr(data-label);display:block;margin:0 0 4px 2px;font:700 10.5px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  .sct td[data-label="Worst"]::before{color:var(--bad)}.sct td[data-label="Best"]::before{color:var(--good)}
+  .sct td.dim{display:none}
+  .sct .inp.sm{padding:0 8px}.sct .inp.sm input{min-width:0;width:100%;font-size:15px}
+  .sct tr.probs{background:color-mix(in srgb,var(--c4) 12%,var(--soft))}
+  /* results: a 2 x 2 card per measure */
+  .sct tbody.res tr{grid-template-columns:repeat(2,minmax(0,1fr));background:var(--card)}
+  .sct tbody.res td{padding:10px 12px!important;border-radius:12px;background:var(--soft);text-align:left}
+  .sct tbody.res td.lk{background:var(--pill-on);color:var(--pill-on-text)}
+  .sct tbody.res td.lk::before{color:inherit;opacity:.7}
+  .sct tbody.res .vw{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;position:static}
+  .sct tbody.res .vw .dchip{position:static;transform:none;margin:0}
+  .sct tbody.res b{font-size:16px;overflow-wrap:anywhere}
+  /* what-if grid: fewer, larger cells that fit the screen */
+  .tw2:has(.hm){overflow:visible}
+  .hm{min-width:0;width:100%;table-layout:fixed}
+  .hm th,.hm td{padding:3px!important;font-size:11px!important}
+  .hm td{height:46px}
+  .pair{display:grid;gap:10px}.pair select,.measure select{width:100%;min-width:0}
+}
+/* the top menu fits all four buttons on small phones */
+@media (max-width:420px){
+  .pillnav{gap:2px;padding:4px}
+  .pill{padding:9px 11px;gap:6px}
+  .pill .caret svg{width:14px;height:14px}
+}
+/* phone: inputs inside the three-column driver cards must shrink to their column */
+@media (max-width:640px){
+  .sct .inp,.sct .inp.sm{min-width:0;width:100%;max-width:100%}
+  .sct .inp.sm .u{font-size:12px;flex:0 0 auto}
+  .sct .inp.sm input{padding:10px 4px;text-overflow:clip}
+}
+/* phone: driver cards list Worst / Base / Best as full-width rows so values are never clipped */
+@media (max-width:640px){
+  .sct tbody:not(.res) tr{grid-template-columns:minmax(0,1fr);gap:8px}
+  .sct tbody:not(.res) td[data-label]:not([data-label=""]){display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:10px}
+  .sct tbody:not(.res) td[data-label]:not([data-label=""])::before{margin:0}
+  .sct tbody:not(.res) .inp.sm input{padding:10px 8px;font-size:16px}
+}
+@media (max-width:640px){
+  .hm th,.hm td{padding:2px!important;font-size:10px!important;overflow:hidden;white-space:nowrap}
+}

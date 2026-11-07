@@ -12,6 +12,8 @@ const deltaChip = (o, x, b) => { const d = delta(x, b); if (d == null || Math.ab
 export function renderScenarios(main) {
   const st = { id: store.get('fl:sc:model') || 'project', ranges: {}, probs: [25, 50, 25], out: null, x: null, y: null, seed: 1 };
   let raf = 0, ro = null, sim = null;
+  const phone = window.matchMedia('(max-width:640px)'), onPhone = () => { if (gridEl && gridEl.isConnected) renderGrid(); };
+  phone.addEventListener('change', onPhone);
   const model = () => MODELS.find(m => m.id === st.id) || MODELS[0];
   const ranges = () => (st.ranges[model().id] ||= defaultRanges(model()));
   const outId = () => { const m = model(); return m.outputs.some(o => o.id === st.out) ? st.out : m.main; };
@@ -42,13 +44,13 @@ export function renderScenarios(main) {
       ['worst', 'base', 'best'].forEach(k => {
         const inp = h('input', { type: 'number', step: d.step, value: r[d.id][k], 'aria-label': `${d.label}, ${k}` });
         inp.addEventListener('input', () => { const v = inp.valueAsNumber; if (Number.isFinite(v)) { r[d.id][k] = d.int ? Math.round(v) : v; refresh(); } });
-        tr.append(h('td', {}, h('div', { class: 'inp sm' }, d.pre && h('span', { class: 'u' }, d.pre), inp, d.unit && h('span', { class: 'u' }, d.unit === 'yrs' ? 'yrs' : d.unit))));
+        tr.append(h('td', { 'data-label': { worst: 'Worst', base: 'Base', best: 'Best' }[k] }, h('div', { class: 'inp sm' }, d.pre && h('span', { class: 'u' }, d.pre), inp, d.unit && h('span', { class: 'u' }, d.unit === 'yrs' ? 'yrs' : d.unit))));
       });
       tr.append(h('td', { class: 'dim' }, ''));
       tb.append(tr);
     });
     const probTr = h('tr', { class: 'probs' }, h('th', {}, 'How likely is each?'));
-    st.probs.forEach((p, i) => { const inp = h('input', { type: 'number', min: 0, max: 100, step: 5, value: p, 'aria-label': 'Chance ' + ['worst', 'base', 'best'][i] }); inp.addEventListener('input', () => { st.probs[i] = Math.max(0, inp.valueAsNumber || 0); refresh(); }); probTr.append(h('td', {}, h('div', { class: 'inp sm' }, inp, h('span', { class: 'u' }, '%')))); });
+    st.probs.forEach((p, i) => { const inp = h('input', { type: 'number', min: 0, max: 100, step: 5, value: p, 'aria-label': 'Chance ' + ['worst', 'base', 'best'][i] }); inp.addEventListener('input', () => { st.probs[i] = Math.max(0, inp.valueAsNumber || 0); refresh(); }); probTr.append(h('td', { 'data-label': ['Worst', 'Base', 'Best'][i] }, h('div', { class: 'inp sm' }, inp, h('span', { class: 'u' }, '%')))); });
     probTr.append(h('td', { class: 'dim' }, ''));
     tb.append(probTr);
     tableRes = h('tbody', { class: 'res' });
@@ -77,8 +79,8 @@ export function renderScenarios(main) {
     tableRes.innerHTML = '';
     m.outputs.forEach(o => {
       const oc = outcome(m, o.id, r, st.probs);
-      const cell = (x, cls) => `<td class="${cls || ''}"><span class="vw"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</span></td>`;
-      const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
+      const cell = (x, cls) => `<td class="${cls || ''}" data-label="${{ wc: 'Worst', base: 'Base', bc: 'Best' }[cls] || ''}"><span class="vw"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</span></td>`;
+      const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk" data-label="Likely"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
       tableRes.append(tr);
       tr.querySelectorAll('td b').forEach((el, i) => tick(el, el.textContent, `sc:${st.id}:${o.id}:${i}`));
     });
@@ -100,7 +102,7 @@ export function renderScenarios(main) {
     const m = model(), o = findOutput(m, outId()), r = ranges(), rows = tornado(m, o.id, r);
     if (!m.drivers.some(d => d.id === st.x)) st.x = (rows[0] || m.drivers[0]).id;
     if (!m.drivers.some(d => d.id === st.y) || st.y === st.x) st.y = (rows.find(x => x.id !== st.x) || m.drivers.find(d => d.id !== st.x)).id;
-    const g = grid(m, o.id, st.x, st.y, r, 7), dx = m.drivers.find(d => d.id === st.x), dy = m.drivers.find(d => d.id === st.y);
+    const g = grid(m, o.id, st.x, st.y, r, phone.matches ? 4 : 7), dx = m.drivers.find(d => d.id === st.x), dy = m.drivers.find(d => d.id === st.y);
     const maxAbs = Math.max(1e-9, ...g.z.flat().filter(isNum).map(z => Math.abs(delta(z, g.base) ?? 0)));
     const near = (arr, v) => arr.reduce((b, x, i) => (Math.abs(x - v) < Math.abs(arr[b] - v) ? i : b), 0), bx = near(g.xs, r[st.x].base), by = near(g.ys, r[st.y].base);
     const sel = (cur, other, key) => `<select data-k="${key}" aria-label="${key === 'x' ? 'Across' : 'Down'}">${m.drivers.filter(d => d.id !== other).map(d => `<option value="${d.id}" ${d.id === cur ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select>`;
@@ -143,5 +145,5 @@ export function renderScenarios(main) {
 
   drawPicker();
   build();
-  return () => { cancelAnimationFrame(raf); if (ro) ro.disconnect(); };
+  return () => { cancelAnimationFrame(raf); if (ro) ro.disconnect(); phone.removeEventListener('change', onPhone); };
 }
