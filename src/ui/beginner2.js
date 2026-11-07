@@ -28,3 +28,38 @@ Object.assign(BEGINNER, {
     words: [['Binomial tree', 'A picture of the price going up or down each step.'], ['American option', 'Can be used at any time before it ends.'], ['European option', 'Can only be used at the end.']]
   }
 });
+
+Object.assign(BEGINNER, {
+  comps: {
+    ask: 'What is this company worth compared to similar ones?', essential: ['ebitda', 'ni', 'rev', 'book', 'debt', 'sh', 'px', 'evE', 'pe'],
+    labels: { ebitda: 'Yearly profit before interest and tax ($M)', ni: 'Yearly profit ($M)', rev: 'Yearly sales ($M)', book: 'What the company owns minus owes ($M)', debt: 'Debt minus cash ($M)', sh: 'Number of shares (M)', px: 'Price of one share today', evE: 'How rivals are priced: value ÷ operating profit', pe: 'How rivals are priced: price ÷ profit' },
+    tips: { ebitda: 'Profit before interest, tax and depreciation.', ni: 'The profit left for owners after everything.', rev: 'Total sales for the year.', book: 'Also called net assets.', debt: 'What it owes in debt, less the cash it holds.', sh: 'In millions.', px: 'Used to see if the company looks cheap or dear.', evE: 'A list of numbers, one per rival, separated by commas.', pe: 'A list of numbers, one per rival, separated by commas.' },
+    easy: [['Likely range', 'Likely price range', 'Middle half of rivals'], ['Versus current price', 'Cheap or expensive?', 'Our value against the market price']],
+    plain: (v, o, k) => [`Compared with similar companies, one share looks worth about ${k.value}.`, o.cards[1] ? `The likely range is ${o.cards[1].value}.` : ''],
+    words: [['Multiple', 'A price divided by something the company earns or owns.'], ['Peers', 'Companies similar enough to compare.'], ['EBITDA', 'Profit before interest, tax and depreciation.']]
+  },
+  model3: {
+    ask: 'What will the company\'s numbers look like in five years?', essential: ['rev0', 'growth', 'cogs', 'opex', 'tax'],
+    labels: { rev0: 'Sales this year ($M)', growth: 'How fast sales grow each year (%)', cogs: 'Cost of making what it sells (% of sales)', opex: 'Running costs (% of sales)', tax: 'Tax rate' },
+    tips: { rev0: 'Total sales for the year, in millions.', growth: 'Five numbers separated by commas, one per year.', cogs: 'Materials and labour to make the product.', opex: 'Rent, salaries, marketing and so on.', tax: 'Share of profit paid in tax.' },
+    easy: [['Revenue growth per year (CAGR)', 'Sales growth per year', 'Over five years'], ['Free cash flow, five years', 'Spare cash made', 'After running costs and investing']],
+    plain: (v, o, k) => [`In five years this company could earn about ${k.value} a year.`, `Sales, costs, cash and what it owns all link together. The balance check shows the numbers add up.`],
+    words: [['Income statement', 'Sales minus costs gives profit.'], ['Cash flow', 'Money actually coming in and going out.'], ['Balance sheet', 'What the company owns and owes.']]
+  },
+  lease: {
+    ask: 'Should we lease it or buy it?', essential: ['cost', 'salv', 'life', 'method', 'tax', 'pay', 'term'],
+    labels: { cost: 'Price of the asset', salv: 'What it is worth at the end', life: 'Years we will use it', method: 'How the cost is spread over the years', tax: 'Tax rate', pay: 'Lease payment each year', term: 'Years of the lease' },
+    tips: { cost: 'What it costs to buy outright.', salv: 'Its resale value when we are done.', life: 'How many years it is useful.', method: 'Faster methods give bigger tax savings early.', tax: 'Share of profit paid in tax.', pay: 'What the lessor charges each year.', term: 'How long the lease lasts.' },
+    easy: [['Net advantage to leasing', 'Lease or buy?', 'Positive means leasing is cheaper'], ['Net advantage to buying', 'Lease or buy?', 'Positive means buying is cheaper']],
+    plain: (v, o, k) => [`${k.label === 'Net advantage to leasing' ? 'Leasing' : 'Buying'} looks cheaper by about ${k.value} in today's money.`, 'The tax saving from depreciation is part of the answer.'],
+    words: [['Depreciation', 'Spreading an asset\'s cost over its useful life.'], ['Tax shield', 'Tax saved because depreciation lowers taxable profit.'], ['Lease', 'Paying to use an asset without owning it.']]
+  },
+  payout: {
+    ask: 'Pay a dividend or buy back shares?', essential: ['earn', 'sh', 'px', 'cash', 'td', 'tg', 'basis', 'hold'],
+    labels: { earn: 'Yearly profit ($M)', sh: 'Number of shares (M)', px: 'Price of one share', cash: 'Cash to give back ($M)', td: 'Tax on dividends', tg: 'Tax on gains from selling shares', basis: 'What you paid per share', hold: 'Shares you own' },
+    tips: { earn: 'Profit left for owners.', sh: 'In millions.', px: 'What one share trades at now.', cash: 'How much the company wants to return.', td: 'Dividends are often taxed at a higher rate.', tg: 'Profit from selling shares is often taxed lower.', basis: 'Your cost per share.', hold: 'How many shares you hold.' },
+    easy: [['EPS after the buyback', 'Profit per share afterwards', 'Fewer shares, same profit']],
+    plain: (v, o, k) => [`${k.label.startsWith('Dividend') ? 'The two choices are equal for you.' : k.label + ' ' + k.value + '.'}`, 'A buyback can be kinder on tax; a dividend gives cash without selling shares.'],
+    words: [['Dividend', 'Profit paid out to shareholders.'], ['Buyback', 'The company buys its own shares, so fewer remain.'], ['Payout ratio', 'Share of profit returned to owners.']]
+  }
+});

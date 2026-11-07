@@ -6,6 +6,7 @@ import '../src/modules/m4.js';
 import '../src/modules/m5.js';
 import '../src/modules/m6.js';
 import '../src/modules/m7.js';
+import '../src/modules/m8.js';
 import { MODS, type Values } from '../src/lib/registry';
 import { BEGINNER, keyCard, easyCard } from '../src/ui/beginner.js';
 import '../src/ui/beginner2.js';
