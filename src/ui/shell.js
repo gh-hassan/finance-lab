@@ -65,7 +65,9 @@ export function startApp(root) {
   let hoverIn = 0, hoverOut = 0;
   const isOpen = btn => (btn === calcBtn ? !pop.hidden : !pop2.hidden && openKey === btn.dataset.menu);
   const wireHover = btn => {
-    btn.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverOut); clearTimeout(hoverIn); hoverIn = setTimeout(() => { if (!isOpen(btn)) btn.click(); }, 90); });
+    btn.addEventListener('click', e => { if (e.isTrusted && btn._hoverAt && isOpen(btn)) { e.stopImmediatePropagation(); e.preventDefault(); } }, true); /* a menu opened by hovering stays open on click; it closes when the pointer leaves */
+    [pop, pop2].forEach(el => new MutationObserver(() => { if (!isOpen(btn)) btn._hoverAt = 0; }).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
+    btn.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverOut); clearTimeout(hoverIn); hoverIn = setTimeout(() => { if (!isOpen(btn)) { btn._hoverAt = performance.now(); btn.click(); } }, 90); });
     btn.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverIn); hoverOut = setTimeout(closeMenu, 260); });
   };
   [calcBtn, learnBtn, decideBtn].forEach(wireHover);

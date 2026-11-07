@@ -47,11 +47,11 @@ export function minVariance(cov: Matrix): number[] | null {
   return Math.abs(s) < 1e-12 ? null : x.map(v => v / s);
 }
 
-/** Tangency (maximum Sharpe) weights: w ∝ Σ⁻¹(μ − r_f). Null when excess returns do not sum to a usable positive total. */
+/** Tangency (maximum Sharpe) weights: w ∝ Σ⁻¹(μ − r_f). Null when the risk-free rate is at or above the minimum-variance return, because no portfolio of the risky assets then beats cash. */
 export function tangency(mu: number[], rf: number, cov: Matrix): number[] | null {
   const inv = invert(cov); if (!inv) return null;
   const x = matVec(inv, mu.map(m => m - rf)), s = x.reduce((a, b) => a + b, 0);
-  return Math.abs(s) < 1e-12 ? null : x.map(v => v / s);
+  return s <= 1e-12 ? null : x.map(v => v / s);
 }
 
 /** Efficient frontier (shorting allowed) as [σ, μ] points between two target returns, using the closed form σ² = (Cm² − 2Am + B)/D. */

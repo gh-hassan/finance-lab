@@ -45,7 +45,7 @@ describe('quote endpoint', () => {
   });
   it('reports a clear error when the source fails', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 404, json: async () => ({}) })));
-    const r = await call({ symbol: 'ZZZZ' }); expect(r.status).toBe(502); expect(r.body.error).toMatch(/404|No data/);
+    const r = await call({ symbol: 'ZZZZ' }); expect(r.status).toBe(502); expect(r.body.error).toMatch(/Could not load/); expect(r.body.error).not.toMatch(/404/); expect(r.headers['Cache-Control']).toBe('no-store');
   });
 });
 

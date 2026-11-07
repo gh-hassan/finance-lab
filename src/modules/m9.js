@@ -125,7 +125,7 @@ register({
 <div class="formula">Value to fixed payer = (market swap rate − your fixed rate) × Σ DF_t × notional</div>
 <ul><li>The floating leg is worth par at every reset date, so only discount factors matter.</li><li>A swap turns a floating loan into a fixed one (pay fixed) or the reverse (receive fixed).</li></ul>`,
   calc(v) {
-    const c = curveFrom(v.par), n = Math.min(Math.round(v.term), c.length);
+    const c = curveFrom(v.par), n = Math.max(1, Math.min(Math.round(v.term), c.length));
     if (c.length < 2 || c.some(r => !(r.df > 0))) return { note: 'Enter at least two sensible par yields, separated by commas.', cards: [], charts: [], steps: [] };
     const df = c.slice(0, n).map(r => r.df), s = swapRate(df), ann = df.reduce((a, b) => a + b, 0), val = swapValue(df, v.fixed / 100) * v.notional;
     return {
@@ -259,19 +259,19 @@ register({
       cards: [
         { key: true, label: 'Buyer return (IRR)', value: pct(o.irr, 1), sub: `${nf(o.moic, 2)}× money back over ${Math.round(v.yrs)} years`, tone: o.irr >= 0.2 ? 'good' : o.irr < 0.08 ? 'bad' : '' },
         { label: 'Equity put in', value: M(o.equity0), sub: `${pct(o.equity0 / (o.ev0 + o.ev0 * v.fee / 100), 0)} of the total cost` },
-        { label: 'Equity out at the sale', value: M(o.equityN), sub: `sale price ${M(o.evN)} less debt ${M(o.debtN)}` },
+        { label: 'Equity out at the sale', value: M(o.equityN), sub: `sale price ${M(o.evN)} less debt ${M(o.debtN)}${o.cash > 0.005 ? ' plus cash ' + M(o.cash) : ''}` },
         { label: 'Debt repaid', value: M(o.debt0 - o.debtN), sub: `from ${M(o.debt0)} to ${M(o.debtN)}`, tone: 'good' },
         { label: 'Debt at the start (× EBITDA)', value: nf(v.debtX, 2) + '×', sub: `interest ${M(o.debt0 * v.rate / 100)} in year 1` }
       ],
       info: o.equityN <= 0 ? 'The sale price does not cover the debt, so the equity is wiped out.' : '',
-      charts: [{ type: 'html', title: 'Where the gain comes from', sub: 'The gain to the buyer, split into its three sources (and the cost of fees).', html: hbars([{ label: 'Earnings growth', from: 0, to: Math.max(0, b.growth), color: 'c1', text: M(b.growth) }, { label: 'Debt paydown', from: 0, to: Math.max(0, b.paydown), color: 'c3', text: M(b.paydown) }, { label: 'Multiple change', from: 0, to: Math.abs(b.multiple), color: b.multiple >= 0 ? 'c2' : 'bad', text: (b.multiple >= 0 ? '+' : '−') + M(Math.abs(b.multiple)) }, { label: 'Fees', from: 0, to: Math.abs(b.fees), color: 'bad', text: '−' + M(Math.abs(b.fees)) }]) }, {
+      charts: [{ type: 'html', title: 'Where the gain comes from', sub: 'The gain to the buyer, split into its three sources (and the cost of fees).', html: hbars([{ label: 'Earnings growth', from: 0, to: Math.max(0, b.growth), color: 'c1', text: M(b.growth) }, { label: 'Debt paydown', from: 0, to: Math.max(0, b.paydown), color: 'c3', text: M(b.paydown) }, ...(b.cash > 0.005 ? [{ label: 'Cash built up', from: 0, to: b.cash, color: 'c3', text: M(b.cash) }] : []), { label: 'Multiple change', from: 0, to: Math.abs(b.multiple), color: b.multiple >= 0 ? 'c2' : 'bad', text: (b.multiple >= 0 ? '+' : '−') + M(Math.abs(b.multiple)) }, { label: 'Fees', from: 0, to: Math.abs(b.fees), color: 'bad', text: '−' + M(Math.abs(b.fees)) }]) }, {
         title: 'The debt comes down', sub: 'Debt at the end of each year as the cash sweep repays it.', series: [{ name: 'Debt', type: 'bars', color: 'c2', pts: [[0, o.debt0], ...o.years.map(y => [y.year, y.debt])] }], xlab: 'Year', xFmt: x => 'Y' + nf(x, 0), yFmt: x => '$' + nf(x, 0), yRead: x => '$' + nf(x, 1) + 'M'
       }],
       tables: [{ title: 'Year by year ($M)', cols: ['Year', 'EBITDA', 'Interest', 'Free cash to repay debt', 'Debt at year end'], rows: o.years.map(y => [y.year, nf(y.ebitda, 1), nf(y.interest, 1), nf(y.fcf, 1), nf(y.debt, 1)]) }],
       steps: [
         ['The deal', `Price = ${nf(v.entry, 2)} × ${M(v.ebitda)} = ${M(o.ev0)}; debt = ${nf(v.debtX, 2)}× = ${M(o.debt0)}; fees ${M(o.ev0 * v.fee / 100)}; equity = ${M(o.equity0)}.`],
-        ['Each year', 'Free cash = EBITDA − capital spending − interest − tax. All of it repays debt.'],
-        ['The sale', `${nf(v.exit, 2)} × ${M(o.years[o.years.length - 1].ebitda)} = ${M(o.evN)}; less debt ${M(o.debtN)} = equity ${M(o.equityN)}.`],
+        ['Each year', 'Free cash = EBITDA − capital spending − interest − tax. It repays debt; once the debt is gone it builds up as cash.'],
+        ['The sale', `${nf(v.exit, 2)} × ${M(o.years[o.years.length - 1].ebitda)} = ${M(o.evN)}; less debt ${M(o.debtN)}${o.cash > 0.005 ? ', plus cash ' + M(o.cash) : ''} = equity ${M(o.equityN)}.`],
         ['Return', `MOIC = ${M(o.equityN)} ÷ ${M(o.equity0)} = ${nf(o.moic, 3)}×; IRR = ${nf(o.moic, 3)}^(1/${Math.round(v.yrs)}) − 1 = ${pct(o.irr, 2)}`]
       ]
     };

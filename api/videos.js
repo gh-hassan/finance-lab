@@ -16,6 +16,8 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=86400');
     res.statusCode = 200; res.end(JSON.stringify({ channel: CHANNEL, videos }));
   } catch (e) {
-    res.statusCode = 502; res.end(JSON.stringify({ error: e && e.name === 'AbortError' ? 'YouTube took too long.' : (e && e.message) || 'Could not load videos.' }));
+    console.error('videos failed', e && e.message);
+    res.setHeader('Cache-Control', 'no-store');
+    res.statusCode = 502; res.end(JSON.stringify({ error: e && e.name === 'AbortError' ? 'YouTube took too long.' : 'Could not load videos.' }));
   } finally { clearTimeout(timer); }
 }

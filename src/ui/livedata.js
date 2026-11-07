@@ -32,7 +32,7 @@ export function liveCard(id, apply) {
     q = data; out.hidden = false; out.innerHTML = '';
     const pct = x => (x * 100).toFixed(1) + '%';
     out.append(h('p', { class: 'lv-name' }, `${data.name} (${data.symbol})`),
-      h('dl', { class: 'lv-grid' }, ...[['Price', `${data.currency === 'USD' ? '$' : ''}${data.price.toFixed(2)}`], ['Beta', data.beta == null ? 'n/a' : data.beta.toFixed(2)], ['Dividend, last year', `$${data.dividend.toFixed(2)} (${pct(data.dividendYield)})`], ['Risk (5 yr)', pct(data.vol)], ['Average return (5 yr)', pct(data.avgReturn)]].flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)])),
+      h('dl', { class: 'lv-grid' }, ...[['Price', `${data.currency === 'USD' ? '$' : data.currency + ' '}${data.price.toFixed(2)}`], ['Beta', data.beta == null ? 'n/a' : data.beta.toFixed(2)], ['Dividend, last year', `${data.currency === 'USD' ? '$' : data.currency + ' '}${data.dividend.toFixed(2)} (${pct(data.dividendYield)})`], ['Risk (5 yr)', pct(data.vol)], ['Average return (5 yr, with dividends)', pct(data.avgReturn)]].flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)])),
       h('div', { class: 'lv-act' }, actions.map(a => h('button', { type: 'button', class: 'btn small', onclick: () => { const n = apply(a.map(q)); status.textContent = n ? `Filled ${n} input${n > 1 ? 's' : ''}. Past data, not a forecast.` : 'This view has no matching inputs. Switch to Pro mode to see them.'; } }, a.label))),
       h('p', { class: 'lv-note' }, `Beta and risk come from ${data.months} months of returns against the S&P 500. History is not a forecast. ${data.source}.`));
   };

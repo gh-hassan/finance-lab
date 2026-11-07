@@ -1,10 +1,10 @@
 /* SmartWealth. Peach glass shell, ink pill navigation, pastel topic tints.
    Type: Unbounded for display, Instrument Serif italic for accents, Outfit for text, DM Mono for numbers. */
 :root{
-  --ink:#0A2540;--mute:#5B6E82;--line:rgba(10,53,88,.11);--soft:rgba(10,53,88,.06);
+  --ink:#0A2540;--mute:#4A5D72;--line:rgba(10,53,88,.11);--soft:rgba(10,53,88,.06);
   --panel:rgba(255,255,255,.64);--panel-solid:#FFFFFF;--card:rgba(255,255,255,.78);
   --pill-on:#0A3558;--pill-on-text:#FFFFFF;
-  --c1:#00949C;--c2:#0A3558;--c3:#17A673;--c4:#CC9C50;--good:#13904F;--bad:#DC3F3F;--warn:#B86E00;
+  --c1:#007C84;--c2:#0A3558;--c3:#17A673;--c4:#CC9C50;--good:#0F7A43;--bad:#C62F2F;--warn:#9A5B00;
   --teal:#3DBDB8;--coral:#DDB074;--lav:#7FA9D6;--sun:#EBCB92;--mint:#7FD3B0;--sky:#6FC1E6;--pink:#8FD8D2;--peach:#D9A460;
   --ans-bg:linear-gradient(135deg,#0A3558,#0C4A6B);--ans-ink:#FFFFFF;--ans-mute:#B9CCDB;
   --bg-a:#9FD8D6;--bg-b:#D3E9EC;--bg-c:#F1F6F8;
@@ -891,3 +891,4 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .vid-bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;color:#fff}
 .vid-bar p{font:600 16px var(--body);flex:1 1 280px}.vid-bar>div{display:flex;gap:10px}
 .vid-chips{display:flex;flex-wrap:wrap;gap:10px}.vid-chips .pick{width:auto;padding:10px 18px;border-radius:999px;font:600 14px var(--body)}
+.case-steps{list-style:decimal}.case-steps li::marker{font-weight:700;color:var(--c1)}

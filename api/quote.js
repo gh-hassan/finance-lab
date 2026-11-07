@@ -18,18 +18,20 @@ async function chart(symbol, signal) {
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   const symbol = String((req.query && req.query.symbol) || '').trim().toUpperCase();
-  if (!SYMBOL.test(symbol)) { res.statusCode = 400; res.end(JSON.stringify({ error: 'Enter a ticker symbol such as AAPL or MSFT.' })); return; }
+  if (!SYMBOL.test(symbol)) { res.setHeader('Cache-Control', 'no-store'); res.statusCode = 400; res.end(JSON.stringify({ error: 'Enter a ticker symbol such as AAPL or MSFT.' })); return; }
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 9000);
   try {
     const [s, m] = await Promise.all([chart(symbol, ctl.signal), chart('^GSPC', ctl.signal)]);
-    const closes = s.indicators.quote[0].close, stock = monthlyReturns(s.timestamp || [], closes), market = monthlyReturns(m.timestamp || [], m.indicators.quote[0].close);
+    const adj = s.indicators.adjclose && s.indicators.adjclose[0] && s.indicators.adjclose[0].adjclose, closes = adj && adj.length ? adj : s.indicators.quote[0].close, stock = monthlyReturns(s.timestamp || [], closes), market = monthlyReturns(m.timestamp || [], m.indicators.quote[0].close);
     const stats = computeStats(stock, market), meta = s.meta || {}, price = meta.regularMarketPrice, divs = trailingDividends(s.events && s.events.dividends, Math.floor(Date.now() / 1000));
     if (!Number.isFinite(price) || !stats) throw new Error(`Not enough price history for ${symbol}`);
     res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
     res.statusCode = 200;
     res.end(JSON.stringify({ symbol, name: meta.longName || meta.shortName || symbol, currency: meta.currency || 'USD', price, dividend: divs, dividendYield: price > 0 ? divs / price : 0, beta: stats.beta, vol: stats.vol, avgReturn: stats.avgReturn, cagr: stats.cagr, months: stats.months, asOf: new Date().toISOString(), source: 'Yahoo Finance (unofficial, delayed)' }));
   } catch (e) {
+    console.error('quote failed', symbol, e && e.message);
+    res.setHeader('Cache-Control', 'no-store');
     res.statusCode = 502;
-    res.end(JSON.stringify({ error: e && e.name === 'AbortError' ? 'The data source took too long. Try again in a moment.' : (e && e.message) || 'Could not load market data.' }));
+    res.end(JSON.stringify({ error: e && e.name === 'AbortError' ? 'The data source took too long. Try again in a moment.' : 'Could not load market data for that symbol. Check the ticker and try again.' }));
   } finally { clearTimeout(timer); }
 }

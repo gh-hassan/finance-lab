@@ -9,10 +9,10 @@ export const CASES = [
     id: 'oven', tag: 'Company decisions', title: 'The café oven', level: 'Starter',
     story: 'Maple Café is choosing between two ovens. Oven A is a standard model that pays back quickly. Oven B costs the same, but it only pays off in year five when a big catering contract starts. The owner\'s hurdle rate is 9%.',
     steps: [
-      ['Open Capital Budgeting and read the NPV, IRR and payback of each oven.', open('capbud', { rate: 9, rr: 9, i0A: 18000, cfA: '5000, 6000, 6500, 6500, 6000', i0B: 18000, cfB: '0, 0, 0, 0, 32000' }, 'Open the oven numbers')],
-      ['The NPV and IRR may rank the ovens differently. Which should the owner follow, and why?', null],
-      ['Raise the hurdle rate to 14% in the calculator. Which oven does the ranking favour now?', null],
-      ['Stress the choice in Scenarios: what if the catering contract is worth only half as much?', open('capbud', { rate: 9, rr: 9, i0A: 18000, cfA: '5000, 6000, 6500, 6500, 6000', i0B: 18000, cfB: '0, 0, 0, 0, 16000' }, 'Try the half-value contract')]
+      ['Open Capital Budgeting and read the NPV, IRR and payback of each oven.', open('capbud', { rate: 9, rr: 9, i0A: 18000, cfA: '5000, 6000, 6500, 6500, 6000', i0B: 18000, cfB: '0, 0, 0, 0, 42000' }, 'Open the oven numbers')],
+      ['Oven A has the higher IRR, but Oven B has the higher NPV at 9%. Which should the owner follow, and why?', null],
+      ['Raise the hurdle rate to 18%. Which oven has the higher NPV now? (The two cross at about 17.7%.)', open('capbud', { rate: 18, rr: 18, i0A: 18000, cfA: '5000, 6000, 6500, 6500, 6000', i0B: 18000, cfB: '0, 0, 0, 0, 42000' }, 'Try an 18% hurdle')],
+      ['Stress the choice in Scenarios: what if the catering contract is worth only half as much?', open('capbud', { rate: 9, rr: 9, i0A: 18000, cfA: '5000, 6000, 6500, 6500, 6000', i0B: 18000, cfB: '0, 0, 0, 0, 21000' }, 'Try the half-value contract')]
     ],
     think: 'When projects differ in size or timing, NPV measures value added in dollars. IRR is a rate, and it can hide a bigger project that adds more money.'
   },

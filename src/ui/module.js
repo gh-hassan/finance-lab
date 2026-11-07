@@ -41,7 +41,7 @@ function chartCard(spec) {
 export function mountModule(m, main, onMode) {
   /* a shared link brings its own numbers and mode */
   const shared = readShared(m.id);
-  if (shared) { store.set('fl:mode', shared.mode); store.set('fl:' + m.id + (shared.simple ? ':simple' : ''), shared.state); if (shared.unit) store.set('fl:unit', shared.unit); }
+  if (shared) { const okIds = new Set([...m.fields, ...(((BEGINNER[m.id] || {}).simple || {}).fields || [])].map(f => f.id)); shared.state = Object.fromEntries(Object.entries(shared.state).filter(([k]) => okIds.has(k))); store.set('fl:mode', shared.mode); store.set('fl:' + m.id + (shared.simple ? ':simple' : ''), shared.state); if (shared.unit) store.set('fl:unit', shared.unit); }
   const beginner = store.get('fl:mode') !== 'pro', B = BEGINNER[m.id] || {}, simple = beginner && B.simple;
   const topic = TOPICS[m.group] || { label: m.group, tint: 'coral' };
   const defaults = Object.fromEntries(m.fields.map(f => [f.id, f.v]));

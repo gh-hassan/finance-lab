@@ -33,7 +33,7 @@ register({
     const you = portStats(w, m, cov), mvw = minVariance(cov), mv = mvw && portStats(mvw, m, cov), tgw = tangency(m, rf, cov), tg = tgw && portStats(tgw, m, cov);
     if (!mvw) return { note: 'These correlations cannot all be true at once (the table is not consistent). Try smaller correlations.', cards: [], charts: [], steps: [] };
     const sharpe = x => (x.mu - rf) / x.sd, nm = i => NAMES[i], fmtW = ws => ws.map((x, i) => `${nm(i)} ${nf(x * 100, 0)}%`).join(' · ');
-    const hi = Math.max(...m) * 1.25, lo = Math.min(mv.mu, Math.min(...m)) - 0.01;
+    const top = Math.max(...m, mv.mu), hi = top + Math.max(0.01, Math.abs(top) * 0.25);
     const front = frontier(m, cov, mv.mu, hi, 70).map(([a, b]) => [a * 100, b * 100]);
     const cloud = randomMixes(n, 260, 11).map(x => { const p = portStats(x, m, cov); return [p.sd * 100, p.mu * 100]; });
     const series = [
@@ -55,7 +55,7 @@ register({
         { label: 'Tangency (best Sharpe) mix', value: tg ? nf(sharpe(tg), 3) + ' Sharpe' : 'n/a', sub: tg ? `${fmtW(tgw)} · ${short(tgw)}` : 'no mix beats the risk-free rate' },
         { label: 'Diversification benefit', value: pct(w.reduce((a, x, i) => a + x * s[i], 0) - you.sd, 2), sub: 'risk removed by mixing', tone: 'good' }
       ],
-      info: tg && sharpe(tg) <= 0 ? 'Every asset earns less than the risk-free rate, so there is no tangency portfolio.' : '',
+      info: !tg ? 'The risk-free rate is above the return of the minimum-variance mix, so no mix of these assets beats cash and there is no tangency portfolio.' : '',
       charts: [{
         title: 'Every mix you could hold', sub: 'Dots are random mixes with no short selling. The curve is the efficient frontier. The dashed line is the best you can do with the risk-free asset.',
         series, xlab: 'Risk (σ, %)', xFmt: x => nf(x, 0) + '%', yFmt: x => nf(x, 0) + '%', yRead: x => nf(x, 2) + '%', nearest: 'xy'

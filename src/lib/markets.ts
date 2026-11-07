@@ -67,19 +67,20 @@ export interface LboIn { ebitda: number; entry: number; debtX: number; fee: numb
 export interface LboYear { year: number; ebitda: number; interest: number; fcf: number; debt: number }
 export interface LboOut {
   ev0: number; debt0: number; equity0: number; years: LboYear[]; evN: number; debtN: number; equityN: number; moic: number; irr: number;
-  bridge: { growth: number; multiple: number; paydown: number; fees: number };
+  cash: number;
+  bridge: { growth: number; multiple: number; paydown: number; cash: number; fees: number };
 }
 /** Simple buyout: all free cash after interest, tax and capital spending repays debt. Capital spending is set equal to depreciation so tax is on EBITDA less capex less interest. */
 export function lbo(m: LboIn): LboOut {
   const ev0 = m.entry * m.ebitda, debt0 = Math.min(ev0, m.debtX * m.ebitda), fees = ev0 * m.fee, equity0 = ev0 + fees - debt0;
-  let debt = debt0, e = m.ebitda; const years: LboYear[] = [];
+  let debt = debt0, cash = 0, e = m.ebitda; const years: LboYear[] = [];
   for (let y = 1; y <= m.years; y++) {
     e *= 1 + m.growth;
     const interest = debt * m.rate, capex = e * m.capex, taxable = Math.max(0, e - capex - interest), fcf = e - capex - interest - taxable * m.tax;
-    debt = Math.max(0, debt - fcf); years.push({ year: y, ebitda: e, interest, fcf, debt });
+    const pay = Math.min(debt, Math.max(0, fcf)); debt -= pay; cash += fcf - pay; years.push({ year: y, ebitda: e, interest, fcf, debt });
   }
-  const evN = m.exit * e, equityN = evN - debt, moic = equityN / equity0, irr = moic > 0 ? Math.pow(moic, 1 / m.years) - 1 : -1;
-  return { ev0, debt0, equity0, years, evN, debtN: debt, equityN, moic, irr, bridge: { growth: (e - m.ebitda) * m.entry, multiple: (m.exit - m.entry) * e, paydown: debt0 - debt, fees: -fees } };
+  const evN = m.exit * e, equityN = evN - debt + cash, moic = equityN / equity0, irr = moic > 0 ? Math.pow(moic, 1 / m.years) - 1 : -1;
+  return { ev0, debt0, equity0, years, evN, debtN: debt, cash, equityN, moic, irr, bridge: { growth: (e - m.ebitda) * m.entry, multiple: (m.exit - m.entry) * e, paydown: debt0 - debt, cash, fees: -fees } };
 }
 
 /* ---------------- retirement ---------------- */
@@ -94,7 +95,7 @@ export function retirement(m: RetireIn): RetireOut {
   const atRetire = fvSeries(m, m.add), gap = need - atRetire;
   const base = fvSeries(m, 0), unit = fvSeries(m, 1) - base, extra = unit > 0 ? Math.max(0, (need - atRetire) / unit) : NaN;
   let b = atRetire, w = first, age = m.retire;
-  while (b > 0 && age < 120) { b = (b - w) * (1 + m.post); w *= 1 + m.inflation; age++; }
+  while (age < 120 && b - w >= 0) { b = (b - w) * (1 + m.post); w *= 1 + m.inflation; age++; }
   return { atRetire, need, gap, yearsSaving, yearsIncome, firstWithdrawal: first, extraPerYear: extra, fundedUntil: age };
 }
 

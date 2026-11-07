@@ -165,7 +165,7 @@ export function hbars(items) {
   const M = Math.max(...items.map(i => Math.max(i.from || 0, i.to))) || 1;
   return '<div class="hb">' + items.map((it, k) => {
     const a = Math.min(it.from || 0, it.to), b = Math.max(it.from || 0, it.to);
-    return `<div class="hrow"><div class="hl">${it.label}</div><div class="ht"><div class="hf" style="left:${(a / M * 100).toFixed(2)}%;width:${Math.max(0.6, (b - a) / M * 100).toFixed(2)}%;background:${col(it.color || 'c1')};--i:${k}"></div></div><div class="hv">${it.text}</div></div>`;
+    return `<div class="hrow"><div class="hl">${esc(it.label)}</div><div class="ht"><div class="hf" style="left:${(a / M * 100).toFixed(2)}%;width:${Math.max(0.6, (b - a) / M * 100).toFixed(2)}%;background:${col(it.color || 'c1')};--i:${k}"></div></div><div class="hv">${esc(it.text)}</div></div>`;
   }).join('') + '</div>';
 }
 export function donutHtml(spec) {

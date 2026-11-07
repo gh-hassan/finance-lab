@@ -17,8 +17,8 @@ export function splitTitle(full) {
 /* Calculators that go with a video, matched by words in its title. */
 const RELATED = [
   [/time value|\btvm\b/i, '/tvm', 'Time value calculator'], [/dcf|discounted cash/i, '/dcf', 'DCF calculator'], [/amortization|mortgage interest|piti|payment/i, '/loan', 'Loan calculator'],
-  [/financial model|projection|sensitivity/i, '/model3', 'Three-statement model'], [/financial statement|ratio/i, '/ratios', 'Ratios calculator'], [/capital budget|npv|irr/i, '/capbud', 'Capital budgeting'],
-  [/wacc|cost of capital/i, '/wacc', 'Cost of capital'], [/bond/i, '/bond', 'Bond calculator'], [/option/i, '/strategies', 'Option strategies'], [/portfolio|diversif/i, '/frontier', 'Portfolio frontier']
+  [/financial model|projection|sensitivity/i, '/model3', 'Three-statement model'], [/financial statement|\bratios?\b/i, '/ratios', 'Ratios calculator'], [/capital budget|\bnpv\b|\birr\b/i, '/capbud', 'Capital budgeting'],
+  [/wacc|cost of capital/i, '/wacc', 'Cost of capital'], [/\bbonds?\b/i, '/bond', 'Bond calculator'], [/\boptions?\b/i, '/strategies', 'Option strategies'], [/portfolio|diversif/i, '/frontier', 'Portfolio frontier']
 ];
 export const relatedFor = title => { const r = RELATED.find(([re]) => re.test(title)); return r ? { href: r[1], label: r[2] } : null; };
 
@@ -37,7 +37,7 @@ export function renderVideos(main) {
   function open(v, from) {
     close(); opener = from;
     const { title } = splitTitle(v.title);
-    const frame = h('iframe', { src: embedUrl(v.id), title, allow: 'accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin' });
+    const frame = h('iframe', { src: embedUrl(v.id), title, allow: 'accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: '', sandbox: 'allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox', referrerpolicy: 'strict-origin-when-cross-origin' });
     const closeBtn = h('button', { type: 'button', class: 'btn small', onclick: close }, 'Close');
     modal = h('div', { class: 'vid-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': title, onclick: e => { if (e.target === modal) close(); } },
       h('div', { class: 'vid-box' }, h('div', { class: 'vid-frame' }, frame), h('div', { class: 'vid-bar' }, h('p', {}, title), h('div', {}, h('a', { class: 'btn small', href: watchUrl(v.id), target: '_blank', rel: 'noopener noreferrer' }, 'Watch on YouTube ↗'), closeBtn))));

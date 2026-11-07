@@ -158,11 +158,11 @@ register({
         { label: 'PV of depreciation tax shield', value: money(res.pvShield, 0), sub: names[v.method] },
         { label: 'PV of salvage (after tax)', value: money(res.pvSalvage, 0), sub: `${money(v.salv, 0)} at the end` },
         { label: 'NPV of buying', value: money(res.buyNpv, 0), sub: 'cost less shields and salvage' },
-        { label: 'Lease payment that breaks even', value: money(((v.cost - res.pvShield - res.pvSalvage) / Math.max(1e-9, (1 - t) * (1 - Math.pow(1 + r, -v.term)) / r)), 0), sub: 'above this, buying wins' }
+        { label: 'Lease payment that breaks even', value: money((v.cost - res.pvShield - res.pvSalvage) / Math.max(1e-9, (1 - t) * (r === 0 ? Math.round(v.term) : (1 - Math.pow(1 + r, -Math.round(v.term))) / r)), 0), sub: 'above this, buying wins' }
       ],
       charts: [
         { title: 'Value left on the books', sub: 'Book value falls faster under accelerated methods.', series: all.map((a, i) => ({ name: names[a.k], type: 'line', color: ['c1', 'c2', 'c3', 'c4', 'c1'][i], dash: i === 4, pts: book(a.dep) })), xlab: 'Year', xFmt: x => 'Y' + nf(x, 0), yFmt: x => '$' + nf(x / 1000, 0) + 'K', yRead: x => money(x, 0) },
-        { title: 'Present value of the tax shield by method', sub: 'Same asset, same total depreciation, different timing.', series: [{ name: 'PV of tax shield', type: 'bars', color: 'c1', pts: pvs.map((p, i) => [i + 1, p]) }], xlab: 'Method (1 straight, 2 double declining, 3 sum of years, 4 MACRS 5, 5 MACRS 7)', xFmt: x => nf(x, 0), yFmt: x => '$' + nf(x / 1000, 0) + 'K', yRead: x => money(x, 0) }
+        { title: 'Present value of the tax shield by method', sub: 'Same asset, different timing. MACRS depreciates the full cost; the other methods stop at salvage.', series: [{ name: 'PV of tax shield', type: 'bars', color: 'c1', pts: pvs.map((p, i) => [i + 1, p]) }], xlab: 'Method (1 straight, 2 double declining, 3 sum of years, 4 MACRS 5, 5 MACRS 7)', xFmt: x => nf(x, 0), yFmt: x => '$' + nf(x / 1000, 0) + 'K', yRead: x => money(x, 0) }
       ],
       tables: [{ title: 'Depreciation schedule: ' + names[v.method], cols: ['Year', 'Depreciation', 'Tax shield', 'Present value of shield'], rows: dep.map((d, i) => [i + 1, money(d, 0), money(d * t, 0), money((d * t) / Math.pow(1 + r, i + 1), 0)]) }],
       steps: [

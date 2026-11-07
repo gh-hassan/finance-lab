@@ -69,8 +69,9 @@ export const GENERATORS: { id: string; topic: string; make: Gen }[] = [
     return build(r, 'capm', 'Investing', `The risk-free rate is ${pc(rf, 0)}, the market risk premium is ${pc(mrp, 1)} and a stock has a beta of ${beta}. What return does CAPM require?`, pc(ke, 2), [pc(rf + mrp, 2), pc(beta * mrp, 2), pc(rf + beta * (rf + mrp), 2)], `CAPM: r = rf + β × premium = ${pc(rf, 1)} + ${beta} × ${pc(mrp, 1)} = ${pc(ke, 2)}.`, '/capm');
   } },
   { id: 'sharpe', topic: 'Investing', make: r => {
-    const rf = pick(r, [2, 3]) / 100, a = { mu: int(r, 8, 12) / 100, sd: int(r, 12, 20) / 100 }, b = { mu: int(r, 6, 10) / 100, sd: int(r, 6, 11) / 100 };
-    const sa = (a.mu - rf) / a.sd, sb = (b.mu - rf) / b.sd, best = sa >= sb ? 'Fund A' : 'Fund B';
+    const rf = pick(r, [2, 3]) / 100; let a = { mu: 0, sd: 1 }, b = { mu: 0, sd: 1 }, sa = 0, sb = 0, tries = 0;
+    do { a = { mu: int(r, 8, 12) / 100, sd: int(r, 12, 20) / 100 }; b = { mu: int(r, 6, 10) / 100, sd: int(r, 6, 11) / 100 }; sa = (a.mu - rf) / a.sd; sb = (b.mu - rf) / b.sd; } while (Math.abs(sa - sb) < 0.03 && ++tries < 50);
+    const best = sa >= sb ? 'Fund A' : 'Fund B';
     return build(r, 'sharpe', 'Investing', `Risk-free rate ${pc(rf, 0)}. Fund A returns ${pc(a.mu, 0)} with risk ${pc(a.sd, 0)}. Fund B returns ${pc(b.mu, 0)} with risk ${pc(b.sd, 0)}. Which has the better Sharpe ratio?`, best, [best === 'Fund A' ? 'Fund B' : 'Fund A', 'They are equal', 'Cannot tell without beta'], `Sharpe = (return − rf) ÷ risk. Fund A: ${sa.toFixed(3)}. Fund B: ${sb.toFixed(3)}.`, '/capm');
   } },
   { id: 'port', topic: 'Investing', make: r => {
