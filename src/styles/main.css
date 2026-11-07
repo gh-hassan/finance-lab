@@ -919,3 +919,38 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .pill .caret svg{width:16px;height:16px;transition:transform .25s cubic-bezier(.2,.9,.2,1)}
 .pill[aria-expanded="true"] .caret svg{transform:rotate(180deg)}
 .pill:hover .caret{opacity:1}
+
+/* pinned calculator link in the Calculators menu */
+.menu.mega .mpin{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--c4) 14%,transparent)}
+.menu.mega .mpin:hover{background:color-mix(in srgb,var(--c4) 24%,transparent);transform:none}
+.mpi{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--pill-on);color:var(--pill-on-text);flex:none}.mpi svg{width:20px;height:20px}
+.menu.mega .mpin b{display:block;font:600 15px var(--body)}.menu.mega .mpin small{display:block;color:var(--mute);font:400 13px var(--body)}
+
+/* the calculator itself */
+.ba-layout{display:grid;grid-template-columns:minmax(300px,400px) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:start;margin-top:8px}
+@media (max-width:900px){.ba-layout{grid-template-columns:minmax(0,1fr);justify-items:center}.ba-guide{width:100%}}
+.ba{width:min(400px,100%);padding:20px 18px 22px;border-radius:30px;background:linear-gradient(165deg,#2a3441,#141b24 70%);box-shadow:0 30px 60px -24px rgba(6,20,36,.6),inset 0 1px 0 rgba(255,255,255,.12);color:#fff;position:sticky;top:96px}
+.ba-brand{display:flex;justify-content:space-between;align-items:baseline;padding:0 6px 12px;font:500 12px var(--body);color:#9fb3c4}.ba-brand b{font:600 13px var(--display);letter-spacing:-.02em;color:#e8c58a}
+.ba-screen{position:relative;background:linear-gradient(180deg,#dfe8d2,#cdd9bd);border-radius:14px;padding:8px 14px 10px;margin-bottom:16px;box-shadow:inset 0 3px 10px rgba(0,0,0,.25),0 1px 0 rgba(255,255,255,.1);color:#17210f;min-height:96px}
+.ba-flags{display:flex;gap:10px;font:700 9.5px var(--mono);letter-spacing:.05em;min-height:14px}.ba-flags span{opacity:.18}.ba-flags span.on{opacity:1}
+.ba-line{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:6px;min-height:46px}
+.ba-lab{font:600 15px var(--mono);white-space:nowrap}
+.ba-val{flex:1;text-align:right;font:500 34px/1.1 var(--mono);letter-spacing:-.02em;white-space:nowrap;overflow:hidden}.ba-val.small{font-size:24px}.ba-val.err{font-size:26px}
+.ba-ws{position:absolute;right:12px;bottom:6px;font:700 10px var(--mono);letter-spacing:.08em;opacity:.55}
+.ba-keys{display:grid;grid-template-columns:repeat(5,1fr);gap:11px 9px}
+.ba-key{position:relative;display:grid;place-items:end center;min-height:50px;padding:0 2px 7px;border:0;border-radius:11px;font:600 14.5px var(--body);color:#fff;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.14);transition:transform .06s,box-shadow .06s,filter .15s;-webkit-tap-highlight-color:transparent;user-select:none}
+.ba-key small{position:absolute;top:5px;left:0;right:0;text-align:center;font:600 8.5px var(--body);letter-spacing:.02em;color:#e8c58a;white-space:nowrap}
+.ba-key:hover{filter:brightness(1.12)}.ba-key:active,.ba-key.hit{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.1)}
+.ba-key:focus-visible{outline:2px solid #e8c58a;outline-offset:2px}
+.k-num{background:linear-gradient(180deg,#eef2f5,#cfd7de);color:#0a2540}.k-num small{color:#8a6a2c}
+.k-op{background:linear-gradient(180deg,#3a4656,#252e3a)}.k-fn{background:linear-gradient(180deg,#3a4656,#252e3a)}
+.k-tvm{background:linear-gradient(180deg,#12808a,#0b5d66)}.k-main{background:linear-gradient(180deg,#12808a,#0b5d66)}
+.k-2nd{background:linear-gradient(180deg,#e0b56a,#b98a3c);color:#2b1c00}.k-2nd.armed{filter:brightness(1.2);box-shadow:0 0 0 3px rgba(232,197,138,.55),0 3px 0 rgba(0,0,0,.45)}
+.k-eq{background:linear-gradient(180deg,#e0b56a,#b98a3c);color:#2b1c00}.k-wide{grid-column:span 3}
+@media (max-width:420px){.ba{padding:16px 12px 18px;border-radius:24px}.ba-val{font-size:28px}.ba-key{min-height:46px;font-size:13.5px}.ba-key small{font-size:7.5px}}
+.ba-guide{display:grid;gap:12px;min-width:0}.ba-guide h2{font:600 24px var(--display);letter-spacing:-.04em}
+.ba-lead{color:var(--mute);line-height:1.55}
+.ba-ex{padding:16px 20px}.ba-ex summary h3{font:600 16px var(--body)}.ba-ex ol{margin:12px 0 4px;padding-left:22px;display:grid;gap:8px;line-height:1.5}
+.ba-fine{color:var(--mute);font-size:13px;line-height:1.5;margin-top:6px}
+.ba{position:static}
+@media (min-width:901px) and (min-height:820px){.ba{position:sticky;top:96px}}

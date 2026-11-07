@@ -12,6 +12,7 @@ import { renderCompare } from './compare.js';
 import { renderQuiz } from './quiz.js';
 import { renderCases } from './cases.js';
 import { renderVideos } from './videos.js';
+import { renderCalculator } from './calculator.js';
 import { renderGlossary, enhanceTerms } from './glossary.js';
 
 let cleanup = () => { };
@@ -46,7 +47,7 @@ export function startApp(root) {
     pop2.hidden = true;
     const here = MODS.find(m => m.id === location.pathname.replace(/^\/+|\/+$/g, ''));
     calcGroup = here ? here.group : calcGroup || topics[0];
-    pop.innerHTML = '<div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
+    pop.innerHTML = '<a class="mpin" href="/calculator" data-link><span class="mpi">' + ICONS.Valuation + '</span><span><b>Financial calculator</b><small>A working BA II Plus style calculator, free</small></span></a><div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
     drawCalc();
     const inp = pop.querySelector('input');
     inp.addEventListener('input', () => drawCalc(inp.value));
@@ -104,7 +105,7 @@ export function startApp(root) {
   let sel = 0, shown = [], extra = [];
   const renderList = () => {
     const q = input.value.trim().toLowerCase();
-    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }, { id: 'videos', title: 'Video tutorials', blurb: 'youtube watch lessons channel', group: 'Foundations' }, { id: 'quiz', title: 'Quiz', blurb: 'test practice questions exam', group: 'Foundations' }, { id: 'cases', title: 'Cases', blurb: 'case studies business situations', group: 'Foundations' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
+    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }, { id: 'calculator', title: 'Financial calculator (BA II Plus style)', blurb: 'tvm npv irr bond amortization depreciation texas instruments ba2 handheld', group: 'Foundations' }, { id: 'videos', title: 'Video tutorials', blurb: 'youtube watch lessons channel', group: 'Foundations' }, { id: 'quiz', title: 'Quiz', blurb: 'test practice questions exam', group: 'Foundations' }, { id: 'cases', title: 'Cases', blurb: 'case studies business situations', group: 'Foundations' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
     shown = [...extra, ...MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q))];
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${m.blurb && !BEGINNER[m.id] ? esc(m.blurb) : esc(m.title) + ' · ' + esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';
@@ -157,20 +158,21 @@ export function navigate(path) {
 }
 
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isQz = id === 'quiz', isCs = id === 'cases', isVd = id === 'videos';
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isQz = id === 'quiz', isCs = id === 'cases', isVd = id === 'videos', isBa = id === 'calculator';
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isQz || isCs || isVd) ? 'learn' : (isSc || isCmp) ? 'decide' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', (m || isBa) ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isQz || isCs || isVd) ? 'learn' : (isSc || isCmp) ? 'decide' : 'home')));
   const rerender = () => route();
   if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
   else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
   else if (isCmp) { document.title = 'Compare · SmartWealth'; cleanup = renderCompare(view); }
+  else if (isBa) { document.title = 'Financial calculator · SmartWealth'; cleanup = renderCalculator(view); }
   else if (isVd) { document.title = 'Video tutorials · SmartWealth'; cleanup = renderVideos(view); }
   else if (isQz) { document.title = 'Quiz · SmartWealth'; cleanup = renderQuiz(view); }
   else if (isCs) { document.title = 'Cases · SmartWealth'; cleanup = renderCases(view); }
   else if (isGl) { document.title = 'Glossary · SmartWealth'; cleanup = renderGlossary(view); }
   else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
   else { document.title = 'SmartWealth · Learn money by playing with it'; renderHome(view, navigate); }
-  if (!isGl && !isQz) enhanceTerms(view);
+  if (!isGl && !isQz && !isBa) enhanceTerms(view);
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   if (location.hash && id === 'learn') setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 600);
   else window.scrollTo({ top: 0 });

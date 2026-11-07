@@ -13,6 +13,7 @@ Calculators: time value of money, interest rates, annuities, loan amortization, 
 
 Around the calculators:
 
+- **Financial calculator** (`/calculator`): a working BA II Plus Professional style handheld with time value of money, cash flows (NPV, IRR, payback), amortization, bonds, depreciation, statistics, break-even, profit margin, dates and interest conversion. Independent practice tool, not affiliated with Texas Instruments.
 - **Compare:** two versions of a calculator side by side, with the better one highlighted.
 - **Quiz:** rounds of ten questions with fresh numbers, instant explanations and saved progress.
 - **Cases:** six business situations that open calculators with the case numbers filled in.
