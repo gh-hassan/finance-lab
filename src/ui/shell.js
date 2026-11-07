@@ -34,7 +34,10 @@ export function startApp(root) {
   const closeMenu = () => { pop.hidden = true; pop2.hidden = true; };
   document.addEventListener('pointerdown', e => { if ((!pop.hidden || !pop2.hidden) && !e.target.closest('.menu') && !e.target.closest('[data-menu]')) closeMenu(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
-  addEventListener('scroll', () => { if (!pop.hidden || !pop2.hidden) closeMenu(); }, { passive: true });
+  let openY = 0; /* a small nudge of the page keeps the menu; a real scroll away closes it */
+  addEventListener('scroll', () => { if ((!pop.hidden || !pop2.hidden) && Math.abs(scrollY - openY) > 60) closeMenu(); }, { passive: true });
+  const markOpen = () => { if (!pop.hidden || !pop2.hidden) openY = scrollY; };
+  [pop, pop2].forEach(el => new MutationObserver(markOpen).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
   addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
@@ -55,6 +58,18 @@ export function startApp(root) {
     return btn;
   };
   const learnBtn = dropBtn('learn', ICONS.learn, 'Learn'), decideBtn = dropBtn('decide', ICONS.scenarios, 'Decide');
+  /* with a mouse the menus open on hover and close shortly after the pointer leaves; touch and keyboard use click */
+  let hoverIn = 0, hoverOut = 0;
+  const isOpen = btn => (btn === calcBtn ? !pop.hidden : !pop2.hidden && openKey === btn.dataset.menu);
+  const wireHover = btn => {
+    btn.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverOut); clearTimeout(hoverIn); hoverIn = setTimeout(() => { if (!isOpen(btn)) btn.click(); }, 90); });
+    btn.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverIn); hoverOut = setTimeout(closeMenu, 260); });
+  };
+  [calcBtn, learnBtn, decideBtn].forEach(wireHover);
+  [pop, pop2].forEach(el => {
+    el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') clearTimeout(hoverOut); });
+    el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hoverOut = setTimeout(closeMenu, 260); });
+  });
   const navItems = [
     h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
     learnBtn,
