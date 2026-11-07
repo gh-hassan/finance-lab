@@ -86,7 +86,7 @@ export class XY {
     if (best !== this.idx) { this.idx = best; this.draw(); }
   }
   draw() {
-    const s = this.spec, W = Math.max(280, Math.floor(this.plot.clientWidth) || 600), narrow = W < 520;
+    const s = this.spec, W = Math.max(180, Math.floor(this.plot.clientWidth) || 600), narrow = W < 520;
     const H = s.h || (narrow ? 250 : 310), M = { l: narrow ? 48 : 58, r: 14, t: 12, b: s.xLabels ? 40 : s.xlab ? 44 : 30 };
     const pw = W - M.l - M.r, ph = H - M.t - M.b, ser = s.series, s0 = ser[0], n0 = s0.pts.length, isBar = x => x.type === 'bars';
     let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;

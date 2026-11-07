@@ -330,8 +330,10 @@ details>summary h3{margin:0}
 @keyframes marquee{to{transform:translateX(-50%)}}
 .foot p{font-size:12.5px;color:var(--mute)}
 
-@media (max-width:1100px){
+@media (max-width:520px){
   .pill em{display:none}.pill.on em{display:inline}
+}
+@media (max-width:900px){
   .lab{grid-template-columns:minmax(0,1fr)}
   .inputs{position:static;max-height:none}
 }
@@ -644,7 +646,7 @@ details>summary h3{font-size:17px}
 .rs .rs-bubble{color:var(--pill-on-text);font:500 13px var(--mono)}
 
 /* small screens: single column (must come after the roomier-layout override above) */
-@media (max-width:1100px){
+@media (max-width:900px){
   .lab{grid-template-columns:minmax(0,1fr);gap:28px}
   .inputs{position:static;max-height:none}
 }
@@ -954,3 +956,27 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .ba-fine{color:var(--mute);font-size:13px;line-height:1.5;margin-top:6px}
 .ba{position:static}
 @media (min-width:901px) and (min-height:820px){.ba{position:sticky;top:96px}}
+
+/* touch-friendly targets on phones and tablets, and legible small labels */
+@media (max-width:900px),(pointer:coarse){
+  .btn,.btn.small{min-height:42px;padding-top:10px;padding-bottom:10px}
+  .vid-rel,.gl-where a,.gl-jump a,.glcard a,.menu a,.qopt,.pick{min-height:42px}
+  .vid-rel,.gl-where a{display:inline-flex;align-items:center}
+  .iconbtn{min-width:44px;min-height:44px}
+  .seg button,.vhead .seg button{min-height:42px}
+}
+.plot svg{max-width:100%;height:auto}
+.ba-flags{font-size:10.5px}.ba-key small{font-size:9.5px}
+@media (max-width:420px){.ba-key small{font-size:9px}}
+
+/* more touch targets, and a Learn / Decide menu that always fits a phone */
+@media (max-width:900px),(pointer:coarse){
+  .chip{min-height:40px;display:inline-flex;align-items:center}
+  .learnlink{display:inline-flex;align-items:center;min-height:40px}
+  .toc a{min-height:40px;display:flex;align-items:center}
+  .cmp-title{min-height:42px}
+}
+.qbtn{position:relative}.qbtn::after{content:'';position:absolute;inset:-9px}
+@media (max-width:480px){
+  .menu.more{left:8px!important;right:8px;width:auto}
+}
