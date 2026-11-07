@@ -772,3 +772,6 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 .menu.mega .mg:last-child{margin-bottom:0}
 .menu.mega a{break-inside:avoid}
 @media (max-width:700px){.menu.mega{column-width:100%;max-height:68vh;overflow-y:auto}}
+/* column headings sit exactly over the middle of their boxes */
+.sct thead th{padding:0 7px 6px;text-align:center}
+.hm thead th{text-align:center}
