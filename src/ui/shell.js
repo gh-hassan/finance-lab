@@ -9,6 +9,8 @@ import { renderHome } from './home.js';
 import { renderLearn } from './learn.js';
 import { renderScenarios } from './scenarios.js';
 import { renderCompare } from './compare.js';
+import { renderQuiz } from './quiz.js';
+import { renderCases } from './cases.js';
 import { renderGlossary, enhanceTerms } from './glossary.js';
 
 let cleanup = () => { };
@@ -41,7 +43,7 @@ export function startApp(root) {
   addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
-    learn: [['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
+    learn: [['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/quiz', 'quiz', 'Quiz', 'Test what you have learned'], ['/cases', 'cases', 'Cases', 'Real situations, step by step'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
     decide: [['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side']]
   };
   let openKey = '';
@@ -90,7 +92,7 @@ export function startApp(root) {
   let sel = 0, shown = [], extra = [];
   const renderList = () => {
     const q = input.value.trim().toLowerCase();
-    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
+    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }, { id: 'quiz', title: 'Quiz', blurb: 'test practice questions exam', group: 'Foundations' }, { id: 'cases', title: 'Cases', blurb: 'case studies business situations', group: 'Foundations' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
     shown = [...extra, ...MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q))];
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${m.blurb && !BEGINNER[m.id] ? esc(m.blurb) : esc(m.title) + ' · ' + esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';
@@ -143,17 +145,19 @@ export function navigate(path) {
 }
 
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary';
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isQz = id === 'quiz', isCs = id === 'cases';
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl) ? 'learn' : (isSc || isCmp) ? 'decide' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isQz || isCs) ? 'learn' : (isSc || isCmp) ? 'decide' : 'home')));
   const rerender = () => route();
   if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
   else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
   else if (isCmp) { document.title = 'Compare · SmartWealth'; cleanup = renderCompare(view); }
+  else if (isQz) { document.title = 'Quiz · SmartWealth'; cleanup = renderQuiz(view); }
+  else if (isCs) { document.title = 'Cases · SmartWealth'; cleanup = renderCases(view); }
   else if (isGl) { document.title = 'Glossary · SmartWealth'; cleanup = renderGlossary(view); }
   else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
   else { document.title = 'SmartWealth · Learn money by playing with it'; renderHome(view, navigate); }
-  if (!isGl) enhanceTerms(view);
+  if (!isGl && !isQz) enhanceTerms(view);
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   if (location.hash && id === 'learn') setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 600);
   else window.scrollTo({ top: 0 });

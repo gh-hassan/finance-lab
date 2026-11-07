@@ -10,6 +10,9 @@ export function shareUrl(id, state, simple, mode, unit) {
   return `${location.origin}/${id}?s=${encodeURIComponent(enc({ v: 1, state, simple: !!simple, mode, unit }))}`;
 }
 
+/** Same link without the site address, for links inside the app. */
+export const sharePath = (id, state, mode = 'pro', unit = 'M') => `/${id}?s=${encodeURIComponent(enc({ v: 1, state, simple: false, mode, unit }))}`;
+
 /** Read numbers from a shared link, then clean the address bar so a refresh does not re-apply them. Returns null when there is nothing valid. */
 export function readShared(id) {
   try {
