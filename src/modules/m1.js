@@ -218,6 +218,7 @@ register({
 <ul><li>Interest is charged on what you still owe, so paying principal early saves interest on every later period.</li><li>Extra payments go straight to principal. On a 30-year mortgage a modest extra amount can remove years from the term.</li></ul>`,
   calc(v) {
     const ppy = Math.max(1, Math.round(v.ppy)), i = v.apr / 100 / ppy, N = Math.max(1, Math.round(v.years * ppy));
+    if (!(v.amt >= 1)) return { note: 'Enter a loan amount of at least $1.', cards: [], charts: [], steps: [] };
     const pay = i === 0 ? v.amt / N : v.amt * i / (1 - Math.pow(1 + i, -N));
     const sched = ex => { const rows = []; let bal = v.amt; for (let k = 1; k <= N + 2 && bal > 0.005; k++) { const int = bal * i; let p = pay + ex; if (p > bal + int) p = bal + int; const pr = p - int; bal = Math.max(0, bal - pr); rows.push({ k, pay: p, int, pr, bal }); } return rows; };
     const base = sched(0), act = sched(Math.max(0, v.extra));

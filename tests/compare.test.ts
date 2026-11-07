@@ -48,3 +48,11 @@ describe('units', () => {
     expect(unitize('Sales ($M)', 'M')).toBe('Sales ($M)');
   });
 });
+
+import { toCsv } from '../src/ui/sharing.js';
+describe('csv export', () => {
+  it('writes inputs, results and tables with safe quoting', () => {
+    const csv = toCsv('Loan', [['Amount', '$250,000']], { cards: [{ label: 'Payment', value: '$1,580.17', sub: 'monthly, 30 years' }], tables: [{ title: 'Schedule', cols: ['#', 'Balance'], rows: [[1, '$249,000']] }] });
+    expect(csv).toContain('Loan'); expect(csv).toContain('Amount,"$250,000"'); expect(csv).toContain('Payment,"$1,580.17","monthly, 30 years"'); expect(csv).toContain('Schedule'); expect(csv).toContain('1,"$249,000"');
+  });
+});

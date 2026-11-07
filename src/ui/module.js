@@ -3,6 +3,8 @@
    and Pro mode (every input, result, chart, step and table). */
 import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
 import { tick } from './ticker.js';
+import { ASSUMPTIONS } from './assumptions.js';
+import { readShared, toolsBar } from './sharing.js';
 import { UNIT_LIST, fieldsHaveUnits, isUnitField, unitFactor, unitize } from './units.js';
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
@@ -36,6 +38,9 @@ function chartCard(spec) {
 }
 
 export function mountModule(m, main, onMode) {
+  /* a shared link brings its own numbers and mode */
+  const shared = readShared(m.id);
+  if (shared) { store.set('fl:mode', shared.mode); store.set('fl:' + m.id + (shared.simple ? ':simple' : ''), shared.state); if (shared.unit) store.set('fl:unit', shared.unit); }
   const beginner = store.get('fl:mode') !== 'pro', B = BEGINNER[m.id] || {}, simple = beginner && B.simple;
   const topic = TOPICS[m.group] || { label: m.group, tint: 'coral' };
   const defaults = Object.fromEntries(m.fields.map(f => [f.id, f.v]));
@@ -51,6 +56,7 @@ export function mountModule(m, main, onMode) {
   const state = simple ? b : v, stateKey = simple ? sKey : key;
   const effective = () => (simple ? { ...defaults, ...B.simple.map(b) } : beginner ? { ...v, ...(B.force || {}) } : v);
   const refs = {};
+  let lastOut = null;
   let raf = 0, charts = [], sig = '', observers = [], sceneView = null;
 
   /* ----- inputs ----- */
@@ -90,12 +96,20 @@ export function mountModule(m, main, onMode) {
   const sceneHost = h('div', { class: 'sv-wrap' }), sceneCard = h('section', { class: 'card scenecard reveal', hidden: true });
   const wordsEl = h('section', { class: 'words reveal', hidden: !beginner });
   const stepsEl = h('section', { class: 'card steps-card reveal' }), tablesEl = h('div', { class: 'tables' });
-  const outEl = h('div', { class: 'out' + (beginner ? ' beg' : '') }, noteEl, infoEl, heroEl, cardsEl, sceneCard, chartsEl, stepsEl, tablesEl, wordsEl);
+  const fieldLabel = f => U((beginner && B.labels && B.labels[f.id]) || f.label);
+  const toolsEl = toolsBar({
+    id: m.id, title: m.title, getState: () => ({ ...state }), getSimple: () => !!simple, getMode: () => (beginner ? 'beginner' : 'pro'), getUnit: () => unit, getOut: () => lastOut,
+    getInputs: () => fieldList.map(f => [fieldLabel(f), (f.pre || '') + state[f.id] + (f.unit ? ' ' + f.unit : '')])
+  });
+  const assume = ASSUMPTIONS[m.id];
+  const assumeEl = assume ? h('details', { class: 'assume card' }, h('summary', {}, h('h3', {}, 'Assumptions and method')), h('ul', {}, assume.map(x => h('li', {}, x))), h('p', { class: 'src' }, 'Standard textbook formulation (for example Brealey, Myers and Allen; Berk and DeMarzo; Bodie, Kane and Marcus). For study and practice.')) : null;
+  const outEl = h('div', { class: 'out' + (beginner ? ' beg' : '') }, toolsEl, noteEl, infoEl, heroEl, cardsEl, sceneCard, chartsEl, stepsEl, tablesEl, assumeEl, wordsEl);
 
   function update(fresh) {
     const eff = effective();
     let out;
     try { out = U(m.calc(eff)); } catch (e) { out = { note: 'Something went wrong in this calculation: ' + e.message, cards: [], charts: [], steps: [] }; }
+    lastOut = out;
     if (!beginner) {
       Object.values(refs).forEach(r => {
         const sh = m.show && m.show[r.f.id]; r.wrap.hidden = sh ? !sh(v) : false;

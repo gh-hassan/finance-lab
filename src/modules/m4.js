@@ -191,6 +191,7 @@ register({
 <ul><li><b>Delta</b> is the price change per $1 move in the stock. <b>Gamma</b> is how fast delta changes. <b>Vega</b> is the change per 1 point of volatility. <b>Theta</b> is daily time decay. <b>Rho</b> is the change per 1 point of rate.</li><li>Time value is largest when the option is at the money, and it melts faster as expiry nears.</li><li>Higher volatility raises both calls and puts, because the downside of an option is capped but the upside is not.</li></ul>`,
   calc(v) {
     const r = v.r / 100, q = v.q / 100, sg = v.vol / 100, o = bs(v.S, v.K, v.T, r, q, sg), eR = Math.exp(-r * v.T), eQ = Math.exp(-q * v.T);
+    if (!(v.S > 0) || !(v.K > 0) || !(v.T > 0) || !(v.vol > 0)) return { note: 'Stock price, strike, time and volatility must all be above zero.', cards: [], charts: [], steps: [] };
     const isCall = v.pos[1] === 'c', sign = v.pos[0] === 'l' ? 1 : -1, nm = { lc: 'Long call', lp: 'Long put', sc: 'Short call', sp: 'Short put' }[v.pos];
     const price = (S, T) => { const x = bs(S, v.K, T, r, q, sg); return isCall ? x.c : x.p; }, prem = isCall ? o.c : o.p;
     const pay = S => (isCall ? Math.max(0, S - v.K) : Math.max(0, v.K - S));

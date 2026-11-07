@@ -33,7 +33,7 @@ register({
     if (par.some(y => !(y > -0.02) || y > 0.5)) return { note: 'A par yield looks out of range. Enter percentages such as 4.5.', cards: [], charts: [], steps: [] };
     const c = bootstrap(par);
     if (c.some(r => !(r.df > 0))) return { note: 'These par yields cannot come from a sensible curve. Check for a typo.', cards: [], charts: [], steps: [] };
-    const n = Math.min(Math.round(v.yrs), c.length), bond = priceOnCurve(c, v.face, v.cpn / 100, n);
+    const n = Math.max(1, Math.min(Math.round(v.yrs), c.length)), bond = priceOnCurve(c, v.face, v.cpn / 100, n);
     const w = immunize(v.hor, v.short, v.long), inverted = c[c.length - 1].spot < c[0].spot;
     return {
       cards: [
@@ -251,7 +251,7 @@ register({
 <div class="formula">MOIC = Equity out ÷ Equity in     IRR = MOIC^(1/years) − 1</div>
 <ul><li>More debt raises the return when things go well and magnifies the loss when they do not.</li><li>All free cash after interest and tax repays debt (a "cash sweep").</li><li>Buying and selling at the same multiple isolates the return from operations and debt paydown.</li></ul>`,
   calc(v) {
-    if (!(v.ebitda > 0) || !(v.entry > 0) || v.debtX < 0) return { note: 'EBITDA and the price multiple must be above zero.', cards: [], charts: [], steps: [] };
+    if (!(v.ebitda > 0) || !(v.entry > 0) || v.debtX < 0 || !(v.yrs >= 1)) return { note: 'EBITDA, the price multiple and the years held must all be positive (years at least 1).', cards: [], charts: [], steps: [] };
     if (v.debtX >= v.entry * (1 + v.fee / 100)) return { note: 'The debt would pay for the whole purchase, leaving no equity. Lower the debt multiple.', cards: [], charts: [], steps: [] };
     const o = lbo({ ebitda: v.ebitda, entry: v.entry, debtX: v.debtX, fee: v.fee / 100, rate: v.rate / 100, growth: v.g / 100, capex: v.capex / 100, tax: v.tax / 100, exit: v.exit, years: Math.round(v.yrs) });
     const b = o.bridge, M = x => money(x, 1) + 'M';

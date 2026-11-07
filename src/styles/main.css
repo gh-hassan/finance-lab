@@ -793,3 +793,24 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 /* the figure sits dead centre under its heading; the change chip hangs off to the right of it */
 .sct .vw{position:relative;display:inline-block}
 .sct .vw .dchip{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin:0 0 0 10px;white-space:nowrap;vertical-align:baseline}
+
+/* share and export tools, assumptions panel */
+.xtools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:flex-end}
+.xtools .xnote{font:500 13px var(--body);color:var(--mute);margin-left:4px}
+.assume{padding:18px 22px}
+.assume ul{margin:12px 0 8px;padding-left:20px;display:grid;gap:6px}
+.assume .src{color:var(--mute);font-size:13px;margin-top:6px}
+@media print{
+  .topbar,.xtools,.tabs,.vctl,.inputs .ihead button,.foot,.bg,.glcard,.sv-btn,.scenecard{display:none!important}
+  body{background:#fff!important;color:#000}.shell{box-shadow:none!important;background:#fff!important;backdrop-filter:none!important;margin:0!important;padding:0!important}
+  .card,.answer,.stat{box-shadow:none!important;break-inside:avoid;background:#fff!important;color:#000!important;border:1px solid #bbb!important}
+  .answer .big{color:#000!important;-webkit-text-fill-color:#000!important;background:none!important}
+  .big .tk-c i,.big .tk-t{-webkit-text-fill-color:#000!important;color:#000!important;background:none!important}
+  details>*{display:block!important}details>summary::before{display:none}
+  .lab{display:block!important}.inputs{margin-bottom:12px}
+}
+@media (min-width:1280px){
+  .out.beg{grid-template-areas:"tools tools" "note note" "info info" "answer scene" "stats scene" "words steps" "assume assume"}
+  .out.beg>.xtools{grid-area:tools}.out.beg>.assume{grid-area:assume}
+}
+.out>.xtools{margin-bottom:-14px}

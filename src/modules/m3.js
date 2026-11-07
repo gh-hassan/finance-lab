@@ -84,6 +84,7 @@ register({
 <ul><li>Above the indifference EBIT the debt plan has higher EPS, below it the equity plan does.</li><li>Higher EPS from leverage is not free value. Shareholders bear more risk, and the extra return is compensation. The only value created in M&amp;M (with taxes) is the interest tax shield.</li></ul>`,
   calc(v) {
     const t = v.tax / 100, dp = v.dp / 100, r = v.rate / 100, ku = v.ku / 100;
+    if (!(v.ebit > 0) || !(v.cap > 0)) return { note: 'Capital to raise and expected EBIT must both be above zero.', cards: [], charts: [], steps: [] };
     const SA = v.cap / v.price, D = v.cap * dp, EB = v.cap - D, SB = EB / v.price, IB = D * r;
     const eps = (ebit, I, S) => { const ebt = ebit - I; return (ebt > 0 ? ebt * (1 - t) : ebt) / S; };
     const star = SA - SB > 1e-9 ? IB * SA / (SA - SB) : NaN;
@@ -198,6 +199,7 @@ register({
 <ul><li>Stretching payables or collecting faster shortens the CCC, but may strain suppliers or customers.</li><li>At the EOQ, ordering cost and holding cost are equal, and total cost is lowest.</li></ul>`,
   calc(v) {
     const dio = v.inv / v.cogs * v.days, dso = v.ar / v.sales * v.days, dpo = v.ap / v.cogs * v.days, ccc = dio + dso - dpo;
+    if (!(v.cogs > 0) || !(v.sales > 0) || !(v.days > 0) || !(v.dem > 0) || !(v.S > 0) || !(v.H > 0)) return { note: 'Sales, cost of goods, days, demand, cost per order and holding cost must all be above zero.', cards: [], charts: [], steps: [] };
     const eoq = Math.sqrt(2 * v.dem * v.S / v.H), orders = v.dem / eoq, oc = orders * v.S, hc = eoq / 2 * v.H, rop = v.dem / v.days * v.lead + v.ss;
     const qs = range(eoq * 0.2, eoq * 3, eoq * 2.8 / 60);
     const hb = hbars([
