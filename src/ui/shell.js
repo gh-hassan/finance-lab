@@ -26,21 +26,36 @@ export function startApp(root) {
   const pop = h('div', { class: 'menu mega', hidden: true });
   const pop2 = h('div', { class: 'menu more', hidden: true });
   const calcBtn = h('button', { class: 'pill', type: 'button', 'data-id': 'calc', 'data-menu': 'calc', 'aria-haspopup': 'true' }, h('span', { html: ICONS.Valuation }), h('em', {}, 'Calculators'), h('span', { class: 'caret', html: '▾' }));
+  let calcGroup = '';
+  const ask = m => (BEGINNER[m.id] || {}).ask || m.title;
+  function drawCalc(q = '') {
+    const term = q.trim().toLowerCase(), active = calcGroup || topics[0];
+    const hit = term ? MODS.filter(m => (ask(m) + ' ' + m.title + ' ' + (m.blurb || '')).toLowerCase().includes(term)) : MODS.filter(m => m.group === active);
+    const rail = topics.map(g => { const n = MODS.filter(m => m.group === g).length; return `<button type="button" class="mr tint-${TOPICS[g].tint}${!term && g === active ? ' on' : ''}" data-g="${esc(g)}"><i class="dot"></i><span>${esc(TOPICS[g].label)}</span><em>${n}</em></button>`; }).join('');
+    const links = hit.map(m => `<a href="/${m.id}" data-link><b>${esc(ask(m))}</b>${term ? `<small>${esc(TOPICS[m.group] ? TOPICS[m.group].label : m.group)}</small>` : ''}</a>`).join('') || '<p class="mnone">No calculator matches that. Try a shorter word.</p>';
+    pop.querySelector('.mrail').innerHTML = rail;
+    const list = pop.querySelector('.mlist');
+    list.innerHTML = `<h4>${term ? `${hit.length} match${hit.length === 1 ? '' : 'es'}` : esc(TOPICS[active].label)}</h4><div class="mlinks">${links}</div>`;
+    list.classList.remove('swap'); void list.offsetWidth; list.classList.add('swap');
+  }
   calcBtn.addEventListener('click', e => {
     e.stopPropagation();
     if (!pop.hidden) { pop.hidden = true; return; }
     pop2.hidden = true;
-    pop.innerHTML = topics.map(g => `<div class="mg tint-${TOPICS[g].tint}"><h4><i class="dot"></i>${esc(TOPICS[g].label)}</h4>${MODS.filter(m => m.group === g).map(m => `<a href="/${m.id}" data-link>${esc((BEGINNER[m.id] || {}).ask || m.title)}</a>`).join('')}</div>`).join('');
+    const here = MODS.find(m => m.id === location.pathname.replace(/^\/+|\/+$/g, ''));
+    calcGroup = here ? here.group : calcGroup || topics[0];
+    pop.innerHTML = '<div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
+    drawCalc();
+    const inp = pop.querySelector('input');
+    inp.addEventListener('input', () => drawCalc(inp.value));
+    pop.querySelector('.mrail').addEventListener('click', ev => { const b = ev.target.closest('.mr'); if (b) { calcGroup = b.dataset.g; inp.value = ''; drawCalc(); } });
+    pop.querySelector('.mrail').addEventListener('pointerover', ev => { const b = ev.target.closest('.mr'); if (b && ev.pointerType === 'mouse' && b.dataset.g !== calcGroup && !inp.value) { calcGroup = b.dataset.g; drawCalc(); } });
     pop.hidden = false;
   });
   /* close on any outside touch or press (iOS skips click on plain areas), Escape, scrolling and rotation */
   const closeMenu = () => { pop.hidden = true; pop2.hidden = true; };
   document.addEventListener('pointerdown', e => { if ((!pop.hidden || !pop2.hidden) && !e.target.closest('.menu') && !e.target.closest('[data-menu]')) closeMenu(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
-  let openY = 0; /* a small nudge of the page keeps the menu; a real scroll away closes it */
-  addEventListener('scroll', () => { if ((!pop.hidden || !pop2.hidden) && Math.abs(scrollY - openY) > 60) closeMenu(); }, { passive: true });
-  const markOpen = () => { if (!pop.hidden || !pop2.hidden) openY = scrollY; };
-  [pop, pop2].forEach(el => new MutationObserver(markOpen).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
   addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
@@ -61,20 +76,6 @@ export function startApp(root) {
     return btn;
   };
   const learnBtn = dropBtn('learn', ICONS.learn, 'Learn'), decideBtn = dropBtn('decide', ICONS.scenarios, 'Decide');
-  /* with a mouse the menus open on hover and close shortly after the pointer leaves; touch and keyboard use click */
-  let hoverIn = 0, hoverOut = 0;
-  const isOpen = btn => (btn === calcBtn ? !pop.hidden : !pop2.hidden && openKey === btn.dataset.menu);
-  const wireHover = btn => {
-    btn.addEventListener('click', e => { if (e.isTrusted && btn._hoverAt && isOpen(btn)) { e.stopImmediatePropagation(); e.preventDefault(); } }, true); /* a menu opened by hovering stays open on click; it closes when the pointer leaves */
-    [pop, pop2].forEach(el => new MutationObserver(() => { if (!isOpen(btn)) btn._hoverAt = 0; }).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
-    btn.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverOut); clearTimeout(hoverIn); hoverIn = setTimeout(() => { if (!isOpen(btn)) { btn._hoverAt = performance.now(); btn.click(); } }, 90); });
-    btn.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; clearTimeout(hoverIn); hoverOut = setTimeout(closeMenu, 260); });
-  };
-  [calcBtn, learnBtn, decideBtn].forEach(wireHover);
-  [pop, pop2].forEach(el => {
-    el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') clearTimeout(hoverOut); });
-    el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hoverOut = setTimeout(closeMenu, 260); });
-  });
   const navItems = [
     h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
     learnBtn,
