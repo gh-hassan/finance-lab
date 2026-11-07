@@ -17,6 +17,8 @@ import { renderGlossary, enhanceTerms } from './glossary.js';
 let cleanup = () => { };
 let view;
 
+const CARET = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+
 export function startApp(root) {
   const topics = Object.keys(TOPICS);
   const theme = () => document.documentElement.dataset.theme || 'light';
@@ -25,7 +27,7 @@ export function startApp(root) {
 
   const pop = h('div', { class: 'menu mega', hidden: true });
   const pop2 = h('div', { class: 'menu more', hidden: true });
-  const calcBtn = h('button', { class: 'pill', type: 'button', 'data-id': 'calc', 'data-menu': 'calc', 'aria-haspopup': 'true' }, h('span', { html: ICONS.Valuation }), h('em', {}, 'Calculators'), h('span', { class: 'caret', html: '▾' }));
+  const calcBtn = h('button', { class: 'pill', type: 'button', 'data-id': 'calc', 'data-menu': 'calc', 'aria-haspopup': 'true' }, h('span', { html: ICONS.Valuation }), h('em', {}, 'Calculators'), h('span', { class: 'caret', html: CARET }));
   let calcGroup = '';
   const ask = m => (BEGINNER[m.id] || {}).ask || m.title;
   function drawCalc(q = '') {
@@ -64,7 +66,7 @@ export function startApp(root) {
   };
   let openKey = '';
   const dropBtn = (key, icon, label) => {
-    const btn = h('button', { class: 'pill', type: 'button', 'data-id': key, 'data-menu': key, 'aria-haspopup': 'true' }, h('span', { html: icon }), h('em', {}, label), h('span', { class: 'caret', html: '▾' }));
+    const btn = h('button', { class: 'pill', type: 'button', 'data-id': key, 'data-menu': key, 'aria-haspopup': 'true' }, h('span', { html: icon }), h('em', {}, label), h('span', { class: 'caret', html: CARET }));
     btn.addEventListener('click', () => {
       if (!pop2.hidden && openKey === key) { pop2.hidden = true; return; }
       pop.hidden = true; openKey = key;
@@ -76,6 +78,12 @@ export function startApp(root) {
     return btn;
   };
   const learnBtn = dropBtn('learn', ICONS.learn, 'Learn'), decideBtn = dropBtn('decide', ICONS.scenarios, 'Decide');
+  const syncOpen = () => {
+    calcBtn.setAttribute('aria-expanded', String(!pop.hidden));
+    [learnBtn, decideBtn].forEach(b => b.setAttribute('aria-expanded', String(!pop2.hidden && openKey === b.dataset.menu)));
+  };
+  [pop, pop2].forEach(el => new MutationObserver(syncOpen).observe(el, { attributes: true, attributeFilter: ['hidden'] }));
+  syncOpen();
   const navItems = [
     h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
     learnBtn,

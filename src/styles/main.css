@@ -913,3 +913,9 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .menu.mega .mlinks a:hover{background:var(--soft);transform:none}
 .mnone{padding:14px 10px;color:var(--mute)}
 @media (max-width:700px){.mbody{grid-template-columns:1fr;height:min(460px,70vh);grid-template-rows:auto 1fr}.mrail{flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--line);scrollbar-width:none}.mr{width:auto;white-space:nowrap}.mr em{display:none}}
+
+/* menu arrows: a clear chevron that turns over while the menu is open */
+.pill .caret{opacity:.75;margin-left:2px}
+.pill .caret svg{width:16px;height:16px;transition:transform .25s cubic-bezier(.2,.9,.2,1)}
+.pill[aria-expanded="true"] .caret svg{transform:rotate(180deg)}
+.pill:hover .caret{opacity:1}
