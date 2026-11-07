@@ -1068,3 +1068,8 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 @media (max-width:640px){
   .hm th,.hm td{padding:2px!important;font-size:10px!important;overflow:hidden;white-space:nowrap}
 }
+
+/* Decide menu: section headings and a scrollable list that always fits the screen */
+.menu.more{max-height:min(78vh,620px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.menu.more .mh{font:700 11.5px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:10px 12px 4px}
+.menu.more .mh:first-child{padding-top:4px}

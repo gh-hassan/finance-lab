@@ -1,0 +1,26 @@
+/* Currency page */
+.cu-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.5fr) auto minmax(0,1.5fr);gap:12px;align-items:end;min-width:0}
+.cu-f{display:grid;gap:6px;min-width:0}
+.cu-f label{font:700 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.cu-f .d-in{width:100%;flex:none;font-size:16px}
+.cu-sel{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:36px;text-overflow:ellipsis;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat}
+.cu-amt{font-family:var(--mono);font-weight:500}
+.cu-swap{width:48px;min-height:48px;padding:0;justify-content:center;font-size:20px;border-radius:14px}
+.cu-result{display:grid;gap:4px;padding:18px 20px;border-radius:18px;background:var(--soft);min-width:0}
+.cu-eq{font-size:14px;color:var(--mute)}
+.cu-big{font:500 clamp(28px,6vw,44px)/1.1 var(--mono);letter-spacing:-.03em;overflow-wrap:anywhere}
+.cu-big span{font-size:.55em;color:var(--mute);letter-spacing:0}
+.cu-rates{display:flex;flex-wrap:wrap;gap:4px 18px;font:500 14px var(--mono);color:var(--mute);margin-top:6px}
+.cu-rates b{color:var(--ink);font-weight:500}
+.cu-hint{font-size:14.5px;color:var(--mute)}.cu-hint.warn{color:var(--bad)}
+.cu-body{display:grid;gap:14px;min-width:0}
+.cu-majors .d-t th:first-child{white-space:normal;min-width:130px;max-width:190px}
+.cu-links{display:grid;gap:10px;justify-items:start}
+.cu-link{height:auto;min-height:44px;padding:10px 16px;white-space:normal;text-align:left;line-height:1.35}
+.cu-ex{display:grid;gap:10px}
+@media (max-width:760px){
+  .cu-grid{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"a a" "f s" "t s"}
+  .cu-grid>.cu-f:nth-child(1){grid-area:a}.cu-grid>.cu-f:nth-child(2){grid-area:f}.cu-grid>.cu-swap{grid-area:s;align-self:center;margin-top:20px}.cu-grid>.cu-f:nth-child(4){grid-area:t}
+}
+@media (max-width:360px){.cu-result{padding:14px}.cu-rates{display:grid}}
+@media (prefers-reduced-motion:reduce){.cu-swap{transition:none}}

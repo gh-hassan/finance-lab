@@ -1,0 +1,36 @@
+/* Crypto page. Shares the .cu-* result and field styles from currency.css, which crypto.js loads too. */
+.cr-risk{font-size:15px;line-height:1.55;padding:16px 18px;border-width:2px}
+.cr-risk b{font-weight:700}
+.cr-badge{flex:none;width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;font:700 14px var(--body);color:var(--panel-solid)}
+.cr-t td.cr-sp{padding:4px 14px;width:124px;min-width:124px}
+.cr-t td.cr-sp .spark{width:96px;height:34px}
+.cr-t th:first-child{min-width:170px}
+.cr-t tbody tr{cursor:pointer}
+.cr-t tbody tr.on th,.cr-t tbody tr.on td{background:color-mix(in srgb,var(--c1) 12%,var(--panel-solid))}
+.cr-pick{display:flex;align-items:center;gap:10px;min-height:44px;width:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:10px}
+.cr-pick:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
+.cr-rank{flex:none;min-width:18px;font:500 12px var(--mono);color:var(--mute);text-align:right}
+.cr-nm{display:grid;line-height:1.2;min-width:0}
+.cr-nm b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis}
+.cr-nm small{font:500 12px var(--mono);color:var(--mute)}
+.cr-t td.neg,.cr-price .neg{color:var(--bad)}
+.cr-title{display:grid;gap:8px;min-width:0}
+.cr-title .d-row{flex-wrap:nowrap}
+.cr-title .cr-badge{width:36px;height:36px;font-size:16px}
+.cr-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.cr-price b{font:500 clamp(26px,5vw,36px) var(--mono);letter-spacing:-.03em}
+.cr-price span{font:600 14px var(--body)}
+.cr-price small{flex:1 1 100%;color:var(--mute);font-size:13px}
+.cr-h3{font:600 16px var(--body)}
+.cr-wif{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end}
+.cr-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.cu-hint b.neg{color:var(--bad)}
+@media (max-width:640px){.cr-wif{grid-template-columns:minmax(0,1fr)}.cr-t th:first-child{min-width:150px}}
+/* phones: a slimmer coin column so the price is visible without scrolling */
+@media (max-width:480px){
+  .cr-t th:first-child{min-width:0;width:118px;max-width:118px}
+  .cr-t th:first-child .cr-rank{display:none}
+  .cr-t th:first-child .cr-badge{width:24px;height:24px;font-size:12px}
+  .cr-t th:first-child .cr-nm{min-width:0;overflow:hidden}
+  .cr-t th:first-child .cr-nm b,.cr-t th:first-child .cr-nm small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:70px}
+}

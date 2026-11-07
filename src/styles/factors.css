@@ -1,0 +1,15 @@
+/* Factor returns page */
+.fac-defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.fac-def{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--soft);min-width:0}
+.fac-def div{display:grid;gap:3px;min-width:0}
+.fac-def b{font:600 14.5px/1.3 var(--body)}
+.fac-def span{font-size:13.5px;line-height:1.45;color:var(--mute)}
+.fac-sw{display:inline-block;flex:none;width:12px;height:12px;border-radius:4px;margin-top:4px}
+.fac-ctl{display:grid;gap:12px;min-width:0}
+.fac-chips .d-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.fac-chips .fac-sw{margin-top:0;width:10px;height:10px}
+.fac-chips .d-chip[aria-pressed="false"] .fac-sw{opacity:.35}
+.fac-chips .d-chip[aria-pressed="false"]{color:var(--mute)}
+.fac-ctl .d-seg button{min-height:44px}
+@media (max-width:640px){.fac-def{padding:12px 14px}}
+.fac-chips .d-chip[aria-pressed="true"] .fac-sw{box-shadow:0 0 0 1.5px var(--pill-on-text)}

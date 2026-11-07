@@ -5,6 +5,11 @@
       "destination": "/index.html"
     }
   ],
+  "functions": {
+    "api/edgar.js": {
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/assets/(.*)",

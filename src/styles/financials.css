@@ -1,0 +1,16 @@
+/* Company financials page */
+.fin-chips-l{font:600 13px var(--body);color:var(--mute)}
+.fin-eq{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;min-width:0}
+.fin-eq .t{flex:1 1 170px;min-width:0;padding:16px 18px;border-radius:18px;background:var(--soft);display:grid;gap:3px;align-content:start}
+.fin-eq .t small{font:700 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.fin-eq .t b{font:500 clamp(22px,3vw,28px) var(--mono);letter-spacing:-.03em}
+.fin-eq .t span{font-size:13px;color:var(--mute);line-height:1.4}
+.fin-eq .t.key{background:var(--ans-bg);color:var(--ans-ink)}.fin-eq .t.key small,.fin-eq .t.key span{color:var(--ans-mute)}
+.fin-eq .t.moved{outline:2px solid var(--c4);outline-offset:-2px}
+.fin-eq .op{align-self:center;font:500 24px var(--mono);color:var(--mute);flex:0 0 auto}
+@media (max-width:640px){.fin-eq{flex-direction:column}.fin-eq .op{align-self:center;line-height:1}.fin-eq .t{flex:1 1 auto}}
+.fin-hand{display:grid;gap:12px}
+.fin-hand .d-row{align-items:stretch}
+.fin-tabs{display:grid;gap:12px}
+.fin-yr{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.fin-yr>span{font:600 13px var(--body);color:var(--mute)}

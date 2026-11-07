@@ -1,0 +1,15 @@
+/* Countries compared page */
+.cty-chips .d-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.cty-sw{display:inline-block;width:10px;height:10px;border-radius:4px;flex:none;box-shadow:0 0 0 1.5px var(--pill-on-text)}
+.cty-msg{min-height:1.4em;color:var(--warn)}
+.d-seg button{min-height:44px}
+.cty-t th:first-child,.cty-t td:first-child{min-width:150px}
+.cty-t th.num{text-align:right}
+.cty-t tbody th{white-space:nowrap}
+.cty-t td.reg{text-align:left;font-family:var(--body);color:var(--mute)}
+.cty-t tr.sel td,.cty-t tr.sel th{background:color-mix(in srgb,var(--c1) 12%,var(--panel-solid))}
+.cty-tag{margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--soft);font:700 11px var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
+.cty-sort{min-height:44px;min-width:44px;padding:0 2px;border:0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}
+.cty-sort:focus-visible{outline:2px solid var(--c1);outline-offset:-2px;border-radius:6px}
+.cty-t thead th{padding-top:0;padding-bottom:0}
+@media (max-width:640px){.cty-t th:first-child,.cty-t td:first-child{min-width:128px}.cty-tag{display:none}}

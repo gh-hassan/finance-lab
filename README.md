@@ -22,6 +22,15 @@ Around the calculators:
 - **Assumptions and method** under every result, plus **share link, CSV download and print/PDF**.
 - **Live stock lookup** (price, beta, dividend) in the CAPM, WACC, DDM and portfolio calculators, via the `api/quote.js` serverless function.
 - **Units:** dollars, thousands, millions or billions on calculators that use amounts.
+- **Live data pages** (under the Decide menu, each loads on demand). Every page explains itself in plain words, shows where the data comes from, and says so when a source is down. No API keys are needed.
+  - `/financials` company financials: ten years of annual figures from SEC EDGAR 10-K filings (`api/edgar.js`), with ratios, DuPont analysis, a plain-words summary and one-click hand-off to the DCF and comps calculators.
+  - `/industries` industry benchmarks: beta, cost of capital, multiples and margins for 94 US industries from Prof. Aswath Damodaran (NYU Stern), stored in `src/data/industries.json`. Rebuild once a year with `scripts/build-industries.py`.
+  - `/economy` interest rates and the economy: Treasury yields, the yield curve, inflation, unemployment, mortgage rates and credit spreads from FRED, plus what the US Treasury pays on its debt (`api/macro.js`).
+  - `/factor-returns` factor returns: Fama-French and momentum factors from Prof. Kenneth French's data library (`api/factors.js`).
+  - `/countries` countries compared: World Bank indicators for major economies (`api/world.js`).
+  - `/currency` currency converter and history from the European Central Bank's reference rates via Frankfurter (`api/fx.js`).
+  - `/crypto` crypto prices and a risk lens from CoinGecko's public API (`api/crypto.js`).
+  Shared pieces: `api/_http.js` (validated parameters, timeouts, friendly errors, cache headers), `src/ui/dataui.js` (loading, error, table and chart building blocks), `src/lib/format.ts` and `src/lib/series.ts` (formatting and series maths). `tests/datapages.test.ts` guards the outbound host allow-list and the free-plan function limit.
 
 ## Run it
 

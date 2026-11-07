@@ -1,0 +1,21 @@
+/* Interest rates page */
+.rt-vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.rt-page{min-width:0}
+.rt-stage{min-width:0;position:relative;min-height:120px;transition:opacity .2s}
+.rt-stage.loading{opacity:.55;pointer-events:none}
+.rt-skel{height:300px;border-radius:16px;background:linear-gradient(90deg,var(--soft),color-mix(in srgb,var(--soft) 40%,transparent),var(--soft));background-size:200% 100%;animation:dsk 1.4s linear infinite}
+.rt-chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.rt-chip{display:grid;gap:2px;padding:12px 14px;border-radius:16px;background:var(--soft);min-width:0}
+.rt-chip small{font:700 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.rt-chip b{font:500 clamp(17px,2.4vw,21px) var(--mono);letter-spacing:-.02em}
+.rt-chip em{font:500 12.5px var(--body);font-style:normal;color:var(--mute);min-height:1.2em}
+.rt-calc .d-row{gap:10px}
+.rt-calc .d-btn{flex:0 1 auto;max-width:100%}
+.rt-tr{display:grid;min-width:0}
+.rt-page .d-seg{justify-self:start}
+@media (max-width:640px){
+  .rt-chips{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rt-calc .d-btn{flex:1 1 100%;justify-content:center}
+}
+@media (max-width:360px){.rt-chips{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.rt-skel{animation:none}.rt-stage{transition:none}}

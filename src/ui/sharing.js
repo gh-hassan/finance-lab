@@ -27,7 +27,7 @@ export function readShared(id) {
   } catch (e) { return null; }
 }
 
-const csvCell = x => { let s = String(x == null ? '' : x).replace(/\s+/g, ' ').trim(); if (/^[=+\-@\t\r]/.test(s) && !/^[+\-−]?\$?\d[\d,.]*%?[a-zA-Z ]*$/.test(s)) s = "'" + s; return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+export const csvCell = x => { let s = String(x == null ? '' : x).replace(/\s+/g, ' ').trim(); if (/^[=+\-@\t\r]/.test(s) && !/^[+\-−]?\$?\d[\d,.]*%?[a-zA-Z ]*$/.test(s)) s = "'" + s; return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 /** Results as CSV text: the inputs, the headline figures, then each table. Opens in Excel or Sheets. */
 export function toCsv(title, inputs, out) {
   const rows = [[title], [], ['Inputs'], ...inputs, [], ['Results'], ...(out.cards || []).filter(c => !c.head).map(c => [c.label, c.value, c.sub || ''])];

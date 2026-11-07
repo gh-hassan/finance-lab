@@ -14,6 +14,7 @@ import { renderCases } from './cases.js';
 import { renderVideos } from './videos.js';
 import { renderCalculator } from './calculator.js';
 import { renderGlossary, enhanceTerms } from './glossary.js';
+import { DATA_PAGES } from './datapages.js';
 
 let cleanup = () => { };
 let view;
@@ -63,7 +64,7 @@ export function startApp(root) {
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
     learn: [['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Tutorials from our YouTube channel'], ['/quiz', 'quiz', 'Quiz', 'Test what you have learned'], ['/cases', 'cases', 'Cases', 'Real situations, step by step'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
-    decide: [['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side']]
+    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], 'Live data', ...DATA_PAGES.map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
   };
   let openKey = '';
   const dropBtn = (key, icon, label) => {
@@ -71,7 +72,7 @@ export function startApp(root) {
     btn.addEventListener('click', () => {
       if (!pop2.hidden && openKey === key) { pop2.hidden = true; return; }
       pop.hidden = true; openKey = key;
-      pop2.innerHTML = MENUS[key].map(([href, ic, t, d]) => `<a href="${href}" data-link><span class="mi">${ICONS[ic]}</span><span><b>${t}</b><small>${d}</small></span></a>`).join('');
+      pop2.innerHTML = MENUS[key].map(it => (typeof it === 'string' ? `<p class="mh">${it}</p>` : `<a href="${it[0]}" data-link><span class="mi">${ICONS[it[1]]}</span><span><b>${it[2]}</b><small>${it[3]}</small></span></a>`)).join('');
       const bb = btn.getBoundingClientRect(), r = bar.getBoundingClientRect();
       pop2.style.left = Math.max(8, Math.min(r.width - 336, bb.left - r.left - 20)) + 'px';
       pop2.hidden = false;
@@ -105,7 +106,7 @@ export function startApp(root) {
   let sel = 0, shown = [], extra = [];
   const renderList = () => {
     const q = input.value.trim().toLowerCase();
-    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }, { id: 'calculator', title: 'Financial calculator (BA II Plus)', blurb: 'tvm npv irr bond amortization depreciation texas instruments ba2 handheld', group: 'Foundations' }, { id: 'videos', title: 'Video tutorials', blurb: 'youtube watch lessons channel', group: 'Foundations' }, { id: 'quiz', title: 'Quiz', blurb: 'test practice questions exam', group: 'Foundations' }, { id: 'cases', title: 'Cases', blurb: 'case studies business situations', group: 'Foundations' }].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
+    extra = [{ id: 'learn', title: 'Learn the basics', blurb: 'lessons basics' , group: 'Foundations' }, { id: 'scenarios', title: 'Scenarios', blurb: 'what if best worst risk', group: 'Investments' }, { id: 'compare', title: 'Compare two options', blurb: 'side by side better which', group: 'Investments' }, { id: 'glossary', title: 'Glossary', blurb: 'words meaning terms dictionary', group: 'Foundations' }, { id: 'calculator', title: 'Financial calculator (BA II Plus)', blurb: 'tvm npv irr bond amortization depreciation texas instruments ba2 handheld', group: 'Foundations' }, { id: 'videos', title: 'Video tutorials', blurb: 'youtube watch lessons channel', group: 'Foundations' }, { id: 'quiz', title: 'Quiz', blurb: 'test practice questions exam', group: 'Foundations' }, { id: 'cases', title: 'Cases', blurb: 'case studies business situations', group: 'Foundations' }, ...DATA_PAGES.map(p => ({ id: p.id, title: p.title, blurb: p.words, group: 'Analysis' }))].filter(x => !q || (x.title + ' ' + x.blurb).toLowerCase().includes(q));
     shown = [...extra, ...MODS.filter(m => !q || (m.title + ' ' + m.blurb + ' ' + ((BEGINNER[m.id] || {}).ask || '') + ' ' + TOPICS[m.group].label).toLowerCase().includes(q))];
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     list.innerHTML = shown.length ? shown.map((m, i) => `<a href="/${m.id}" data-link class="${i === sel ? 'on' : ''} tint-${TOPICS[m.group].tint}"><i class="dot"></i><div><b>${esc((BEGINNER[m.id] || {}).ask || m.title)}</b><small>${m.blurb && !BEGINNER[m.id] ? esc(m.blurb) : esc(m.title) + ' · ' + esc(TOPICS[m.group].label)}</small></div></a>`).join('') : '<p class="none">No match. Try “loan”, “stock” or “risk”.</p>';
@@ -157,22 +158,37 @@ export function navigate(path) {
   route();
 }
 
+/** Loads a live data page on demand, and stops it cleanly if you leave before it arrives. */
+function mountData(dp, root) {
+  let live = true, inner = () => { };
+  const say = (text, cls) => root.replaceChildren(h('p', { class: cls, role: 'alert' }, text));
+  root.replaceChildren(h('p', { class: 'lead', role: 'status' }, 'Loading…'));
+  dp.load().then(m => {
+    if (!live) return;
+    root.replaceChildren();
+    try { inner = m[dp.fn](root) || inner; }
+    catch (e) { try { inner(); } catch (e2) { /* nothing half-built to clean up */ } inner = () => { }; say('Something went wrong showing this page. Refresh to try again.', 'note'); }
+  }).catch(() => { if (live) say('This page could not load. Check your connection and refresh.', 'note'); });
+  return () => { live = false; inner(); };
+}
+
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isQz = id === 'quiz', isCs = id === 'cases', isVd = id === 'videos', isBa = id === 'calculator';
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isQz = id === 'quiz', isCs = id === 'cases', isVd = id === 'videos', isBa = id === 'calculator', dp = DATA_PAGES.find(x => x.id === id);
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', (m || isBa) ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isQz || isCs || isVd) ? 'learn' : (isSc || isCmp) ? 'decide' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', (m || isBa) ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isQz || isCs || isVd) ? 'learn' : (isSc || isCmp || dp) ? 'decide' : 'home')));
   const rerender = () => route();
   if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
   else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
   else if (isCmp) { document.title = 'Compare · SmartWealth'; cleanup = renderCompare(view); }
   else if (isBa) { document.title = 'Financial calculator · SmartWealth'; cleanup = renderCalculator(view); }
+  else if (dp) { document.title = `${dp.title} · SmartWealth`; cleanup = mountData(dp, view); }
   else if (isVd) { document.title = 'Video tutorials · SmartWealth'; cleanup = renderVideos(view); }
   else if (isQz) { document.title = 'Quiz · SmartWealth'; cleanup = renderQuiz(view); }
   else if (isCs) { document.title = 'Cases · SmartWealth'; cleanup = renderCases(view); }
   else if (isGl) { document.title = 'Glossary · SmartWealth'; cleanup = renderGlossary(view); }
   else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
   else { document.title = 'SmartWealth · Learn money by playing with it'; renderHome(view, navigate); }
-  if (!isGl && !isQz && !isBa) enhanceTerms(view);
+  if (!isGl && !isQz && !isBa && !dp) enhanceTerms(view);
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   if (location.hash && id === 'learn') setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 600);
   else window.scrollTo({ top: 0 });
