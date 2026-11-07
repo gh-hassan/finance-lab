@@ -24,13 +24,14 @@ function saveState({ id, codes }) {
 }
 
 export function renderCountries(main) {
-  const S = scope(), st = readState(), out = h('div', { class: 'd-page', 'aria-live': 'polite' });
+  const S = scope(), st = readState(), out = h('div', { class: 'd-page' });
   const meaning = h('p', { class: 'd-plain plain' }), msg = h('p', { class: 'd-cap cty-msg', role: 'status', 'aria-live': 'polite' }), chips = h('div', { class: 'd-chips cty-chips', role: 'group', 'aria-label': 'Countries to compare' });
   let seq = 0, alive = true;
 
-  const drawChips = () => chips.replaceChildren(...COUNTRIES.map(c => {
+  const drawChips = () => { const had = chips.contains(document.activeElement) ? document.activeElement.dataset.k : null; paintChips(); if (had) { const b = chips.querySelector(`[data-k="${had}"]`); if (b) b.focus(); } };
+  const paintChips = () => chips.replaceChildren(...COUNTRIES.map(c => {
     const on = st.codes.includes(c.code);
-    return h('button', { type: 'button', class: 'd-chip', 'aria-pressed': String(on), onclick: () => toggle(c.code) }, on ? h('i', { class: 'cty-sw', style: `background:${colorOf(st.codes, c.code)}` }) : null, c.name);
+    return h('button', { type: 'button', class: 'd-chip', 'data-k': c.code, 'aria-pressed': String(on), onclick: () => toggle(c.code) }, on ? h('i', { class: 'cty-sw', style: `background:${colorOf(st.codes, c.code)}` }) : null, c.name);
   }));
   function toggle(code) {
     if (st.codes.includes(code)) { if (st.codes.length === 1) { msg.textContent = 'Keep at least one country selected.'; return; } st.codes = st.codes.filter(c => c !== code); }

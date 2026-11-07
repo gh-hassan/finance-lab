@@ -38,7 +38,11 @@ async function history(q, signal) {
   const all = await load(id, start ? shiftMonths(start, id === 'INFLATION' ? -13 : 0) : null, signal);
   const kept = start ? all.filter(p => p[0] >= start) : all;
   if (!kept.length) throw new HttpError(404, 'That series has no values for this time range.');
-  return { series: id, label: SERIES[id].label, unit: 'percent', freq: SERIES[id].freq, range, asOf: kept[kept.length - 1][0], points: thin(kept, MAX_POINTS).map(([d, v]) => [d, Math.round(v * 1e4) / 1e4]) };
+  /* high, low and average come from every observation, not from the thinned chart points */
+  let hi = kept[0], lo = kept[0], sum = 0;
+  for (const p of kept) { if (p[1] > hi[1]) hi = p; if (p[1] < lo[1]) lo = p; sum += p[1]; }
+  const stats = { high: { date: hi[0], value: hi[1] }, low: { date: lo[0], value: lo[1] }, mean: sum / kept.length };
+  return { series: id, label: SERIES[id].label, unit: 'percent', freq: SERIES[id].freq, range, asOf: kept[kept.length - 1][0], stats, points: thin(kept, MAX_POINTS).map(([d, v]) => [d, Math.round(v * 1e4) / 1e4]) };
 }
 
 export default route(async ({ q, signal }) => {

@@ -55,7 +55,7 @@ export function renderCrypto(main) {
       coins = d.coins || [];
       table = marketsTable(coins, state.coin, pickCoin);
       srcHost.replaceChildren(sourceLine({ source: 'CoinGecko', asOf: d.asOf, url: d.url }));
-      tableHost.replaceChildren(...[d.stale ? h('p', { class: 'd-note warn', role: 'status' }, 'The free price source is busy, so these prices are a few minutes old. They will refresh on their own.') : null, table,
+      tableHost.replaceChildren(...[d.stale ? h('p', { class: 'd-note warn', role: 'status' }, 'The free price source is busy, so these prices are a few minutes old. Try again in a few minutes.') : null, table,
         h('p', { class: 'd-cap' }, 'Tap a coin to see its chart. Prices are in US dollars. Changes are shown as plus or minus percent.')].filter(Boolean));
       coinEl.title(current(), state.coin); if (chartData) { coinEl.show(chartData, nameOf()); drawWhatIf(); }
       enhanceTerms(out);

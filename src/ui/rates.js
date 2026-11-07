@@ -35,16 +35,20 @@ function historySpec(d) {
 }
 
 function chips(d) {
-  const vals = d.points.map(p => p[1]), s = summary(vals);
+  const vals = d.points.map(p => p[1]);
+  if (!vals.length) return [];
+  /* the server measures the whole series; the drawn points are only a thinned copy */
+  const st = d.stats && d.stats.high && d.stats.low ? d.stats : null, s = st ? { max: st.high.value, min: st.low.value, mean: st.mean } : summary(vals);
   if (!s) return [];
-  const when = v => asOfLabel(d.points[vals.indexOf(v)][0], d.freq);
+  const when = (v, which) => (st ? asOfLabel(st[which].date, d.freq) : asOfLabel(d.points[vals.indexOf(v)][0], d.freq));
   const chip = (k, v, sub) => h('span', { class: 'rt-chip' }, h('small', {}, k), h('b', {}, ratePct(v)), sub ? h('em', {}, sub) : null);
-  return [chip('Latest', vals[vals.length - 1], asOfLabel(d.asOf, d.freq)), chip('High', s.max, when(s.max)), chip('Low', s.min, when(s.min)), chip('Average', s.mean, '')];
+  return [chip('Latest', vals[vals.length - 1], asOfLabel(d.asOf, d.freq)), chip('High', s.max, when(s.max, 'high')), chip('Low', s.min, when(s.min, 'low')), chip('Average', s.mean, '')];
 }
 
 function historyCard(scopeH, owner) {
   const cache = new Map(), state = { series: 'DGS10', range: '5y' };
   let box = null, token = 0;
+  owner.add(() => { if (box) box.destroy(); });
   const stage = h('div', { class: 'rt-stage', 'aria-busy': 'false' }), chipRow = h('div', { class: 'rt-chips', 'aria-label': 'Summary of the visible range', role: 'group' });
   const note = h('p', { class: 'd-cap' }, NOTE[state.series]), status = h('p', { class: 'rt-vh', role: 'status', 'aria-live': 'polite' });
   const key = () => `${state.series}|${state.range}`;
@@ -53,7 +57,7 @@ function historyCard(scopeH, owner) {
     if (box) box.destroy();
     stage.replaceChildren(); box = null;
     if (!d.points || d.points.length < 2) { stage.append(h('p', { class: 'd-empty' }, 'Not enough data to draw this range.')); chipRow.replaceChildren(); return; }
-    box = chartBox(historySpec(d)); owner.add(box.destroy); stage.append(box.el);
+    box = chartBox(historySpec(d)); stage.append(box.el);
     chipRow.replaceChildren(...chips(d));
   };
   const busy = on => { stage.setAttribute('aria-busy', String(on)); stage.classList.toggle('loading', on); status.textContent = on ? 'Loading chart' : ''; };

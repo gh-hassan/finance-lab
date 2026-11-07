@@ -14,7 +14,7 @@ export async function api(name, params = {}, signal) {
   catch (e) { if (e && e.name === 'AbortError') throw e; throw new Error('Could not reach the data service. Check your connection and try again.'); }
   if (!(res.headers.get('content-type') || '').includes('json')) throw new Error('Live data is only available on the published site.');
   let body;
-  try { body = await res.json(); } catch (e) { throw new Error('The data service sent something unreadable. Try again in a moment.'); }
+  try { body = await res.json(); } catch (e) { if (e && e.name === 'AbortError') throw e; throw new Error('The data service sent something unreadable. Try again in a moment.'); }
   if (!res.ok) throw new Error((body && body.error) || 'Could not load that data. Try again in a moment.');
   return body;
 }
@@ -39,7 +39,7 @@ export const sourceLine = ({ source, asOf, url, live = true, extra }) => h('p', 
   h('span', { class: 'd-dot', 'aria-hidden': 'true' }),
   h('span', { class: 'd-srct' }, `${live ? 'Live from' : 'From'} ${source}${asOf ? ', checked ' + whenText(asOf) : ''}.`, extra ? ' ' : null, extra || null, url && /^https:\/\//.test(url) ? ' ' : null, url && /^https:\/\//.test(url) ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, 'Source ↗') : null));
 
-export const skeleton = (label = 'Loading') => h('div', { class: 'd-card', role: 'status', 'aria-live': 'polite', 'aria-label': label }, h('div', { class: 'd-skel' }, h('i', { class: 'd-big' }), h('i'), h('i'), h('i'), h('i')));
+export const skeleton = (label = 'Loading') => h('div', { class: 'd-card', role: 'status', 'aria-live': 'polite', 'aria-label': label }, h('div', { class: 'd-skel' }, h('span', { class: 'd-vh' }, label), h('i', { class: 'd-big' }), h('i'), h('i'), h('i'), h('i')));
 
 export const errorBox = (message, retry) => h('div', { class: 'd-err', role: 'alert' }, h('p', {}, message), retry ? h('button', { type: 'button', class: 'd-btn', onclick: retry }, 'Try again') : null);
 

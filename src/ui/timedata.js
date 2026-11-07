@@ -8,7 +8,8 @@ export async function memo(key, ttlMs, load) {
   const hit = store.get(key);
   if (hit && Date.now() - hit.at < ttlMs) return hit.value;
   const value = await load();
-  store.set(key, { at: Date.now(), value });
+  /* an answer marked stale is shown but never kept, so the next try asks again */
+  if (!(value && value.stale)) store.set(key, { at: Date.now(), value });
   return value;
 }
 

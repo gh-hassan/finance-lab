@@ -8,6 +8,21 @@
   "functions": {
     "api/edgar.js": {
       "maxDuration": 30
+    },
+    "api/macro.js": {
+      "maxDuration": 20
+    },
+    "api/factors.js": {
+      "maxDuration": 20
+    },
+    "api/world.js": {
+      "maxDuration": 20
+    },
+    "api/fx.js": {
+      "maxDuration": 20
+    },
+    "api/crypto.js": {
+      "maxDuration": 20
     }
   },
   "headers": [

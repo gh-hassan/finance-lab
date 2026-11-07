@@ -20,13 +20,18 @@ export function parseAmount(input: unknown): number | null {
   const neg = paren || /^[-−]/.test(s);
   s = s.replace(/^[-+−]/, '');
   if (!s || !/^[\d.,]+$/.test(s) || !/\d/.test(s)) return null;
+  if (/[.,]{2}/.test(s)) return null;
   const lastDot = s.lastIndexOf('.'), lastComma = s.lastIndexOf(',');
   let decimalAt = -1;
   if (lastDot >= 0 && lastComma >= 0) decimalAt = Math.max(lastDot, lastComma);
   else if (lastComma >= 0) decimalAt = (s.match(/,/g) || []).length > 1 || /^\d{1,3}(,\d{3})+$/.test(s) ? -1 : lastComma;
   else if (lastDot >= 0) decimalAt = (s.match(/\./g) || []).length > 1 ? -1 : lastDot;
+  /* with no decimal point, any separators must be proper thousands groups (1,234,567); "1.500" and "1,234,56" are ambiguous, so they are refused */
+  if (decimalAt < 0 && /[.,]/.test(s) && !/^\d{1,3}([.,]\d{3})+$/.test(s) && !/^\d{1,2}(,\d{2})+,\d{3}$/.test(s)) return null;
+  if (lastDot >= 0 && lastComma < 0 && (s.match(/\./g) || []).length === 1 && /^\d{1,3}\.\d{3}$/.test(s)) return null;
   const whole = decimalAt < 0 ? s : s.slice(0, decimalAt), frac = decimalAt < 0 ? '' : s.slice(decimalAt + 1);
   if (/[.,]/.test(frac) || (decimalAt >= 0 && whole.includes(s[decimalAt]))) return null;
+  if (/[.,]/.test(whole) && !/^\d{1,3}([.,]\d{3})+$/.test(whole) && !/^\d{1,2}(,\d{2})+,\d{3}$/.test(whole)) return null;
   const n = Number(`${whole.replace(/[.,]/g, '') || '0'}${frac ? '.' + frac : ''}`);
   if (!finite(n) || n > MAX_AMOUNT) return null;
   return neg && n !== 0 ? -n : n;
@@ -53,7 +58,9 @@ export function fmtRate(x: number | null | undefined): string {
 
 /** A converted amount: two decimals, or four for amounts under 1, with thousands commas. Beyond a quadrillion it gives up. */
 export function fmtAmount(x: number | null | undefined): string {
-  if (!finite(x) || Math.abs(x) >= 1e16) return '—';
+  if (!finite(x)) return '—';
+  if (Math.abs(x) >= 1e16) return x.toExponential(2).replace('e+', ' × 10^');
+  if (x !== 0 && Math.abs(x) < 0.0001) return x < 0 ? '−<0.0001' : '<0.0001';
   const a = Math.abs(x), [w, f = ''] = a.toFixed(a > 0 && a < 1 ? 4 : 2).split('.');
   return (x < 0 && Number(a.toFixed(a < 1 ? 4 : 2)) > 0 ? '−' : '') + group(w) + (f ? '.' + f : '');
 }

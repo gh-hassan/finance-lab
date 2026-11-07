@@ -68,7 +68,7 @@ export function coinCard({ onDays, days }) {
       const top = [h('h2', { class: 'd-h' }, name), sym ? h('span', { class: 'd-badge' }, sym) : null];
       const price = coin ? h('p', { class: 'cr-price' }, h('b', {}, fmtUsd(coin.price)), h('span', { class: coin.ch24 != null && coin.ch24 < 0 ? 'neg' : '' }, coin.ch24 == null ? '' : `${signedPct(coin.ch24 / 100)} in 24 hours`),
         coin.ath != null && coin.athChange != null ? h('small', {}, `Record high ${fmtUsd(coin.ath)}, now ${pct(Math.abs(coin.athChange) / 100, 0)} ${coin.athChange < 0 ? 'below' : 'above'} it`) : null) : null;
-      titleBox.replaceChildren(h('div', { class: 'd-row' }, coin ? badge(coin) : null, ...top), price);
+      fill(titleBox, h('div', { class: 'd-row' }, coin ? badge(coin) : null, ...top), price);
     },
     loading() { kill(); body.replaceChildren(skel('Loading price history')); },
     error(message, retry) { kill(); body.replaceChildren(errorBox(message, retry)); },

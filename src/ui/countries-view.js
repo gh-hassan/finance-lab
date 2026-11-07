@@ -8,11 +8,11 @@ export const PALETTE = ['c1', 'c4', 'c3', 'var(--lav)', 'ink', 'var(--coral)'];
 export const cv = c => (c.startsWith('var') ? c : `var(--${c})`);
 export const colorOf = (selected, code) => cv(PALETTE[Math.max(0, selected.indexOf(code)) % PALETTE.length]);
 
-const axisFmt = kind => v => (kind === 'usd' ? '$' + (Math.abs(v) >= 1000 ? Math.round(v / 1000) + 'K' : Math.round(v)) : kind === 'people' ? formatValue('people', v) : Math.round(v * 10) / 10 + '%');
+const axisFmt = kind => v => (kind === 'usd' ? '$' + (Math.abs(v) >= 1000 ? +(v / 1000).toFixed(1) + 'K' : Math.round(v)) : kind === 'people' ? formatValue('people', v) : Math.round(v * 10) / 10 + '%');
 
 function chartSpec(data, selected, ind) {
   const years = yearAxis(data.series), fmt = v => formatValue(ind.kind, v);
-  const series = selected.filter(c => (data.series[c] || []).length).map(c => ({ name: countryName(c), color: PALETTE[selected.indexOf(c) % PALETTE.length], pts: alignToYears(data.series[c], years) }));
+  const series = selected.filter(c => (data.series[c] || []).length >= 2).map(c => ({ name: countryName(c), color: PALETTE[selected.indexOf(c) % PALETTE.length], pts: alignToYears(data.series[c], years) }));
   return {
     series, h: 320, title: `${ind.label} over time`, yFmt: axisFmt(ind.kind), xFmt: v => String(Math.round(v)), hint: 'Slide across the chart to read each year.',
     readout: i => `<span class="rx">${years[i]}</span>` + series.map(s => `<span class="ri"><i style="background:${cv(s.color)}"></i>${esc(s.name)} <b>${esc(fmt(s.pts[i][1]))}</b></span>`).join('')
@@ -20,7 +20,7 @@ function chartSpec(data, selected, ind) {
 }
 
 function chartCard(data, selected, ind, scope) {
-  const spec = chartSpec(data, selected, ind), missing = selected.filter(c => !(data.series[c] || []).length);
+  const spec = chartSpec(data, selected, ind), missing = selected.filter(c => (data.series[c] || []).length < 2);
   if (!spec.series.length) return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, ind.label + ' over time'), h('p', { class: 'd-empty' }, 'The World Bank has no figures for these countries on this measure. Try different countries or another measure.'));
   const box = chartBox(spec); scope.add(box.destroy);
   return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, `${ind.label} over time`),

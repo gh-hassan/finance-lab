@@ -70,6 +70,11 @@ describe('reading the source', () => {
   });
 });
 
+describe('ambiguous or malformed amounts are refused, not guessed', () => {
+  it.each(['1..5', '1,,5', '1,234,56', '1.500', '1.2.3,4', ',', '.', '1,2,3'])('refuses %j', raw => { expect(parseAmount(raw)).toBeNull(); });
+  it.each([['1,500', 1500], ['1.500,25', 1500.25], ['1,500.25', 1500.25], ['1.5', 1.5], ['1500', 1500], ['12,3456', 12.3456]])('still reads %j', (raw, n) => { expect(parseAmount(raw as string)).toBe(n); });
+});
+
 describe('currency maths', () => {
   it.each([
     ['1234.56', 1234.56], ['1,234.56', 1234.56], ['1.234,56', 1234.56], ['1,234', 1234], ['1,5', 1.5], ['1.234.567', 1234567],
@@ -94,8 +99,8 @@ describe('currency maths', () => {
     expect(fmtRate(0.006316)).toBe('0.006316'); expect(fmtRate(18100)).toBe('18,100.00');
     ['x', NaN, null, 0, -2, Infinity].forEach(v => expect(fmtRate(v as any)).toBe('—'));
     expect(fmtAmount(1234567.891)).toBe('1,234,567.89'); expect(fmtAmount(0.5)).toBe('0.5000'); expect(fmtAmount(0)).toBe('0.00');
-    expect(fmtAmount(-1500)).toBe('−1,500.00'); expect(fmtAmount(-0.00001)).toBe('0.0000');
-    expect(fmtAmount(1e16)).toBe('—'); expect(fmtAmount(NaN)).toBe('—'); expect(fmtAmount(undefined)).toBe('—');
+    expect(fmtAmount(-1500)).toBe('−1,500.00'); expect(fmtAmount(-0.00001)).toBe('−<0.0001'); expect(fmtAmount(0.00004)).toBe('<0.0001'); expect(fmtAmount(0)).toBe('0.00'); expect(fmtAmount(1.2e20)).toMatch(/× 10\^/);
+    expect(fmtAmount(1e16)).toBe('1.00 × 10^16'); expect(fmtAmount(NaN)).toBe('—'); expect(fmtAmount(undefined)).toBe('—');
   });
   it('computes range statistics by hand', () => {
     const s = seriesStats([['a', 100], ['b', 120], ['c', 80], ['d', 110]]);

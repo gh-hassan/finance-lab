@@ -69,7 +69,8 @@ export function buildView(d, init, save, scope) {
   const box = chartBox(chartSpec(d, keys, rangeStart(d.months.length, range)));
   scope.add(box.destroy);
   const chips = h('div', { class: 'd-chips fac-chips', role: 'group', 'aria-label': 'Factors to show' });
-  const drawChips = () => chips.replaceChildren(...FACTORS.map(f => h('button', { type: 'button', class: 'd-chip', 'aria-pressed': String(keys.includes(f.key)), onclick: () => toggle(f.key) }, h('i', { class: 'fac-sw', style: `background:${cv(f.color)}` }), f.short)));
+  const drawChips = () => { const had = chips.contains(document.activeElement) ? document.activeElement.dataset.k : null; paintChips(); if (had) { const b = chips.querySelector(`[data-k="${had}"]`); if (b) b.focus(); } };
+  const paintChips = () => chips.replaceChildren(...FACTORS.map(f => h('button', { type: 'button', class: 'd-chip', 'data-k': f.key, 'aria-pressed': String(keys.includes(f.key)), onclick: () => toggle(f.key) }, h('i', { class: 'fac-sw', style: `background:${cv(f.color)}` }), f.short)));
   const toggle = k => { const next = keys.includes(k) ? keys.filter(x => x !== k) : FACTOR_KEYS.filter(x => keys.includes(x) || x === k); if (!next.length) return; keys = next; refresh(); };
   const cap = h('p', { class: 'd-cap', 'aria-live': 'polite' }), summary = h('p', { class: 'd-plain plain' }), statsHost = h('div'), calcHost = h('div'), tip = h('p', { class: 'd-cap' });
 
