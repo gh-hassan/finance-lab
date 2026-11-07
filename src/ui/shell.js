@@ -36,21 +36,30 @@ export function startApp(root) {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
   addEventListener('scroll', () => { if (!pop.hidden || !pop2.hidden) closeMenu(); }, { passive: true });
   addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
-  const MORE = [['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']];
-  const moreBtn = h('button', { class: 'pill', type: 'button', 'data-id': 'more', 'data-menu': 'more', 'aria-haspopup': 'true' }, h('span', { html: ICONS.scenarios }), h('em', {}, 'Scenarios'), h('span', { class: 'caret', html: '▾' }));
-  moreBtn.addEventListener('click', () => {
-    if (!pop2.hidden) { pop2.hidden = true; return; }
-    pop.hidden = true;
-    pop2.innerHTML = MORE.map(([href, ic, t, d]) => `<a href="${href}" data-link><span class="mi">${ICONS[ic]}</span><span><b>${t}</b><small>${d}</small></span></a>`).join('');
-    const b = moreBtn.getBoundingClientRect(), r = bar.getBoundingClientRect();
-    pop2.style.left = Math.max(8, Math.min(r.width - 336, b.left - r.left - 20)) + 'px';
-    pop2.hidden = false;
-  });
+  /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
+  const MENUS = {
+    learn: [['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
+    decide: [['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side']]
+  };
+  let openKey = '';
+  const dropBtn = (key, icon, label) => {
+    const btn = h('button', { class: 'pill', type: 'button', 'data-id': key, 'data-menu': key, 'aria-haspopup': 'true' }, h('span', { html: icon }), h('em', {}, label), h('span', { class: 'caret', html: '▾' }));
+    btn.addEventListener('click', () => {
+      if (!pop2.hidden && openKey === key) { pop2.hidden = true; return; }
+      pop.hidden = true; openKey = key;
+      pop2.innerHTML = MENUS[key].map(([href, ic, t, d]) => `<a href="${href}" data-link><span class="mi">${ICONS[ic]}</span><span><b>${t}</b><small>${d}</small></span></a>`).join('');
+      const bb = btn.getBoundingClientRect(), r = bar.getBoundingClientRect();
+      pop2.style.left = Math.max(8, Math.min(r.width - 336, bb.left - r.left - 20)) + 'px';
+      pop2.hidden = false;
+    });
+    return btn;
+  };
+  const learnBtn = dropBtn('learn', ICONS.learn, 'Learn'), decideBtn = dropBtn('decide', ICONS.scenarios, 'Decide');
   const navItems = [
     h('a', { class: 'pill on', href: '/', 'data-link': true, 'data-id': 'home' }, h('span', { html: ICONS.home }), h('em', {}, 'Home')),
-    h('a', { class: 'pill', href: '/learn', 'data-link': true, 'data-id': 'learn' }, h('span', { html: ICONS.learn }), h('em', {}, 'Learn')),
+    learnBtn,
     calcBtn,
-    moreBtn
+    decideBtn
   ];
 
   const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<img src="/logo.png" alt="" width="38" height="38">' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop, pop2);
@@ -121,7 +130,7 @@ export function navigate(path) {
 function route() {
   const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary';
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === (isLearn ? 'learn' : (isSc || isCmp || isGl) ? 'more' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', m ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl) ? 'learn' : (isSc || isCmp) ? 'decide' : 'home')));
   const rerender = () => route();
   if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
   else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
