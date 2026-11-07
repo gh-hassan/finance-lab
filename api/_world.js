@@ -1,7 +1,7 @@
 /* World Bank helpers: the lists of countries and indicators we allow, and a defensive reader for its answers. */
 import { HttpError } from './_http.js';
 
-export const COUNTRIES = ['US', 'CA', 'MX', 'BR', 'AR', 'CL', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'CH', 'SE', 'TR', 'ZA', 'NG', 'EG', 'SA', 'IN', 'CN', 'JP', 'KR', 'ID', 'AU', 'SG'];
+export const COUNTRIES = ['US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE', 'UY', 'EC', 'PY', 'BO', 'CR', 'PA', 'DO', 'GT', 'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'BE', 'AT', 'PT', 'GR', 'PL', 'CZ', 'HU', 'RO', 'UA', 'BG', 'HR', 'SK', 'SI', 'LT', 'LV', 'EE', 'IS', 'LU', 'RS', 'RU', 'TR', 'ZA', 'NG', 'EG', 'SA', 'AE', 'IL', 'QA', 'KW', 'OM', 'JO', 'LB', 'IQ', 'IR', 'MA', 'DZ', 'TN', 'KE', 'ET', 'GH', 'TZ', 'UG', 'CI', 'SN', 'AO', 'ZM', 'ZW', 'BW', 'NA', 'RW', 'CM', 'CD', 'MZ', 'MU', 'IN', 'CN', 'JP', 'KR', 'ID', 'AU', 'SG', 'PK', 'BD', 'LK', 'NP', 'VN', 'TH', 'PH', 'MY', 'NZ', 'HK', 'KZ', 'UZ', 'MN', 'KH', 'MM'];
 export const INDICATORS = {
   'NY.GDP.MKTP.KD.ZG': { label: 'Economic growth (GDP growth per year)', unit: '%' },
   'FP.CPI.TOTL.ZG': { label: 'Inflation (consumer prices, per year)', unit: '%' },

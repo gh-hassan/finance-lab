@@ -16,7 +16,7 @@
       "maxDuration": 20
     },
     "api/world.js": {
-      "maxDuration": 20
+      "maxDuration": 25
     },
     "api/fx.js": {
       "maxDuration": 20

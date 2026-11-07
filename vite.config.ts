@@ -19,7 +19,8 @@ const devApi = {
 
 export default defineConfig({
   plugins: [devApi],
-  build: { target: 'es2022', sourcemap: false },
+  /* flags are loaded one by one when shown, so none are packed into the script as base64 */
+  build: { target: 'es2022', sourcemap: false, assetsInlineLimit: (file: string) => (file.includes('/assets/flags/') ? false : undefined) },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],

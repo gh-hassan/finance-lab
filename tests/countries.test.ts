@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { COUNTRIES as SERVER_COUNTRIES, INDICATORS as SERVER_INDICATORS, parseCountries, parseWorldBank, latestOf, MAX_AGE } from '../api/_world.js';
 import handler from '../api/world.js';
 import {
@@ -109,12 +110,41 @@ describe('GET /api/world', () => {
     expect(m.calls[0]).toMatch(/^https:\/\/api\.worldbank\.org\/v2\/country\/US;DE;JP\/indicator\/FP\.CPI\.TOTL\.ZG\?format=json/);
   });
   it('accepts commas and lower case', async () => { ok(); const r = await call(handler, { indicator: 'SP.POP.TOTL', countries: 'us,de' }); expect(r.status).toBe(200); expect(Object.keys(r.body.series)).toEqual(['US', 'DE']); });
-  it('ranks every offered country with one call', async () => {
+  it('abandons a stalled World Bank request and tries once more', async () => {
+    vi.useFakeTimers();
+    try {
+      let n = 0;
+      vi.stubGlobal('fetch', (_url: string, init: any) => {
+        n++;
+        if (n === 1) return new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))));
+        return Promise.resolve({ ok: true, status: 200, headers: { get: () => null }, json: async () => wb([row('PK', NOW - 1, 3.5)]) });
+      });
+      const pending = call(handler, { indicator: 'FP.CPI.TOTL.ZG', countries: 'PK' });
+      await vi.advanceTimersByTimeAsync(6100);
+      const r = await pending;
+      expect(r.status).toBe(200); expect(n).toBe(2); expect(r.body.latest.PK.value).toBe(3.5);
+    } finally { vi.useRealTimers(); }
+  });
+  it('gives a friendly error when it stalls twice', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubGlobal('fetch', (_url: string, init: any) => new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })))));
+      const pending = call(handler, { indicator: 'FP.CPI.TOTL.ZG', countries: 'PK' });
+      await vi.advanceTimersByTimeAsync(18000);
+      const r = await pending;
+      expect(r.status).toBe(502); expect(r.body.error).toMatch(/slow|too long/); expect(r.headers['cache-control']).toBe('no-store');
+    } finally { vi.useRealTimers(); }
+  });
+  it('no longer offers a whole-world ranking request (that comes from a snapshot)', async () => {
     const m = ok();
-    const r = await call(handler, { indicator: 'FP.CPI.TOTL.ZG', view: 'ranking' });
-    expect(r.status).toBe(200); expect(Object.keys(r.body.latest)).toHaveLength(SERVER_COUNTRIES.length); expect(r.body.series).toBeUndefined();
-    expect(r.body.latest.US.value).toBe(3.1); expect(r.body.latest.CN).toBeNull(); expect(m.calls).toHaveLength(1);
-    expect(r.headers['cache-control']).toBe('s-maxage=86400, stale-while-revalidate=604800');
+    expect((await call(handler, { indicator: 'FP.CPI.TOTL.ZG', view: 'ranking' })).status).toBe(400);
+    expect((await call(handler, { indicator: 'FP.CPI.TOTL.ZG' })).status).toBe(400);
+    expect(m.calls).toHaveLength(0);
+  });
+  it('offers Pakistan and a hundred other countries', async () => {
+    const m = ok(); const r = await call(handler, { indicator: 'FP.CPI.TOTL.ZG', countries: 'PK;BD;LK' });
+    expect(r.status).toBe(200); expect(Object.keys(r.body.series)).toEqual(['PK', 'BD', 'LK']); expect(m.calls[0]).toContain('/country/PK;BD;LK/');
+    expect(SERVER_COUNTRIES.length).toBeGreaterThanOrEqual(100);
   });
   it('returns empty series when the source has nothing', async () => {
     mockFetch(() => ({ json: [{ page: 0, total: 0 }, null] }));
@@ -142,4 +172,20 @@ describe('GET /api/world', () => {
     mockFetch(() => ({ json: { weird: true } })); r = await call(handler, { indicator: 'FP.CPI.TOTL.ZG', countries: 'US' }); expect(r.status).toBe(502);
   });
   it('rejects POST', async () => { ok(); const r = await call(handler, { indicator: 'FP.CPI.TOTL.ZG', countries: 'US' }, 'POST'); expect(r.status).toBe(405); });
+});
+
+describe('countries snapshot', () => {
+  const snap = JSON.parse(readFileSync(new URL('../src/data/countries-latest.json', import.meta.url), 'utf8'));
+  it('has every indicator, every country and sane values', () => {
+    const NOWY = new Date().getFullYear();
+    expect(Object.keys(snap.latest).sort()).toEqual([...INDICATOR_IDS].sort());
+    for (const id of INDICATOR_IDS) {
+      expect(Object.keys(snap.latest[id]).sort(), id).toEqual([...SERVER_COUNTRIES].sort());
+      for (const v of Object.values<any>(snap.latest[id])) if (v) { expect(Number.isFinite(v.value)).toBe(true); expect(v.year).toBeGreaterThanOrEqual(NOWY - 10); expect(v.year).toBeLessThanOrEqual(NOWY); }
+    }
+  });
+  it('includes Pakistan with the main measures', () => {
+    for (const id of ['NY.GDP.MKTP.KD.ZG', 'FP.CPI.TOTL.ZG', 'SP.POP.TOTL']) expect(snap.latest[id].PK, id).not.toBeNull();
+    expect(snap.latest['SP.POP.TOTL'].PK.value).toBeGreaterThan(2e8);
+  });
 });

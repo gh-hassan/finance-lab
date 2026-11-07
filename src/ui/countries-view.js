@@ -2,6 +2,7 @@
 /* Countries compared: the results shown once data has loaded (chart, ranking, notes, calculator link). */
 import { h, esc, chartBox, sourceLine } from './dataui.js';
 import { sharePath } from './sharing.js';
+import { flag } from './flags.js';
 import { countryName, regionOf, indicatorOf, rankCountries, yearAxis, alignToYears, formatValue, fxInputs, CODES } from '../lib/countries';
 
 export const PALETTE = ['c1', 'c4', 'c3', 'var(--lav)', 'ink', 'var(--coral)'];
@@ -42,13 +43,13 @@ const cmp = (key, dir) => (a, b) => {
 function rankingCard(ranking, selected, ind) {
   const rows = rankCountries(ranking.latest), have = rows.filter(r => r.value != null).length;
   let key = 'rank', dir = 1;
-  const wrap = h('div', { class: 'd-tw', role: 'region', 'aria-label': `${ind.label}: latest figure for each country`, tabindex: '0' }), note = h('p', { class: 'd-cap', 'aria-live': 'polite' });
+  const wrap = h('div', { class: 'd-tw cty-tw', role: 'region', 'aria-label': `${ind.label}: latest figure for each country`, tabindex: '0' }), note = h('p', { class: 'd-cap', 'aria-live': 'polite' });
   const draw = () => {
     const sorted = rows.slice().sort(cmp(key, dir));
     const th = ([k, label]) => h('th', { scope: 'col', 'aria-sort': k === key ? (dir > 0 ? 'ascending' : 'descending') : 'none', class: k === 'country' ? '' : 'num' }, h('button', { type: 'button', class: 'cty-sort', onclick: () => { dir = k === key ? -dir : (k === 'value' ? -1 : 1); key = k; draw(); } }, label, h('span', { 'aria-hidden': 'true' }, k === key ? (dir > 0 ? ' ↑' : ' ↓') : '')));
     wrap.replaceChildren(h('table', { class: 'd-t cty-t' }, h('thead', {}, h('tr', {}, COLS.map(th))),
       h('tbody', {}, sorted.map(r => h('tr', { class: selected.includes(r.code) ? 'sel' : null },
-        h('th', { scope: 'row' }, countryName(r.code), selected.includes(r.code) ? h('span', { class: 'cty-tag' }, 'selected') : null),
+        h('th', { scope: 'row' }, flag(r.code, 'sm'), countryName(r.code), selected.includes(r.code) ? h('span', { class: 'cty-tag' }, 'selected') : null),
         h('td', {}, r.rank == null ? '—' : String(r.rank)), h('td', { class: r.value != null && r.value < 0 ? 'neg' : r.value == null ? 'na' : '' }, formatValue(ind.kind, r.value)),
         h('td', {}, r.year == null ? '—' : String(r.year)), h('td', { class: 'reg' }, regionOf(r.code)))))));
     note.textContent = `Sorted by ${COLS.find(c => c[0] === key)[1].toLowerCase()}, ${dir > 0 ? 'ascending' : 'descending'}.`;
@@ -68,7 +69,7 @@ function calcCard(inflation, selected) {
 }
 
 export function buildResults({ series, ranking, inflation }, selected, ind, scope) {
-  return h('div', { class: 'd-page' }, chartCard(series, selected, ind, scope), rankingCard(ranking, selected, ind),
+  return h('div', { class: 'd-page' }, series ? chartCard(series, selected, ind, scope) : null, rankingCard(ranking, selected, ind),
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'What this means for investors'), h('p', { class: 'd-plain plain' }, ind.investors)),
     calcCard(inflation, selected));
 }
