@@ -5,17 +5,19 @@ import '../src/modules/m3.js';
 import '../src/modules/m4.js';
 import '../src/modules/m5.js';
 import '../src/modules/m6.js';
+import '../src/modules/m7.js';
 import { MODS, type Values } from '../src/lib/registry';
 import { BEGINNER, keyCard, easyCard } from '../src/ui/beginner.js';
+import '../src/ui/beginner2.js';
 import { SCENES } from '../src/ui/scenes.js';
 
 const defaults = (m: (typeof MODS)[number]): Values => Object.fromEntries(m.fields.map(f => [f.id, f.v]));
 const get = (id: string) => MODS.find(m => m.id === id)!;
 
 describe('calculator registry', () => {
-  it('registers 23 calculators with unique ids', () => {
-    expect(MODS).toHaveLength(23);
-    expect(new Set(MODS.map(m => m.id)).size).toBe(23);
+  it('registers the calculators with unique ids', () => {
+    expect(MODS.length).toBeGreaterThanOrEqual(26);
+    expect(new Set(MODS.map(m => m.id)).size).toBe(MODS.length);
   });
   it('every calculator runs on its defaults without NaN in charts', () => {
     for (const m of MODS) {
