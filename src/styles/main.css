@@ -864,3 +864,30 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .lv-row{flex-wrap:wrap}.lv-in{flex:1 1 130px}.lv-row .btn{flex:0 0 auto}
 /* the tall digit wheels must never add scroll height to the panel that holds them */
 .tk-d{contain:paint}
+
+/* video tutorials */
+.vid-chips{margin:6px 0 4px}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:22px;margin-top:12px}
+.vid-card{padding:0;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
+.vid-thumb{position:relative;display:block;padding:0;border:0;background:var(--soft);aspect-ratio:16/9;cursor:pointer;overflow:hidden}
+.vid-thumb img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.vid-thumb:hover img{transform:scale(1.04)}
+.vid-play{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,transparent 50%,rgba(6,30,51,.45))}
+.vid-play i{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 8px 24px -6px rgba(6,30,51,.5);position:relative;transition:transform .2s}
+.vid-play i::after{content:'';position:absolute;left:23px;top:18px;border-left:18px solid #0A3558;border-top:11px solid transparent;border-bottom:11px solid transparent}
+.vid-thumb:hover .vid-play i{transform:scale(1.1)}
+.vid-info{padding:16px 18px 18px;display:grid;gap:6px;align-content:start}
+.vid-series{font:700 11.5px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--c1)}
+.vid-info h3{font:600 17px/1.3 var(--display);letter-spacing:-.03em}
+.vid-meta{color:var(--mute);font:500 13px var(--body)}
+.vid-desc{font:400 14px/1.5 var(--body);color:var(--ink);opacity:.85}
+.vid-act{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+.vid-rel{font:600 13.5px var(--body);color:var(--c1)}
+.vid-lock{overflow:hidden}
+.vid-modal{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px;background:rgba(6,20,36,.72);backdrop-filter:blur(6px);animation:pop .2s ease}
+.vid-box{width:min(960px,100%);display:grid;gap:12px}
+.vid-frame{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 80px -20px rgba(0,0,0,.7)}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;color:#fff}
+.vid-bar p{font:600 16px var(--body);flex:1 1 280px}.vid-bar>div{display:flex;gap:10px}
+.vid-chips{display:flex;flex-wrap:wrap;gap:10px}.vid-chips .pick{width:auto;padding:10px 18px;border-radius:999px;font:600 14px var(--body)}

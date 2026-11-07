@@ -9,6 +9,7 @@ export const ICONS = {
   glossary: svg('<path d="M4 19L8.500 6 13 19M6 15h5"/><path d="M16 8h4M16 12h4M16 16h4"/>'),
   quiz: svg('<circle cx="12" cy="12" r="8"/><path d="M9.500 12.200l1.900 1.900 3.300-3.800"/>'),
   cases: svg('<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5.500A1.500 1.500 0 0110.500 4h3A1.500 1.500 0 0115 5.500V7M4 12h16"/>'),
+  video: svg('<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M10.500 9.500l4 2.500-4 2.500z"/>'),
   search: svg('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>'),
   arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
   sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>'),

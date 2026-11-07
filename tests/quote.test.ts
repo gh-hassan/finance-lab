@@ -48,3 +48,29 @@ describe('quote endpoint', () => {
     const r = await call({ symbol: 'ZZZZ' }); expect(r.status).toBe(502); expect(r.body.error).toMatch(/404|No data/);
   });
 });
+
+// @ts-ignore plain JavaScript modules
+import { decode, parseFeed, VIDEO_ID } from '../api/_videos.js';
+import { relatedFor, splitTitle, watchUrl, embedUrl, thumbUrl } from '../src/ui/videos.js';
+
+const FEED = `<feed><entry><yt:videoId>abcdefghijk</yt:videoId><title>SmartWealth: Time Value of Money &amp; Interest</title><published>2026-10-23T10:00:00+00:00</published><media:group><media:description>Learn PV &amp; FV.
+Second line</media:description><media:community><media:statistics views="42"/></media:community></media:group></entry>
+<entry><yt:videoId>zzzzzzzzzzz</yt:videoId><title>SAFE MLO Exam Prep: PITI</title><published>2026-11-01T10:00:00+00:00</published></entry>
+<entry><yt:videoId>bad id!</yt:videoId><title>Broken</title><published>2026-11-02T10:00:00+00:00</published></entry></feed>`;
+describe('video feed', () => {
+  it('decodes entities and keeps only valid videos, newest first', () => {
+    expect(decode('A &amp; B &quot;x&quot; &#39;y&#39;')).toBe('A & B "x" \'y\'');
+    const v = parseFeed(FEED);
+    expect(v.map((x: any) => x.id)).toEqual(['zzzzzzzzzzz', 'abcdefghijk']);
+    expect(v[1].title).toBe('SmartWealth: Time Value of Money & Interest'); expect(v[1].views).toBe(42); expect(v[1].description).toContain('PV & FV');
+    expect(parseFeed('')).toEqual([]); expect(VIDEO_ID.test('abcdefghijk')).toBe(true); expect(VIDEO_ID.test('x')).toBe(false);
+  });
+  it('splits series from title and links related calculators', () => {
+    expect(splitTitle('SAFE MLO Exam Prep: LTV vs. CLTV')).toEqual({ series: 'SAFE MLO Exam Prep', title: 'LTV vs. CLTV' });
+    expect(splitTitle('No prefix here').series).toBe('Other');
+    expect(relatedFor('Time Value of Money (TVM) Introduction')!.href).toBe('/tvm'); expect(relatedFor('Mastering DCF Valuation')!.href).toBe('/dcf'); expect(relatedFor('Something unrelated')).toBeNull();
+  });
+  it('builds YouTube links that always play on YouTube', () => {
+    expect(watchUrl('abcdefghijk')).toBe('https://www.youtube.com/watch?v=abcdefghijk'); expect(embedUrl('abcdefghijk')).toContain('youtube-nocookie.com/embed/abcdefghijk'); expect(thumbUrl('abcdefghijk')).toContain('i.ytimg.com/vi/abcdefghijk');
+  });
+});
