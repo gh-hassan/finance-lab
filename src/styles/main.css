@@ -862,3 +862,5 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .lv-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font:500 14px var(--body)}.lv-grid dt{color:var(--mute)}.lv-grid dd{margin:0;font-family:var(--mono)}
 .lv-act{display:flex;flex-wrap:wrap;gap:8px}.lv-note{font:400 12.5px/1.4 var(--body);color:var(--mute)}
 .lv-row{flex-wrap:wrap}.lv-in{flex:1 1 130px}.lv-row .btn{flex:0 0 auto}
+/* the tall digit wheels must never add scroll height to the panel that holds them */
+.tk-d{contain:paint}

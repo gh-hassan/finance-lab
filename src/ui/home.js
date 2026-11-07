@@ -27,9 +27,7 @@ export function renderHome(main, go) {
   main.innerHTML = '';
   const hero = h('section', { class: 'hero reveal' },
     h('div', { class: 'hero-copy' },
-      h('p', { class: 'eyebrow' }, 'A free finance playground'),
       h('h1', { class: 'split', html: `${split('Money math,')}<br><em>${split('made playful.', 2)}</em>` }),
-      h('p', { class: 'lead' }, 'Calculators that explain themselves in plain words. Change a number and watch the answer update.'),
       h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },
       h('div', { class: 'float f1' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
