@@ -1,6 +1,7 @@
 // @ts-nocheck
 /* Plain-English layer for the calculators added after the first release. Same shape as the entries in beginner.js. */
 import { BEGINNER } from './beginner.js';
+import { nf } from '../lib/math';
 
 Object.assign(BEGINNER, {
   frontier: {
@@ -61,5 +62,72 @@ Object.assign(BEGINNER, {
     easy: [['EPS after the buyback', 'Profit per share afterwards', 'Fewer shares, same profit']],
     plain: (v, o, k) => [`${k.label.startsWith('Dividend') ? 'The two choices are equal for you.' : k.label + ' ' + k.value + '.'}`, 'A buyback can be kinder on tax; a dividend gives cash without selling shares.'],
     words: [['Dividend', 'Profit paid out to shareholders.'], ['Buyback', 'The company buys its own shares, so fewer remain.'], ['Payout ratio', 'Share of profit returned to owners.']]
+  }
+});
+
+Object.assign(BEGINNER, {
+  curve: {
+    ask: 'What do interest rates look like for different lengths of time?', essential: ['par', 'face', 'cpn', 'yrs'],
+    labels: { par: 'Rate for 1 year, 2 years, 3 years… (%)', face: 'Face value of the bond', cpn: 'Yearly interest the bond pays', yrs: 'Years until the bond ends' },
+    tips: { par: 'One rate per year, separated by commas, for example 4, 4.2, 4.4.', face: 'What the bond repays at the end.', cpn: 'The yearly payment as a percent of the face value.', yrs: 'How long until the bond repays.' },
+    easy: [['Curve shape', 'Shape of the rate curve', 'Rising is normal, falling is a warning'], ['Macaulay duration of your bond', 'Average wait for your money', 'In years']],
+    plain: (v, o, k) => [`Using today's rates for each length of time, this bond is worth about ${k.value}.`, `Longer money usually earns a higher rate. The curve also shows the rates the market expects in the future.`],
+    words: [['Spot rate', 'The rate for lending from today to a set date.'], ['Forward rate', 'The rate the market expects for a future year.'], ['Duration', 'How long you wait on average to get your money back.']]
+  },
+  futures: {
+    ask: 'What should a future price be, and how do I hedge?', essential: ['S', 'r', 'T', 'mkt', 'expo', 'cv', 'rho', 'sdS', 'sdF'],
+    labels: { S: 'Price today', r: 'Safe interest rate', T: 'Time until delivery', mkt: 'Price quoted in the market', expo: 'Value you want to protect', cv: 'Value of one contract', rho: 'How closely they move together', sdS: 'How bumpy your holding is (%)', sdF: 'How bumpy the future is (%)' },
+    tips: { S: 'What it costs right now.', r: 'What cash earns with no risk.', T: 'In years. 0.5 is six months.', mkt: 'The price you can lock in today for later.', expo: 'The amount at risk of falling.', cv: 'What one contract is worth.', rho: '1 means they move together exactly.', sdS: 'Yearly ups and downs of your holding.', sdF: 'Yearly ups and downs of the future.' },
+    easy: [['Arbitrage', 'Free money?', 'Whether the quoted price is off'], ['Contracts to sell', 'Contracts to sell', 'To cancel out the risk']],
+    plain: (v, o, k) => [`A fair price for delivery later is about ${k.value}.`, `${o.cards[1].value === 'None' ? 'The quoted price matches, so there is no free profit.' : 'The quoted price is off, which would allow a riskless profit.'}`],
+    words: [['Forward', 'An agreement to buy or sell at a set price later.'], ['Hedge', 'A trade that cancels out a risk you already have.'], ['Basis', 'The gap between the future price and today\'s price.']]
+  },
+  swaps: {
+    ask: 'What is a fair fixed rate, and what is my swap worth now?', essential: ['par', 'term', 'notional', 'fixed'],
+    labels: { par: 'Rate for 1 year, 2 years, 3 years… (%)', term: 'Years of the swap', notional: 'Amount the rates apply to', fixed: 'Fixed rate you pay now' },
+    tips: { par: 'One rate per year, separated by commas.', term: 'How long the swap lasts.', notional: 'The amount payments are worked out on. It is never exchanged.', fixed: 'The rate already agreed in an existing swap.' },
+    easy: [['Value of your swap (to fixed payer)', 'What your swap is worth', 'Positive means you are ahead']],
+    plain: (v, o, k) => [`A fair fixed rate for this swap today is ${k.value}.`, `If you already pay a different fixed rate, your swap is worth ${o.cards[1].value} to you.`],
+    words: [['Swap', 'Two sides trade payments, usually fixed for floating.'], ['Notional', 'The amount payments are based on.'], ['Floating rate', 'A rate that changes with the market.']]
+  },
+  varcalc: {
+    ask: 'How much could I lose in a bad period?', essential: ['val', 'mu', 'sd', 'days', 'conf', 'hist'],
+    labels: { val: 'Money invested', mu: 'Expected yearly return', sd: 'How bumpy it is each year', days: 'How long you hold it (days)', conf: 'How sure you want to be (%)', hist: 'Past returns, if you have them (%)' },
+    tips: { val: 'The total you have at risk.', mu: 'The average yearly return you expect.', sd: 'Bigger means bigger swings.', days: 'Market days, about 252 in a year.', conf: '95 means the loss should be worse only 1 time in 20.', hist: 'Optional. A list separated by commas.' },
+    easy: [['Expected shortfall', 'Average loss in the worst cases', 'Beyond the main line'], ['Historical VaR', 'Loss using your past returns', 'Based on what actually happened']],
+    plain: (v, o, k) => [`With ${v.conf}% confidence you should not lose more than ${k.value} over ${v.days} days.`, `The loss is worse only about ${nf(100 - v.conf, 1)}% of the time, and when it is, it averages ${o.cards[1].value}.`],
+    words: [['Value at risk', 'The loss you should only exceed rarely.'], ['Confidence level', 'How sure you want the answer to be.'], ['Expected shortfall', 'The average loss when it is worse than the main line.']]
+  },
+  altman: {
+    ask: 'How close is this company to going bust?', essential: ['model', 'wc', 're', 'ebit', 'eq', 'liab', 'sales', 'assets'],
+    labels: { model: 'What kind of company?', wc: 'Short-term assets minus short-term debts ($M)', re: 'Profit kept over the years ($M)', ebit: 'Operating profit ($M)', eq: 'Value of the shares ($M)', liab: 'Everything it owes ($M)', sales: 'Yearly sales ($M)', assets: 'Everything it owns ($M)' },
+    tips: { model: 'Pick the closest match. Listed manufacturers use market value.', wc: 'Also called working capital.', re: 'Accumulated profits not paid out.', ebit: 'Profit before interest and tax.', eq: 'Market value for a listed company, book value otherwise.', liab: 'Total liabilities.', sales: 'Total revenue for the year.', assets: 'Total assets.' },
+    easy: [['Z-score', 'Health score', 'Higher is safer']],
+    plain: (v, o, k) => [`The health score is ${k.value}, which is the ${k.sub.toLowerCase()}.`, 'Below the low line means high risk of failing. Above the high line means low risk.'],
+    words: [['Z-score', 'A single number summarising financial health.'], ['Distress', 'A real risk of the company failing to pay its debts.'], ['Working capital', 'Short-term assets minus short-term debts.']]
+  },
+  lbo: {
+    ask: 'What return can a buyer make with borrowed money?', essential: ['ebitda', 'entry', 'debtX', 'rate', 'g', 'exit', 'yrs'],
+    labels: { ebitda: 'Yearly operating profit ($M)', entry: 'Price paid (times profit)', debtX: 'Money borrowed (times profit)', rate: 'Interest on the loan', g: 'Profit growth each year', exit: 'Sale price (times profit)', yrs: 'Years before selling' },
+    tips: { ebitda: 'Profit before interest, tax and depreciation.', entry: 'For example 8 means eight times the yearly profit.', debtX: 'How much of the price is borrowed.', rate: 'What the lenders charge.', g: 'How fast the business grows.', exit: 'What the buyer sells for, in the same units.', yrs: 'How long the buyer owns it.' },
+    easy: [['Equity out at the sale', 'Money back at the sale', 'After repaying the loan']],
+    plain: (v, o, k) => [`The buyer could earn about ${k.value} a year on the money they put in.`, 'Most of the return usually comes from growth and from paying down the loan.'],
+    words: [['LBO', 'Buying a company mostly with borrowed money.'], ['IRR', 'The yearly return on the money put in.'], ['Cash sweep', 'Using all spare cash to repay debt.']]
+  },
+  retire: {
+    ask: 'Will I have enough to retire?', essential: ['age', 'ret', 'live', 'saved', 'add', 'pre', 'post', 'inf', 'inc'],
+    labels: { age: 'Your age now', ret: 'Age you want to stop working', live: 'Age to plan for', saved: 'Saved so far', add: 'Saved each year', pre: 'Yearly return while saving', post: 'Yearly return in retirement', inf: 'Price rises each year', inc: 'Yearly income you want (today\'s money)' },
+    tips: { age: 'How old you are today.', ret: 'When you plan to stop.', live: 'How long to make the money last.', saved: 'What you already have.', add: 'What you will add each year.', pre: 'What your savings earn while you work.', post: 'What your savings earn after you stop.', inf: 'Inflation, which shrinks what money buys.', inc: 'What you want to spend each year, in today\'s prices.' },
+    easy: [['Pot at retirement', 'Savings when you stop', 'What you will have'], ['Needed at retirement', 'Savings you need', 'To pay your income']],
+    plain: (v, o, k) => [`${k.label === 'You are on track' ? 'You look on track.' : 'You may fall short.'} ${k.label === 'You are on track' ? '' : 'The gap is ' + k.value + '.'}`.trim(), `Your savings could reach ${o.cards[1].value} at ${v.ret}. You would need about ${o.cards[2].value}.`],
+    words: [['Nest egg', 'The savings you retire with.'], ['Inflation', 'Prices rising over time.'], ['Real return', 'The return after inflation.']]
+  },
+  factors: {
+    ask: 'What should this investment earn for its risks?', essential: ['rf', 'names', 'prem', 'beta', 'actual'],
+    labels: { rf: 'Safe return', names: 'The kinds of risk', prem: 'Extra return each risk has paid (%)', beta: 'How much your investment has of each', actual: 'What it actually earned' },
+    tips: { rf: 'What cash earns with no risk.', names: 'For example Market, Size, Value, Momentum.', prem: 'A list, one per risk, in the same order.', beta: 'A list, one per risk. Negative means the opposite.', actual: 'The return it really earned.' },
+    easy: [['Alpha versus the factor model', 'Beat the odds?', 'Positive means it earned more than its risks explain']],
+    plain: (v, o, k) => [`For the risks it carries, this investment should earn about ${k.value} a year.`, `Compared with its actual return, the gap is ${o.cards[2].value}.`],
+    words: [['Factor', 'A kind of risk that earns extra return.'], ['Alpha', 'Return that the risks do not explain.'], ['Loading', 'How strongly an investment moves with a factor.']]
   }
 });

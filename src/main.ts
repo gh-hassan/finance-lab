@@ -7,6 +7,7 @@ import './modules/m5.js';
 import './modules/m6.js';
 import './modules/m7.js';
 import './modules/m8.js';
+import './modules/m9.js';
 import './ui/beginner2.js';
 import { startApp } from './ui/shell.js';
 

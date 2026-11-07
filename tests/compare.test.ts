@@ -7,6 +7,7 @@ import '../src/modules/m5.js';
 import '../src/modules/m6.js';
 import '../src/modules/m7.js';
 import '../src/modules/m8.js';
+import '../src/modules/m9.js';
 import { comparable, parseValue, winner } from '../src/ui/compare.js';
 import { glossary } from '../src/ui/glossary.js';
 import { unitize } from '../src/ui/units.js';
