@@ -77,10 +77,10 @@ export function renderScenarios(main) {
     tableRes.innerHTML = '';
     m.outputs.forEach(o => {
       const oc = outcome(m, o.id, r, st.probs);
-      const cell = (x, cls) => `<td class="${cls || ''}"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</td>`;
+      const cell = (x, cls) => `<td class="${cls || ''}"><span class="vw"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</span></td>`;
       const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
       tableRes.append(tr);
-      tr.querySelectorAll('td > b').forEach((el, i) => tick(el, el.textContent, `sc:${st.id}:${o.id}:${i}`));
+      tr.querySelectorAll('td b').forEach((el, i) => tick(el, el.textContent, `sc:${st.id}:${o.id}:${i}`));
     });
   }
 
