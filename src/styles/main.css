@@ -852,3 +852,13 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .case-think summary{font:600 15px var(--body);color:var(--mute)}.case-think p{margin-top:8px;color:var(--ink)}
 
 .qm .btn{justify-self:start}
+
+/* live market data card */
+.live{display:grid;gap:10px;padding:14px 16px;border-radius:16px;background:var(--soft);margin-bottom:6px}
+.lv-t{font:600 14px var(--body)}
+.lv-row{display:flex;gap:8px}.lv-in{flex:1;min-width:0;font:500 15px var(--mono);text-transform:uppercase;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel-solid);color:var(--ink)}
+.lv-st{font:500 13px var(--body);color:var(--mute);min-height:0}.lv-st:empty{display:none}
+.lv-out{display:grid;gap:8px}.lv-name{font:600 15px var(--body)}
+.lv-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font:500 14px var(--body)}.lv-grid dt{color:var(--mute)}.lv-grid dd{margin:0;font-family:var(--mono)}
+.lv-act{display:flex;flex-wrap:wrap;gap:8px}.lv-note{font:400 12.5px/1.4 var(--body);color:var(--mute)}
+.lv-row{flex-wrap:wrap}.lv-in{flex:1 1 130px}.lv-row .btn{flex:0 0 auto}

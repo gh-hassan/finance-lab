@@ -5,6 +5,7 @@ import { XY, h, esc, store, donutHtml, countUp, burst } from './visuals.js';
 import { tick } from './ticker.js';
 import { ASSUMPTIONS } from './assumptions.js';
 import { readShared, toolsBar } from './sharing.js';
+import { liveCard } from './livedata.js';
 import { UNIT_LIST, fieldsHaveUnits, isUnitField, unitFactor, unitize } from './units.js';
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
@@ -64,6 +65,12 @@ export function mountModule(m, main, onMode) {
   const read = f => { const r = refs[f.id]; state[f.id] = f.type === 'select' || f.type === 'text' ? r.input.value : (Number.isFinite(r.input.valueAsNumber) ? r.input.valueAsNumber : 0); store.set(stateKey, state); schedule(); };
   const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => update(false)); };
   inputsEl.append(h('div', { class: 'ihead' }, h('h2', {}, beginner ? 'Play with these' : 'Inputs'), h('button', { class: 'btn small', type: 'button', onclick: () => { store.del(key); store.del(sKey); onMode(); } }, 'Reset')));
+  const live = liveCard(m.id, vals => {
+    let n = 0;
+    Object.entries(vals).forEach(([fid, val]) => { const ref = refs[fid]; if (ref && val != null) { ref.input.value = val; ref.input.dispatchEvent(new Event('input', { bubbles: true })); n++; } });
+    return n;
+  });
+  if (live) inputsEl.append(live);
   fieldList.forEach(f => {
     const id = `f_${m.id}_${f.id}`, wrap = h('div', { class: 'fld' }), label = U((beginner && B.labels && B.labels[f.id]) || f.label), tip = beginner && U(f.tip || (B.tips && B.tips[f.id]));
     const tipEl = tip ? h('small', { class: 'tip', hidden: true }, tip) : null;

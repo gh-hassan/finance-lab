@@ -1,6 +1,6 @@
 # SmartWealth
 
-Twenty-three finance and statistics calculators for MBA students and beginners. Every calculator has:
+Thirty-six finance and statistics calculators for MBA students and beginners. Every calculator has:
 
 - **Beginner mode:** one plain-English question, a few friendly inputs, a big answer, one animated chart, and a short glossary.
 - **Pro mode:** every input, all results, step-by-step workings with your numbers, tables and the formulas behind it.
@@ -9,7 +9,17 @@ Twenty-three finance and statistics calculators for MBA students and beginners. 
 - **Learn:** short pictures of the basic ideas including a "Chance and numbers" chapter (averages, spread, the bell curve, probability, correlation, beta, risk simulation).
 - **Stats toolkit:** describe a list of numbers, correlation and beta, chance of a big move (Value at Risk), and expected value of a bet.
 
-Calculators: time value of money, interest rates, annuities, loan amortization, bonds, stock valuation (DDM), DCF, capital budgeting, WACC, capital structure, break-even, working capital, CAPM, portfolio theory, return statistics, options (Black-Scholes), ratios and DuPont, FX and parity, M&A accretion/dilution.
+Calculators: time value of money, interest rates, annuities, loan amortization, bonds, yield curve and forward rates, stock valuation (DDM), DCF, comparable companies, capital budgeting, WACC, capital structure, leveraged buyout, lease vs buy and depreciation, dividends vs buybacks, break-even, working capital, three-statement model, CAPM, portfolio theory, multi-asset efficient frontier, factor models, return statistics, value at risk, options (Black-Scholes), option strategies, binomial trees, futures and hedging, interest rate swaps, ratios and DuPont, credit health (Altman Z), FX and parity, M&A accretion/dilution, retirement planning, and the statistics toolkit.
+
+Around the calculators:
+
+- **Compare:** two versions of a calculator side by side, with the better one highlighted.
+- **Quiz:** rounds of ten questions with fresh numbers, instant explanations and saved progress.
+- **Cases:** six business situations that open calculators with the case numbers filled in.
+- **Glossary:** every term in plain words, searchable, with hover cards in lessons.
+- **Assumptions and method** under every result, plus **share link, CSV download and print/PDF**.
+- **Live stock lookup** (price, beta, dividend) in the CAPM, WACC, DDM and portfolio calculators, via the `api/quote.js` serverless function.
+- **Units:** dollars, thousands, millions or billions on calculators that use amounts.
 
 ## Run it
 
@@ -23,7 +33,7 @@ npm run build      # type-check + production build into dist/
 
 ## Deploy to Vercel
 
-Vercel detects Vite automatically. `vercel.json` rewrites every path to `index.html` so links like `/loan` work on refresh.
+Vercel detects Vite automatically. `vercel.json` rewrites every path except `/api/*` and assets to `index.html` so links like `/loan` work on refresh. `api/quote.js` runs as a Vercel serverless function and needs no keys.
 
 1. Push this folder to a GitHub repository.
 2. In Vercel choose **Add New → Project**, import the repository, and accept the defaults (build command `npm run build`, output `dist`).
