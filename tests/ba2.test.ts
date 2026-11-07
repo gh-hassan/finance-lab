@@ -156,3 +156,19 @@ describe('robustness: no key sequence can break the calculator', () => {
     });
   });
 });
+
+import { EXAMPLES, stepKeys } from '../src/ui/ba2guide.js';
+describe('the how-to lessons give the answers they promise', () => {
+  EXAMPLES.forEach((ex: any) => {
+    it(ex.title, () => {
+      let s = initial();
+      ex.steps.forEach((st: any) => { stepKeys(st).forEach((k: string) => { s = press(s, k); }); });
+      const v = view(s);
+      expect(`${v.label} ${v.value}`.trim(), ex.title).toBe(ex.expect);
+    });
+  });
+  it('every step has words and at least one key press, and no lesson is empty', () => {
+    expect(EXAMPLES.length).toBeGreaterThanOrEqual(8);
+    EXAMPLES.forEach((ex: any) => { expect(ex.steps.length).toBeGreaterThan(2); ex.steps.forEach((st: any) => { expect(st.parts.some((p: any) => p.text)).toBe(true); expect(stepKeys(st).length).toBeGreaterThan(0); }); });
+  });
+});

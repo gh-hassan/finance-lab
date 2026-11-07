@@ -1,4 +1,4 @@
-/** Key-by-key engine for a BA II Plus Professional style financial calculator. `press` is a pure function: the old state in, a new state out.
+/** Key-by-key engine for a BA II Plus Professional financial calculator. `press` is a pure function: the old state in, a new state out.
  *  Independent training tool, not affiliated with or endorsed by Texas Instruments. */
 import * as M from './ba2math';
 

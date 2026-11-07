@@ -1,4 +1,4 @@
-/** Financial maths behind the BA II Plus style calculator. Pure functions with the same conventions as the handheld:
+/** Financial maths behind the BA II Plus calculator. Pure functions with the same conventions as the handheld:
  *  cash you receive is positive, cash you pay is negative, rates are entered in percent. */
 import { findRoot, irr as irrOf, mean, stdev } from './math';
 
