@@ -39,3 +39,21 @@
 .pl-live i{width:9px;height:9px;border-radius:50%;background:var(--mute)}
 .pl-live.on i{background:var(--good);animation:dlive 2.4s ease-out infinite}
 @media (max-width:640px){.pl-row{grid-template-columns:minmax(0,1fr) 64px auto}.pl-row svg.spark{width:64px}.pl-card .pl-p{font-size:20px}}
+/* plain-English helpers */
+.pl-short{padding:14px 18px;border-radius:16px;background:color-mix(in srgb,var(--c1) 12%,var(--panel-solid));border:1px solid color-mix(in srgb,var(--c1) 30%,transparent);font:600 16px/1.5 var(--body);max-width:80ch}
+.pl-intro{display:grid;gap:14px}
+.pl-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:st}
+.pl-steps li{counter-increment:st;position:relative;padding:14px 16px 14px 52px;border-radius:16px;background:var(--soft);line-height:1.55;font-size:14.5px}
+.pl-steps li::before{content:counter(st);position:absolute;left:14px;top:13px;width:26px;height:26px;border-radius:50%;background:var(--pill-on);color:var(--pill-on-text);display:grid;place-items:center;font:700 13px var(--body)}
+.pl-steps b{display:block;font-size:15px;margin-bottom:2px}
+.pl-legend{display:flex;flex-wrap:wrap;gap:8px 18px;font:600 13.5px var(--body)}
+.pl-legend span{display:inline-flex;align-items:center;gap:7px}.pl-legend i{width:14px;height:14px;border-radius:5px;display:inline-block}
+.pl-legend .g{background:color-mix(in srgb,var(--good) 55%,var(--panel-solid))}.pl-legend .r{background:color-mix(in srgb,var(--bad) 55%,var(--panel-solid))}
+.pl-cover{padding:12px 16px;border-radius:14px;background:var(--soft);font-size:14px;line-height:1.55}
+.pl-dl{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:8px 18px;margin:0}
+.pl-dl dt{font-weight:700}.pl-dl dd{margin:0;color:var(--ink);line-height:1.5}
+@media (max-width:640px){.pl-dl{grid-template-columns:minmax(0,1fr)}.pl-dl dd{margin-bottom:6px}}
+.pl-row small .m{color:var(--mute)}
+.pl-sub3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+@media (max-width:1000px){.pl-sub3{grid-template-columns:minmax(0,1fr)}}
+.pl-sub3 h3{font:700 14px var(--body);margin:0 0 6px}

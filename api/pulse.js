@@ -4,9 +4,10 @@
    Data comes from Yahoo Finance's public batch chart endpoint (unofficial, delayed). Pakistan data is end of day only: the Pakistan Stock Exchange does not
    allow its live data to be redistributed without a licence, so we do not use its portal. The student only chooses a market; every symbol is ours. */
 import { route, pick, getJson, HttpError, cached } from './_http.js';
-import { MARKETS, MARKET_IDS, BATCH, chunk, yahooSymbol, parseSpark, buildUs, buildPk } from './_pulse.js';
+import { MARKETS, MARKET_IDS, BATCH, SCREENERS, chunk, yahooSymbol, parseSpark, buildUs, buildPk, parseScreener } from './_pulse.js';
 
 const HOST = 'https://query1.finance.yahoo.com/v8/finance/spark';
+const SCREEN = id => `https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=${id}&count=50`;
 const KEEP_MS = { us: 45e3, pakistan: 10 * 60e3 };
 const memo = new Map();
 
@@ -16,11 +17,18 @@ async function batch(symbols, market, signal) {
   catch (e) { if (e && e.name === 'AbortError') throw e; return {}; }
 }
 
+/** The day's biggest movers across the whole US market. If this extra call fails the page simply goes without it. */
+async function wide(signal) {
+  const entries = await Promise.all(Object.entries(SCREENERS).map(async ([k, id]) => { try { return [k, parseScreener(await getJson(SCREEN(id), { signal }))]; } catch (e) { if (e && e.name === 'AbortError') throw e; return [k, null]; } }));
+  const out = Object.fromEntries(entries.filter(([, v]) => v && v.length));
+  return Object.keys(out).length ? out : null;
+}
+
 async function load(id, signal) {
-  const market = MARKETS[id], parts = await Promise.all(chunk(market.symbols, BATCH).map(g => batch(g, market, signal)));
+  const market = MARKETS[id], [parts, whole] = await Promise.all([Promise.all(chunk(market.symbols, BATCH).map(g => batch(g, market, signal))), id === 'us' ? wide(signal) : null]);
   const parsed = Object.assign({}, ...parts), built = id === 'us' ? buildUs(parsed) : buildPk(parsed);
   if (built.items.length < (id === 'us' ? 12 : 15)) throw new HttpError(502, 'The market data source is not answering right now. Try again in a moment.');
-  return { market: id, tz: market.tz, granularity: market.granularity, count: built.items.length, requested: market.symbols.length, lastBar: built.lastBar, items: built.items, asOf: new Date().toISOString(), source: 'Yahoo Finance public chart data (delayed, unofficial)' };
+  return { market: id, tz: market.tz, granularity: market.granularity, count: built.items.length, requested: market.symbols.length, lastBar: built.lastBar, items: built.items, ...(whole ? { wide: whole } : {}), asOf: new Date().toISOString(), source: 'Yahoo Finance public chart data (delayed, unofficial)' };
 }
 
 export const resetCache = () => memo.clear();

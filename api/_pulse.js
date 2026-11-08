@@ -110,7 +110,24 @@ AGP|AGP Limited|Pharma
 PAEL|Pak Elektron|Industrials
 TGL|Tariq Glass|Industrials
 PKGS|Packages Limited|Industrials
-CEPB|Century Paper & Board|Industrials`).map(r => ({ ...r, yahoo: r.symbol + '.KA' }));
+CEPB|Century Paper & Board|Industrials
+AIRLINK|Air Link Communication|Technology
+BOP|Bank of Punjab|Banks
+CNERGY|Cnergyico|Energy
+CPHL|Citi Pharma|Pharma
+FCEPL|FrieslandCampina Engro|Consumer
+LOTCHEM|Lotte Chemical Pakistan|Fertilizer and chemicals
+MUGHAL|Mughal Iron & Steel|Steel
+NATF|National Foods|Consumer
+NCPL|Nishat Chunian Power|Power
+PIBTL|Pakistan International Bulk Terminal|Industrials
+PRL|Pakistan Refinery|Energy
+PTC|Pakistan Telecommunication|Telecom
+SAZEW|Sazgar Engineering|Autos
+TPLP|TPL Properties|Real estate
+WTL|WorldCall Telecom|Telecom
+TREET|Treet Corporation|Consumer
+HASCOL|Hascol Petroleum|Energy`).map(r => ({ ...r, yahoo: r.symbol + '.KA' }));
 
 export const MARKETS = { us: { symbols: US, range: '1d', interval: '5m', tz: 'America/New_York', granularity: '5min' }, pakistan: { symbols: PK, range: '1mo', interval: '1d', tz: 'Asia/Karachi', granularity: 'day' } };
 export const MARKET_IDS = Object.keys(MARKETS);
@@ -170,4 +187,23 @@ export function buildPk(parsed, list = PK) {
   }
   const last = Math.max(0, ...Object.values(parsed).map(p => p.times[p.times.length - 1]));
   return { items, lastBar: last || null };
+}
+
+/* ---- the whole US market: Yahoo's own lists of the day's biggest movers ---- */
+export const SCREENERS = { gainers: 'day_gainers', losers: 'day_losers', active: 'most_actives' };
+const US_EXCHANGES = new Set(['NYQ', 'NMS', 'NGM', 'NCM', 'ASE', 'PCX', 'BTS']);
+
+/** Reads one screener answer. Only real US-listed shares that are big and busy enough to matter are kept: worth at least $2 billion, priced at $5 or more, over a million shares traded. */
+export function parseScreener(json, { minCap = 2e9, minPrice = 5, minVolume = 1e6, limit = 8 } = {}) {
+  const quotes = json && json.finance && Array.isArray(json.finance.result) && json.finance.result[0] && json.finance.result[0].quotes;
+  if (!Array.isArray(quotes)) throw new HttpError(502, 'The market data source sent something we could not read.');
+  const out = [];
+  for (const q of quotes) {
+    if (!q || q.quoteType !== 'EQUITY' || !US_EXCHANGES.has(q.exchange) || !/^[A-Z.\-]{1,6}$/.test(String(q.symbol))) continue;
+    const price = q.regularMarketPrice, chg = q.regularMarketChangePercent, vol = q.regularMarketVolume, cap = q.marketCap;
+    if (!fin(price) || !fin(chg) || !fin(vol) || !fin(cap) || cap < minCap || price < minPrice || vol < minVolume) continue;
+    out.push({ symbol: q.symbol, name: String(q.shortName || q.longName || q.symbol).slice(0, 36), price: round(price, 2), chg: round(chg / 100, 5), volume: Math.round(vol), cap: Math.round(cap) });
+    if (out.length >= limit) break;
+  }
+  return out;
 }
