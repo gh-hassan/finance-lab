@@ -87,3 +87,53 @@ export function parseMoves(now, then, base) {
   moves.sort((x, y) => size(y) - size(x));
   return { date: a.date, prevDate: b.date, moves: moves.slice(0, 10) };
 }
+
+/* ---- sources beyond the ECB (it publishes only about 30 currencies) ---- */
+
+/** The oldest date the community currency-api dataset has. */
+export const FAWAZ_FIRST = '2024-03-02';
+
+/** open.er-api.com answer: { result, time_last_update_unix, rates:{ CODE: n } } becomes { date, rates } with the base included. */
+export function parseErRates(json, base) {
+  if (!json || typeof json !== 'object' || json.result !== 'success' || !json.rates || typeof json.rates !== 'object' || Array.isArray(json.rates)) throw bad();
+  const unix = Number(json.time_last_update_unix), date = Number.isFinite(unix) && unix > 0 ? isoDay(new Date(unix * 1000)) : isoDay(new Date());
+  const rates = {};
+  for (const [k, v] of Object.entries(json.rates)) if (/^[A-Z]{3}$/.test(k) && goodRate(v)) rates[k] = v;
+  if (!Object.keys(rates).length) throw bad();
+  return { base, date, rates: { ...rates, [base]: 1 } };
+}
+
+/** currency-api answer: { date, <base>: { code: rate } } with lower-case codes becomes { date, rates } with upper-case codes. */
+export function parseFawaz(json, base) {
+  const row = json && typeof json === 'object' && json[base.toLowerCase()];
+  if (!json || !ISO.test(String(json.date)) || !row || typeof row !== 'object' || Array.isArray(row)) throw bad();
+  const rates = {};
+  for (const [k, v] of Object.entries(row)) if (/^[a-z]{3}$/.test(k) && goodRate(v)) rates[k.toUpperCase()] = v;
+  if (!Object.keys(rates).length) throw bad();
+  return { date: json.date, rates: { ...rates, [base]: 1 } };
+}
+
+/** English currency names from the runtime itself (no network). Unknown codes keep their code as the name. */
+const NAMER = typeof Intl !== 'undefined' && Intl.DisplayNames ? new Intl.DisplayNames(['en'], { type: 'currency' }) : null;
+export function currencyName(code) {
+  try { const n = NAMER && NAMER.of(code); return n && n !== code ? n.slice(0, 60) : code; } catch (e) { return code; }
+}
+
+/** Dates to sample for a range, newest last, never earlier than the dataset starts. Daily for a month, every 3 days for 3 months, weekly for a year, every 2 weeks beyond. */
+export function sampleDates(range, now = new Date()) {
+  const t = now instanceof Date ? now : new Date(now), end = Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate());
+  const start = Math.max(Date.parse(startDate(range, t)), Date.parse(FAWAZ_FIRST)), step = { '1m': 1, '3m': 3, '1y': 7, '5y': 14, '10y': 14 }[range] * 864e5;
+  const out = [];
+  for (let d = end; d >= start; d -= step) out.push(isoDay(new Date(d)));
+  return out.reverse();
+}
+
+/** Turns dated currency-api answers into sorted [date, rate] points for one quote currency. Missing days are simply skipped. */
+export function fawazSeries(answers, quote) {
+  const pts = [];
+  for (const a of answers) { const v = a && a.rates && a.rates[quote]; if (a && ISO.test(String(a.date)) && goodRate(v)) pts.push([a.date, v]); }
+  pts.sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0));
+  const seen = new Set(), uniq = pts.filter(p => (seen.has(p[0]) ? false : seen.add(p[0])));
+  if (uniq.length < 2) throw new HttpError(404, 'There is not enough rate history for that pair.');
+  return uniq;
+}

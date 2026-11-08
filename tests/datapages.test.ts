@@ -8,7 +8,7 @@ const apiFiles = readdirSync(new URL('../api', import.meta.url)).filter(f => f.e
 const functions = apiFiles.filter(f => !f.startsWith('_'));
 
 /** Every outside host our server code is allowed to call. Adding a source means adding it here on purpose. */
-const ALLOWED_HOSTS = ['www.sec.gov', 'data.sec.gov', 'fred.stlouisfed.org', 'api.fiscaldata.treasury.gov', 'mba.tuck.dartmouth.edu', 'api.frankfurter.dev', 'api.worldbank.org', 'api.coingecko.com', 'www.coingecko.com', 'www.ecb.europa.eu', 'data.worldbank.org', 'fiscaldata.treasury.gov', 'home.treasury.gov', 'query1.finance.yahoo.com', 'www.youtube.com', 'finance-lab-nine.vercel.app', 'www.w3.org'];
+const ALLOWED_HOSTS = ['www.sec.gov', 'data.sec.gov', 'fred.stlouisfed.org', 'api.fiscaldata.treasury.gov', 'mba.tuck.dartmouth.edu', 'api.frankfurter.dev', 'open.er-api.com', 'cdn.jsdelivr.net', 'www.exchangerate-api.com', 'api.worldbank.org', 'api.coingecko.com', 'www.coingecko.com', 'www.ecb.europa.eu', 'data.worldbank.org', 'fiscaldata.treasury.gov', 'home.treasury.gov', 'query1.finance.yahoo.com', 'www.youtube.com', 'finance-lab-nine.vercel.app', 'www.w3.org'];
 
 describe('live data page registry', () => {
   it('lists every page with a unique id and a real module that exports its function', () => {

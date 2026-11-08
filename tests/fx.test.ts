@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { startDate, parseRates, parseNames, parseSeries, summarise, parseMoves, thin } from '../api/_fx.js';
+import { startDate, parseRates, parseNames, parseSeries, summarise, parseMoves, thin, parseErRates, parseFawaz, currencyName, sampleDates, fawazSeries } from '../api/_fx.js';
 import handler, { resetCache } from '../api/fx.js';
 import { parseAmount, invertRate, crossRate, fmtRate, fmtAmount, seriesStats, calcSpot, rankWords, isRange } from '../src/lib/currency';
 import { call, mockFetch } from './helpers';
@@ -119,50 +119,86 @@ describe('currency maths', () => {
 describe('/api/fx', () => {
   beforeEach(() => resetCache());
   afterEach(() => vi.unstubAllGlobals());
+  const ER_RATES: Record<string, number> = { USD: 1, EUR: 0.9, GBP: 0.8, JPY: 150, CHF: 0.88, CAD: 1.4, AUD: 1.5, CNY: 7.1, INR: 83, MXN: 17, BRL: 5.2, PKR: 276.4, BDT: 124.5 };
+  const erBody = (rates = ER_RATES) => ({ result: 'success', time_last_update_unix: 1793923200, rates });
+  const fawazBody = (base: string, version: string) => ({ date: version === 'latest' ? '2026-11-07' : version, [base]: Object.fromEntries(Object.entries(ER_RATES).filter(([c]) => c.toLowerCase() !== base).map(([c, v], i) => [c.toLowerCase(), v * (1 + (version === 'latest' ? 0 : 0.05)) + i / 1e3])) });
   const answer = (url: string): any => {
+    if (url.startsWith('https://open.er-api.com/v6/latest/')) return { json: erBody() };
     if (url.endsWith('/currencies')) return { json: NAMES };
+    if (url.startsWith('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@')) { const m = /@([\w-]+)\/v1\/currencies\/(\w+)\.json$/.exec(url)!; return { json: fawazBody(m[2], m[1]) }; }
     if (url.includes('/latest')) return { json: latest(/base=(\w+)/.exec(url)![1]) };
     if (url.includes('..')) return { json: series };
     return { json: { ...latest(/base=(\w+)/.exec(url)![1]), date: '2025-11-07' } };
   };
+  const HOSTS = /^https:\/\/(open\.er-api\.com|api\.frankfurter\.dev|cdn\.jsdelivr\.net)\//;
 
-  it('returns rates with names and long caching', async () => {
+  it('returns rates for every currency we price, including the Pakistani rupee, with names', async () => {
     const f = mockFetch(answer);
     const r = await call(handler, { view: 'rates', base: 'USD' });
     expect(r.status).toBe(200);
-    expect(r.body.base).toBe('USD'); expect(r.body.rates.USD).toBe(1); expect(r.body.names.EUR).toBe('Euro'); expect(r.body.date).toBe('2026-11-06');
-    expect(r.headers['cache-control']).toBe('s-maxage=3600, stale-while-revalidate=86400');
-    expect(f.calls.every(u => u.startsWith('https://api.frankfurter.dev/v1/'))).toBe(true);
+    expect(r.body.base).toBe('USD'); expect(r.body.rates.USD).toBe(1); expect(r.body.rates.PKR).toBe(276.4); expect(r.body.names.PKR).toBe('Pakistani Rupee'); expect(r.body.names.EUR).toBe('Euro');
+    expect(r.body.date).toBe('2026-11-06'); expect(r.headers['cache-control']).toBe('s-maxage=3600, stale-while-revalidate=86400');
+    expect(f.calls.every(u => HOSTS.test(u))).toBe(true);
   });
-  it('defaults to the rates view and caches the name list in memory', async () => {
+  it('accepts a base the ECB does not publish (PKR) and keeps the currency list in memory', async () => {
     const f = mockFetch(answer);
-    await call(handler, { base: 'EUR' }); await call(handler, { view: 'rates', base: 'GBP' });
+    expect((await call(handler, { base: 'PKR' })).status).toBe(200); expect((await call(handler, { view: 'rates', base: 'BDT' })).status).toBe(200);
     expect(f.calls.filter(u => u.endsWith('/currencies'))).toHaveLength(1);
+    expect(f.calls.filter(u => u === 'https://open.er-api.com/v6/latest/USD')).toHaveLength(1);
   });
-  it('returns thinned history with its summary', async () => {
+  it('uses the ECB for history when both currencies are published there', async () => {
     const f = mockFetch(answer);
     const r = await call(handler, { view: 'history', base: 'USD', quote: 'EUR', range: '1m' });
-    expect(r.status).toBe(200);
-    expect(r.body.points).toHaveLength(4);
-    expect(r.body).toMatchObject({ base: 'USD', quote: 'EUR', first: 0.9, last: 0.9, high: 0.92, low: 0.88 });
-    expect(r.body.change).toBeCloseTo(0, 10);
+    expect(r.status).toBe(200); expect(r.body.points).toHaveLength(4); expect(r.body.limited).toBe(false);
+    expect(r.body).toMatchObject({ base: 'USD', quote: 'EUR', first: 0.9, last: 0.9, high: 0.92, low: 0.88 }); expect(r.body.change).toBeCloseTo(0, 10);
     expect(r.headers['cache-control']).toBe('s-maxage=21600, stale-while-revalidate=86400');
-    expect(f.calls.some(u => /\/v1\/\d{4}-\d{2}-\d{2}\.\.\?base=USD&symbols=EUR$/.test(u))).toBe(true);
+    expect(f.calls.some(u => /frankfurter\.dev\/v1\/\d{4}-\d{2}-\d{2}\.\.\?base=USD&symbols=EUR$/.test(u))).toBe(true);
+    expect(f.calls.some(u => u.includes('jsdelivr'))).toBe(false);
   });
-  it('thins a long series to 500 points', async () => {
+  it('uses dated community data for history when a currency is not on the ECB list (PKR)', async () => {
+    const f = mockFetch(answer);
+    const r = await call(handler, { view: 'history', base: 'USD', quote: 'PKR', range: '3m' });
+    expect(r.status).toBe(200); expect(r.body.limited).toBe(false);
+    expect(r.body.points.length).toBeGreaterThan(20); expect(r.body.points.length).toBeLessThanOrEqual(32);
+    const dates = r.body.points.map((p: any) => p[0]); expect([...dates].sort()).toEqual(dates); expect(new Set(dates).size).toBe(dates.length);
+    expect(f.calls.some(u => /currency-api@\d{4}-\d{2}-\d{2}\/v1\/currencies\/usd\.json$/.test(u))).toBe(true);
+    expect(r.body.high).toBeGreaterThanOrEqual(r.body.low);
+  });
+  it('says so when history for a pair only goes back to March 2024', async () => {
+    mockFetch(answer);
+    const r = await call(handler, { view: 'history', base: 'PKR', quote: 'USD', range: '10y' });
+    expect(r.status).toBe(200); expect(r.body.limited).toBe(true); expect(r.body.earliest).toBe('2024-03-02'); expect(r.body.firstDate >= '2024-03-02').toBe(true);
+  });
+  it('skips days the community dataset is missing instead of failing', async () => {
+    let n = 0;
+    mockFetch(url => { if (url.includes('currency-api@') && ++n % 5 === 0) return { status: 404, json: {} }; return answer(url); });
+    const r = await call(handler, { view: 'history', base: 'USD', quote: 'PKR', range: '3m' });
+    expect(r.status).toBe(200); expect(r.body.points.length).toBeGreaterThan(15);
+  });
+  it('gives a 404 when the community dataset has no days at all', async () => {
+    mockFetch(url => (url.includes('currency-api@') ? { status: 404, json: {} } : answer(url)));
+    expect((await call(handler, { view: 'history', base: 'USD', quote: 'PKR', range: '1m' })).status).toBe(404);
+  });
+  it('thins a long ECB series to 500 points', async () => {
     const rows: any = {};
     for (let i = 0; i < 2600; i++) rows[new Date(Date.UTC(2016, 0, 1 + i)).toISOString().slice(0, 10)] = { EUR: 1 + i / 1e4 };
-    mockFetch(url => (url.endsWith('/currencies') ? { json: NAMES } : { json: { rates: rows } }));
+    mockFetch(url => (url.includes('..') ? { json: { rates: rows } } : answer(url)));
     const r = await call(handler, { view: 'history', base: 'USD', quote: 'EUR', range: '10y' });
     expect(r.body.points).toHaveLength(500);
   });
-  it('returns the majors with two upstream calls for the rates', async () => {
+  it('returns the majors for an ECB base with two ECB calls', async () => {
     const f = mockFetch(answer);
     const r = await call(handler, { view: 'moves', base: 'USD' });
-    expect(r.status).toBe(200);
-    expect(r.body.moves.length).toBeGreaterThan(5); expect(r.body.moves.find((m: any) => m.code === 'USD')).toBeUndefined();
-    expect(f.calls.filter(u => u.includes('symbols=') && !u.includes('..'))).toHaveLength(2);
+    expect(r.status).toBe(200); expect(r.body.moves.length).toBeGreaterThan(5); expect(r.body.moves.find((m: any) => m.code === 'USD')).toBeUndefined();
+    expect(f.calls.filter(u => u.includes('frankfurter') && u.includes('symbols=') && !u.includes('..'))).toHaveLength(2);
     expect(r.headers['cache-control']).toBe('s-maxage=3600, stale-while-revalidate=86400');
+  });
+  it('returns the majors for a base the ECB does not publish (PKR) from the community data', async () => {
+    const f = mockFetch(answer);
+    const r = await call(handler, { view: 'moves', base: 'PKR' });
+    expect(r.status).toBe(200); expect(r.body.moves.length).toBeGreaterThan(5); expect(r.body.moves.find((m: any) => m.code === 'PKR')).toBeUndefined();
+    expect(f.calls.filter(u => u.includes('currency-api@') && u.endsWith('/pkr.json'))).toHaveLength(2);
+    expect(r.body.moves.every((m: any) => m.change == null || Number.isFinite(m.change))).toBe(true);
   });
   it.each([
     [{ view: 'rates', base: 'usd' }], [{ view: 'rates', base: 'USDX' }], [{ view: 'rates', base: 'ZZZ' }], [{ view: 'rates', base: '<script>' }],
@@ -172,40 +208,70 @@ describe('/api/fx', () => {
     const f = mockFetch(answer);
     const r = await call(handler, q as any);
     expect(r.status).toBe(400); expect(r.headers['cache-control']).toBe('no-store'); expect(typeof r.body.error).toBe('string');
-    expect(f.calls.every(u => u.startsWith('https://api.frankfurter.dev/'))).toBe(true);
+    expect(f.calls.every(u => HOSTS.test(u))).toBe(true);
   });
   it('refuses a repeated parameter and unknown options', async () => {
     const f = mockFetch(answer);
     expect((await call(handler, { view: 'rates', base: ['EUR', 'USD'] })).status).toBe(400);
     expect((await call(handler, { view: 'rates', cachebust: '1' })).status).toBe(400);
-    expect(f.calls.some(u => u.includes('/latest'))).toBe(false);
+    expect(f.calls).toHaveLength(0);
   });
   it('maps upstream failures to friendly errors', async () => {
     const cases: [any, number][] = [[{ status: 404 }, 404], [{ status: 429 }, 503], [{ status: 500 }, 502], [new Error('net down'), 502], [{ text: '<html>oops</html>', json: undefined, status: 200 }, 502]];
     for (const [bad, status] of cases) {
       resetCache();
-      mockFetch(url => (url.endsWith('/currencies') ? bad : answer(url)));
+      mockFetch(url => (url.startsWith('https://open.er-api.com/') ? bad : answer(url)));
       const r = await call(handler, { view: 'rates', base: 'USD' });
       expect(r.status).toBe(status);
       expect(r.headers['cache-control']).toBe(status === 404 ? 's-maxage=60' : 'no-store');
       expect(r.text).not.toMatch(/html|oops|net down/);
     }
   });
+  it('still works when the ECB list is down (history falls back to the community data)', async () => {
+    mockFetch(url => (url.endsWith('/currencies') && url.includes('frankfurter') ? { status: 500, json: {} } : answer(url)));
+    const r = await call(handler, { view: 'history', base: 'USD', quote: 'EUR', range: '1m' });
+    expect(r.status).toBe(200); expect(r.body.points.length).toBeGreaterThan(15);
+  });
   it('maps wrong shapes from the rates call to 502', async () => {
-    for (const json of [null, 'x', [], {}, { date: '2026-11-06', rates: 'no' }]) {
-      mockFetch(url => (url.endsWith('/currencies') ? { json: NAMES } : { json }));
+    for (const json of [null, 'x', [], {}, { result: 'error' }, { result: 'success', rates: 'no' }, { result: 'success', rates: {} }]) {
+      mockFetch(url => (url.startsWith('https://open.er-api.com/') ? { json } : answer(url)));
+      resetCache();
       const r = await call(handler, { view: 'rates', base: 'USD' });
       expect(r.status).toBe(502); expect(r.headers['cache-control']).toBe('no-store');
     }
   });
-  it('maps a history with no rows to 404', async () => {
-    mockFetch(url => (url.endsWith('/currencies') ? { json: NAMES } : { json: { rates: {} } }));
-    const r = await call(handler, { view: 'history', base: 'USD', quote: 'EUR', range: '1m' });
-    expect(r.status).toBe(404);
+  it('maps an ECB history with no rows to 404', async () => {
+    mockFetch(url => (url.includes('..') ? { json: { rates: {} } } : answer(url)));
+    expect((await call(handler, { view: 'history', base: 'USD', quote: 'EUR', range: '1m' })).status).toBe(404);
   });
   it('refuses POST', async () => {
     mockFetch(answer);
     const r = await call(handler, { base: 'USD' }, 'POST');
     expect(r.status).toBe(405); expect(r.headers.allow).toBe('GET, HEAD'); expect(r.headers['cache-control']).toBe('no-store');
+  });
+});
+
+describe('extra currency sources', () => {
+  it('reads open.er-api answers defensively', () => {
+    const r = parseErRates({ result: 'success', time_last_update_unix: 1793923200, rates: { USD: 1, PKR: 276.4, bad: 3, XXX: -1, YYY: 'a', ZZZ: Infinity } }, 'USD');
+    expect(r).toEqual({ base: 'USD', date: '2026-11-06', rates: { USD: 1, PKR: 276.4 } });
+    for (const bad of [null, 5, {}, { result: 'error' }, { result: 'success', rates: [] }, { result: 'success', rates: {} }]) expect(() => parseErRates(bad as any, 'USD')).toThrow();
+  });
+  it('reads currency-api answers defensively and upper-cases codes', () => {
+    expect(parseFawaz({ date: '2026-11-07', usd: { pkr: 276.4, eur: 0.9, bad1: 1, nan: NaN } }, 'USD')).toEqual({ date: '2026-11-07', rates: { PKR: 276.4, EUR: 0.9, USD: 1 } });
+    for (const bad of [null, {}, { date: 'x', usd: { eur: 1 } }, { date: '2026-11-07' }, { date: '2026-11-07', usd: [] }, { date: '2026-11-07', usd: {} }]) expect(() => parseFawaz(bad as any, 'USD')).toThrow();
+  });
+  it('names currencies from the runtime, with the code as a fallback', () => {
+    expect(currencyName('PKR')).toBe('Pakistani Rupee'); expect(currencyName('EUR')).toBe('Euro'); expect(currencyName('QQQ')).toBe('QQQ'); expect(currencyName('')).toBe('');
+  });
+  it('picks sample dates: daily, 3-daily, weekly and never before the dataset starts', () => {
+    const now = new Date('2026-11-08T10:00:00Z');
+    expect(sampleDates('1m', now)).toHaveLength(32); expect(sampleDates('3m', now).length).toBeGreaterThan(28); expect(sampleDates('1y', now)).toHaveLength(53);
+    const long = sampleDates('10y', now); expect(long[0] >= '2024-03-02').toBe(true); expect(long[long.length - 1]).toBe('2026-11-08'); expect([...long].sort()).toEqual(long);
+  });
+  it('builds a sorted, de-duplicated series and refuses too little data', () => {
+    const a = (d: string, v: number) => ({ date: d, rates: { PKR: v } });
+    expect(fawazSeries([a('2026-01-03', 3), a('2026-01-01', 1), a('2026-01-01', 9), null as any, { date: 'x', rates: { PKR: 5 } } as any, a('2026-01-02', NaN)], 'PKR')).toEqual([['2026-01-01', 1], ['2026-01-03', 3]]);
+    expect(() => fawazSeries([a('2026-01-01', 1)], 'PKR')).toThrow(/enough/);
   });
 });

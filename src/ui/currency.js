@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* Currency: a converter with ECB reference rates, a rate history chart and the major currencies, all explained for beginners. */
+/* Currency: a converter with daily market rates for about 165 currencies, a rate history chart and the major currencies, all explained for beginners. */
 import '../styles/currency.css';
 import { h, esc, head, api, scope, skeleton, errorBox, sourceLine } from './dataui.js';
 import { enhanceTerms } from './glossary.js';
@@ -83,7 +83,7 @@ export function renderCurrency(main) {
     const field = (id, label, el) => h('div', { class: 'cu-f' }, h('label', { for: id }, label), el);
     hist = historyCard({ onRange, range: state.range }); majors = majorsCard(); mathHost = h('div');
     out.replaceChildren(
-      sourceLine({ source: 'European Central Bank reference rates, via Frankfurter', asOf: data.asOf, url: data.url, extra: h('span', {}, `Rates dated ${longDate(data.date)}.`) }),
+      sourceLine({ source: 'open.er-api.com daily rates', asOf: data.asOf, url: data.url, extra: h('span', {}, `Rates dated ${longDate(data.date)}.`) }),
       h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Convert'),
         h('div', { class: 'cu-grid' }, field('cu-amount', 'Amount', amountEl), field('cu-from', 'From', fromEl), swap, field('cu-to', 'To', toEl)), result),
       hist.el, majors.el, mathHost, explainers());
@@ -97,7 +97,7 @@ export function renderCurrency(main) {
   }
 
   main.replaceChildren(
-    head({ eyebrow: 'Live data · ECB reference rates', title: 'Currency <em>converter</em>', lead: 'Convert between 30 major currencies, see how a rate has moved, and learn why the number at the bank is never quite the same.' }), out);
+    head({ eyebrow: 'Live data · about 165 currencies', title: 'Currency <em>converter</em>', lead: 'Convert between about 165 currencies, including the Pakistani rupee, the Indian rupee and the Bangladeshi taka. See how a rate has moved, and learn why the number at the bank is never quite the same.' }), out);
   boot();
   return () => { S.run(); SH.run(); SM.run(); if (hist) hist.destroy(); };
 }
