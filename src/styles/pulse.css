@@ -1,0 +1,41 @@
+/* Market pulse page */
+.pl-bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.pl-mood{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;font:700 15px var(--body)}
+.pl-mood.on{background:color-mix(in srgb,var(--good) 16%,var(--panel-solid));color:var(--good)}
+.pl-mood.off{background:color-mix(in srgb,var(--bad) 14%,var(--panel-solid));color:var(--bad)}
+.pl-mood.mix{background:var(--soft);color:var(--ink)}
+.pl-head{font:600 clamp(20px,3vw,26px)/1.3 var(--body);letter-spacing:-.01em;max-width:44ch}
+.pl-points{margin:0;padding:0;list-style:none;display:grid;gap:10px;max-width:80ch}
+.pl-points li{position:relative;padding-left:22px;line-height:1.6;font-size:15.5px}
+.pl-points li::before{content:'';position:absolute;left:2px;top:.62em;width:8px;height:8px;border-radius:50%;background:var(--c1)}
+.pl-meter{display:grid;gap:8px;max-width:560px}
+.pl-meter .track{position:relative;height:14px;border-radius:999px;background:linear-gradient(90deg,var(--bad),color-mix(in srgb,var(--soft) 70%,var(--panel-solid)) 50%,var(--good));opacity:.9}
+.pl-meter .dot{position:absolute;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--panel-solid);border:4px solid var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.3);transition:left .6s cubic-bezier(.2,.8,.2,1)}
+.pl-meter .ends{display:flex;justify-content:space-between;font:600 12.5px var(--body);color:var(--mute)}
+.pl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:12px}
+.pl-grid.wide{grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr))}
+.pl-card{position:relative;display:grid;gap:4px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--panel-solid);min-width:0;align-content:start}
+.pl-card .pl-n{font:600 13.5px var(--body);color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-card .pl-p{font:500 22px var(--mono);letter-spacing:-.03em}
+.pl-card .pl-c{font:600 14px var(--mono)}
+.pl-card .pl-c.up,.pl-v.up{color:var(--good)}.pl-card .pl-c.down,.pl-v.down{color:var(--bad)}
+.pl-card svg.spark{width:100%;height:42px;margin-top:2px}
+.pl-card small{color:var(--mute);font-size:12.5px;line-height:1.4}
+.pl-heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:8px}
+.pl-tile{display:grid;gap:2px;padding:14px;min-height:78px;border-radius:16px;align-content:center;border:1px solid var(--line);background:var(--panel-solid)}
+.pl-tile b{font:600 14px var(--body);line-height:1.25}.pl-tile span{font:600 18px var(--mono)}
+.pl-tile small{color:var(--mute);font-size:12px}
+.pl-tile.up{background:color-mix(in srgb,var(--good) calc(var(--s) * 52%),var(--panel-solid))}
+.pl-tile.down{background:color-mix(in srgb,var(--bad) calc(var(--s) * 52%),var(--panel-solid))}
+.pl-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+@media (max-width:900px){.pl-cols{grid-template-columns:minmax(0,1fr)}}
+.pl-list{display:grid;gap:2px;margin:0;padding:0;list-style:none}
+.pl-row{display:grid;grid-template-columns:minmax(0,1fr) 84px auto;align-items:center;gap:12px;padding:8px 10px;min-height:52px;border-radius:12px}
+.pl-row:hover{background:var(--soft)}
+.pl-row b{font:600 14.5px var(--body)}.pl-row small{display:block;color:var(--mute);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-row svg.spark{width:84px;height:30px}.pl-v{font:600 14px var(--mono);min-width:64px;text-align:right}
+.pl-still svg.spark .sp-line,.pl-still svg.spark .sp-fill{animation:none!important;stroke-dashoffset:0!important;opacity:1}
+.pl-live{display:inline-flex;align-items:center;gap:7px;font:700 12.5px var(--body);letter-spacing:.06em;text-transform:uppercase}
+.pl-live i{width:9px;height:9px;border-radius:50%;background:var(--mute)}
+.pl-live.on i{background:var(--good);animation:dlive 2.4s ease-out infinite}
+@media (max-width:640px){.pl-row{grid-template-columns:minmax(0,1fr) 64px auto}.pl-row svg.spark{width:64px}.pl-card .pl-p{font-size:20px}}

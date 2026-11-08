@@ -30,6 +30,7 @@ Around the calculators:
   - `/countries` countries compared: World Bank indicators for major economies (`api/world.js`).
   - `/currency` currency converter and history from the European Central Bank's reference rates via Frankfurter (`api/fx.js`).
   - `/crypto` crypto prices and a risk lens from CoinGecko's public API (`api/crypto.js`).
+  - `/market-pulse` market pulse: a plain-English read of the US market (live while open, up to 15 minutes delayed) and of Pakistan at end of day, with a risk-on / risk-off mood, sector heat map, fear gauge and biggest movers (`api/pulse.js`, one batch request per 20 symbols). Pakistan live prices are not used because the Pakistan Stock Exchange does not allow redistributing its market data without a licence.
   Shared pieces: `api/_http.js` (validated parameters, timeouts, friendly errors, cache headers), `src/ui/dataui.js` (loading, error, table and chart building blocks), `src/lib/format.ts` and `src/lib/series.ts` (formatting and series maths). `tests/datapages.test.ts` guards the outbound host allow-list and the free-plan function limit.
 
 ## Run it

@@ -89,10 +89,8 @@
 
 /* explainers */
 .d-ex{border:1px solid var(--line);border-radius:18px;background:var(--card);padding:0}
-.d-ex summary{cursor:pointer;list-style:none;padding:16px 20px;font:600 15px var(--body);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px}
+.d-ex summary{cursor:pointer;list-style:none;padding:16px 20px;font:600 15px var(--body);display:flex;align-items:center;justify-content:flex-start;gap:12px;min-height:52px}
 .d-ex summary::-webkit-details-marker{display:none}
-.d-ex summary::after{content:'+';font:500 22px var(--body);color:var(--mute);transition:transform .2s}
-.d-ex[open] summary::after{transform:rotate(45deg)}
 .d-ex .d-exb{padding:0 20px 18px;display:grid;gap:10px;font-size:14.5px;line-height:1.6;color:var(--ink)}
 .d-ex .d-exb ul{margin:0;padding-left:20px;display:grid;gap:6px}
 

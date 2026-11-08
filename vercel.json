@@ -23,6 +23,9 @@
     },
     "api/crypto.js": {
       "maxDuration": 20
+    },
+    "api/pulse.js": {
+      "maxDuration": 20
     }
   },
   "headers": [
