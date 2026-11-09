@@ -1073,3 +1073,12 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .menu.more{max-height:min(78vh,620px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 .menu.more .mh{font:700 11.5px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:10px 12px 4px}
 .menu.more .mh:first-child{padding-top:4px}
+
+/* phones: the floating cards become a tidy 2-column grid so nothing overlaps */
+@media (max-width:640px){
+  .hero .hero-art{height:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .hero-art .float{position:static;translate:none;animation:none;width:auto;padding:12px 14px;min-width:0}
+  .hero-art .float b{font-size:22px;overflow-wrap:anywhere}
+  .hero-art .f2{display:none}
+  .hero-art .coin{display:none}
+}

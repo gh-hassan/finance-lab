@@ -35,6 +35,7 @@ export function renderHome(main, go) {
       h('div', { class: 'float f1', id: 'heroPkr', hidden: true }, h('span', {}, 'One US dollar costs'), h('b', {}, ''), h('small', {}, 'in Pakistani rupees')),
       h('div', { class: 'float f1', id: 'heroR72' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
       h('div', { class: 'float f2', html: `<span>Example: save $190 a month for 20 years at 7%</span><b id="heroNum">$0</b>${sparkline(range(0, 20, 1).map(t => [t, heroFv(t)]), { w: 180, h: 60, color: 'var(--c3)' })}` }),
+      h('div', { class: 'float f4', id: 'heroPk', hidden: true }, h('span', {}, 'Pakistan stocks, last close'), h('b', {}, ''), h('small', {}, '')),
       h('div', { class: 'float f3', id: 'heroSpx', hidden: true }, h('span', {}, 'S&P 500, live'), h('b', { class: 'pos' }, ''), h('small', {}, '')),
       h('div', { class: 'float f3', id: 'heroNpv' }, h('span', {}, 'NPV'), h('b', { class: 'pos' }, '+$32,199')),
       h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));

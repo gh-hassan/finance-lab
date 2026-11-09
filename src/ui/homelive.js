@@ -67,9 +67,11 @@ export function mountHomeLive(host, { tape, hero } = {}) {
     const one = (k) => h('div', { class: 'hl-tp', 'aria-hidden': k ? 'true' : null }, items.map(i => h('a', { href: i.href, 'data-link': true, tabindex: k ? '-1' : null }, h('span', {}, i.label), h('b', {}, i.value), i.change != null && i.label !== 'Gold' && i.label !== 'Pakistan stocks' ? h('em', { class: dir(i.change) }, signedPct(i.change, 2)) : i.label === 'Gold' || i.label === 'Pakistan stocks' ? h('em', { class: dir(i.change) }, i.change > 0 ? '▲' : i.change < 0 ? '▼' : '–') : null)));
     tape.replaceChildren(h('div', { class: 'hl-tpi', role: 'region', 'aria-label': 'Market ticker' }, one(0), one(1)));
   };
-  const drawHero = r => {
+  const drawHero = (r, pkc) => {
     if (!hero) return; const sp = r.tiles.find(t => t.key === '^GSPC'), pr = r.tiles.find(t => t.key === 'pkr'), a = hero.querySelector('#heroSpx'), b = hero.querySelector('#heroPkr');
     if (sp && a) { a.hidden = false; const n = hero.querySelector('#heroNpv'); if (n) n.hidden = true; a.querySelector('b').textContent = sp.value; const c = a.querySelector('small'); c.textContent = (sp.change >= 0 ? '+' : '−') + (Math.abs(sp.change) * 100).toFixed(2) + '% ' + (r.live ? 'today' : 'at last close'); c.className = dir(sp.change); }
+    const c = hero.querySelector('#heroPk');
+    if (pkc && pkc.avg != null && c) { c.hidden = false; c.querySelector('b').textContent = signedPct(pkc.avg, 2); c.querySelector('b').className = dir(pkc.avg) === 'down' ? 'neg' : 'pos'; const sm = c.querySelector('small'); sm.textContent = `${pkc.up} of ${pkc.up + pkc.down} stocks rose`; }
     if (pr && b) { b.hidden = false; const r = hero.querySelector('#heroR72'); if (r) r.hidden = true; b.querySelector('b').textContent = pr.value; }
   };
 
@@ -81,7 +83,7 @@ export function mountHomeLive(host, { tape, hero } = {}) {
       if (!alive) return;
       const r = homeLive(us, pk, fx, macro);
       const rate = (fx && fx.rate) || (hist && hist.rate) || null, avgPk = (r.tiles.find(t => t.key === 'pk') || {}).change;
-      drawHeat(us); drawPk(pk, rate, hist && hist.change); drawTape(us, avgPk, rate); drawHero(r);
+      drawHeat(us); drawPk(pk, rate, hist && hist.change); drawTape(us, avgPk, rate); drawHero(r, pkToday(pk && pk.items, null));
       if (!r.tiles.length && !r.summaries.length) { if (!shown) host.firstElementChild.hidden = true; return; }
       shown = true; host.firstElementChild.hidden = false;
       sums.replaceChildren(...r.summaries.map(summary)); strip.replaceChildren(...r.tiles.map(tile)); drawGrid(r);
