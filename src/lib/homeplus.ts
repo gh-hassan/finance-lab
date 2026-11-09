@@ -8,12 +8,12 @@ const fin = (x: unknown): x is number => typeof x === 'number' && Number.isFinit
 export interface TimeMachine {
   startMonth: number; endMonth: number; years: number; amount: number;
   stocks: Pt[]; cash: Pt[]; endStocks: number; endCash: number; multiple: number; yearly: number | null;
-  prices: Pt[] | null; endPrices: number | null; worstDrop: number; worstYear: { year: number; ret: number } | null; usedMonths: number;
+  worstDrop: number; worstYear: { year: number; ret: number } | null; usedMonths: number;
 }
 
 /** What `amount` dollars put into the whole US stock market at the start of `startYear` would be worth now, next to the same money held in cash (US Treasury bills).
  *  Monthly returns are percent numbers (1.5 means 1.5%); the stock return is the market's extra return plus the cash return. Null when there is too little data. */
-export function timeMachine(months: readonly number[], mkt: readonly Ret[], rf: readonly Ret[], startYear: number, amount: number, cpi?: readonly (readonly [number, number])[] | null): TimeMachine | null {
+export function timeMachine(months: readonly number[], mkt: readonly Ret[], rf: readonly Ret[], startYear: number, amount: number): TimeMachine | null {
   if (!fin(startYear) || !fin(amount) || amount <= 0 || months.length !== mkt.length || months.length !== rf.length) return null;
   const from = months.findIndex(m => m >= Math.round(startYear) * 100 + 1);
   if (from < 0) return null;
@@ -36,18 +36,7 @@ export function timeMachine(months: readonly number[], mkt: readonly Ret[], rf: 
   const last = months[months.length - 1], years = used / 12;
   let worst: { year: number; ret: number } | null = null;
   for (const [year, v] of yr) if (v.n === 12) { const ret = v.g - 1; if (!worst || ret < worst.ret) worst = { year, ret }; }
-  const prices = priceLine(months.slice(from), cpi, amount);
-  return { startMonth: first, endMonth: last, prices, endPrices: prices ? prices[prices.length - 1][1] : null, years, amount, stocks, cash, endStocks: s, endCash: c, multiple: s / amount, yearly: s > 0 ? Math.pow(s / amount, 1 / years) - 1 : -1, worstDrop: drop, worstYear: worst, usedMonths: used };
-}
-
-/** The cost of living: what `amount` at the start must grow to just to buy the same things, from the consumer price index ([YYYYMM, index] pairs). A month the index has not reached yet uses its latest value. Null without usable data. */
-export function priceLine(months: readonly number[], cpi: readonly (readonly [number, number])[] | null | undefined, amount: number): Pt[] | null {
-  if (!months.length || !cpi || cpi.length < 12) return null;
-  const sorted = cpi.filter(p => fin(p[0]) && fin(p[1]) && p[1] > 0).sort((a, b) => a[0] - b[0]);
-  if (sorted.length < 12) return null;
-  const at = (m: number): number => { let lo = 0, hi = sorted.length - 1, r = sorted[0][1]; while (lo <= hi) { const mid = (lo + hi) >> 1; if (sorted[mid][0] <= m) { r = sorted[mid][1]; lo = mid + 1; } else hi = mid - 1; } return r; };
-  const base = at(prevMonth(months[0]));
-  return [[monthX(prevMonth(months[0])), amount], ...months.map((m): Pt => [monthX(m), amount * at(m) / base])];
+  return { startMonth: first, endMonth: last, years, amount, stocks, cash, endStocks: s, endCash: c, multiple: s / amount, yearly: s > 0 ? Math.pow(s / amount, 1 / years) - 1 : -1, worstDrop: drop, worstYear: worst, usedMonths: used };
 }
 
 /** The start years offered on the slider: from the first full year in the data to ten years ago. */

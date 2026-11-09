@@ -169,21 +169,6 @@ describe('/api/macro history and treasury', () => {
   });
 });
 
-describe('/api/macro cpi view', () => {
-  const rows = Array.from({ length: 200 }, (_, i) => `${1962 + Math.floor(i / 12)}-${String(i % 12 + 1).padStart(2, '0')}-01,${(30 + i * 0.1).toFixed(1)}`);
-  it('returns the price index as month numbers from FRED only', async () => {
-    const { calls } = mockFetch(() => ({ text: csv('CPIAUCSL', rows) }));
-    const r = await call(handler, { view: 'cpi' });
-    expect(r.status).toBe(200); expect(r.body.points[0]).toEqual([196201, 30]); expect(r.body.points).toHaveLength(200);
-    expect(calls[0].startsWith('https://fred.stlouisfed.org/')).toBe(true);
-  });
-  it('refuses an incomplete file and a bad option', async () => {
-    mockFetch(() => ({ text: csv('CPIAUCSL', rows.slice(0, 10)) }));
-    expect((await call(handler, { view: 'cpi' })).status).toBe(502);
-    expect((await call(handler, { view: 'cpi', x: '1' })).status).toBe(400);
-  });
-});
-
 describe('/api/macro validation and upstream failures', () => {
   it.each([
     [{}], [{ view: 'nope' }], [{ view: ['snapshot', 'x'] }], [{ view: 'snapshot', extra: '1' }], [{ view: 'history' }], [{ view: 'history', series: 'FOO' }],

@@ -45,17 +45,8 @@ async function history(q, signal) {
   return { series: id, label: SERIES[id].label, unit: 'percent', freq: SERIES[id].freq, range, asOf: kept[kept.length - 1][0], stats, points: thin(kept, MAX_POINTS).map(([d, v]) => [d, Math.round(v * 1e4) / 1e4]) };
 }
 
-/** The monthly consumer price index since 1962 as [YYYYMM, index], for "what would this money buy" comparisons. */
-async function cpi(signal) {
-  const pts = parseFredCsv(await getText(FRED('CPIAUCSL', '1962-01-01'), { signal }), 'CPIAUCSL');
-  const points = pts.map(([d, v]) => [Number(d.slice(0, 4)) * 100 + Number(d.slice(5, 7)), v]).filter(p => p[1] > 0);
-  if (points.length < 120) throw new HttpError(502, 'The price index looked incomplete. Try again in a moment.');
-  return { label: 'US consumer price index', asOf: pts[pts.length - 1][0], points };
-}
-
 export default route(async ({ q, signal }) => {
-  const view = pick(q, 'view', { list: ['snapshot', 'history', 'treasury', 'cpi'], max: 10, say: 'Choose a view: snapshot, history, treasury or cpi.' });
-  if (view === 'cpi') return cpi(signal);
+  const view = pick(q, 'view', { list: ['snapshot', 'history', 'treasury'], max: 10, say: 'Choose a view: snapshot, history or treasury.' });
   if (view === 'snapshot') return snapshot(signal);
   if (view === 'history') return history(q, signal);
   return parseTreasury(await getJson(TREASURY, { signal }));
