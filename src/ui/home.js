@@ -78,11 +78,16 @@ export function renderHome(main, go) {
   const all = h('section', { class: 'sec reveal' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Every tool')),
     groups.map(g => h('div', { class: 'agroup' }, h('h3', { class: `tint-${TOPICS[g].tint}` }, TOPICS[g].label), h('div', { class: 'chips' }, MODS.filter(m => m.group === g).map(m => h('a', { class: `chip2 tint-${TOPICS[g].tint}`, href: '/' + m.id, 'data-link': true }, m.title))))));
 
-  main.append(hero, bands, qrow, grid2, all);
+  const liveHost = h('div', { class: 'reveal' });
+  let stopLive = () => { };
+  main.append(hero, bands, liveHost, qrow, grid2, all);
+  /* loaded after the page is shown, so a slow data source never delays it */
+  import('./homelive.js').then(m => { if (liveHost.isConnected) stopLive = m.mountHomeLive(liveHost) || stopLive; }).catch(() => { liveHost.hidden = true; });
 
   /* motion */
   main.querySelectorAll('[data-count]').forEach(el => { if (el.dataset.count) countUp(el, el.dataset.count, 900); });
   const hn = main.querySelector('#heroNum'); if (hn) countUp(hn, '$98,420', 1200);
   let k = 0; const ask = main.querySelector('#askText');
   const timer = setInterval(() => { if (!ask.isConnected) { clearInterval(timer); return; } ask.classList.add('swap'); setTimeout(() => { k = (k + 1) % PLACEHOLDERS.length; ask.textContent = PLACEHOLDERS[k]; ask.classList.remove('swap'); }, 220); }, 2600);
+  return () => { clearInterval(timer); stopLive(); };
 }

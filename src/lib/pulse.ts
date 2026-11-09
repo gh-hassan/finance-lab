@@ -55,7 +55,7 @@ export function usStory(items: readonly UsItem[], live: boolean): { headline: st
   const m = movers(items, 1);
   if (m.up[0] && m.down[0]) bullets.push(`Among well-known giants, ${m.up[0].name} is the biggest riser (${signedPct(m.up[0].chg, 1)}) and ${m.down[0].name} the biggest faller (${signedPct(m.down[0].chg, 1)}).`);
   const mood = riskMood(items), best = sec[0], worst = sec[sec.length - 1];
-  const takeaway = mood.label === 'Bold' ? `In short: investors are feeling bold ${live ? 'today' : 'at the last close'}. More money is going into shares${best ? `, especially ${best.name.toLowerCase()} companies` : ''}.` : mood.label === 'Cautious' ? `In short: investors are playing it safe ${live ? 'today' : 'at the last close'}. They are selling shares${worst ? `, especially ${worst.name.toLowerCase()} companies` : ''}, and moving money to safer places.` : `In short: there is no clear direction ${live ? 'today' : 'at the last close'}. Buyers and sellers are about even.`;
+  const takeaway = mood.label === 'Bold' ? `In short: investors are feeling bold ${live ? 'today' : 'at the last close'}. More money is going into shares${best ? `, especially in ${best.name.toLowerCase()}` : ''}.` : mood.label === 'Cautious' ? `In short: investors are playing it safe ${live ? 'today' : 'at the last close'}. They are selling shares${worst ? `, especially in ${worst.name.toLowerCase()}` : ''}, and moving money to safer places.` : `In short: there is no clear direction ${live ? 'today' : 'at the last close'}. Buyers and sellers are about even.`;
   return { headline, bullets, takeaway };
 }
 

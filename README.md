@@ -21,6 +21,7 @@ Around the calculators:
 - **Glossary:** every term in plain words, searchable, with hover cards in lessons.
 - **Assumptions and method** under every result, plus **share link, CSV download and print/PDF**.
 - **Live stock lookup** (price, beta, dividend) in the CAPM, WACC, DDM and portfolio calculators, via the `api/quote.js` serverless function.
+- **Home page live strip:** the home page shows "The markets right now" (a one-sentence read for the US and Pakistan plus live tiles) and an "Explore the live data" grid. It loads after the page is shown (`src/ui/homelive.js`), uses only already-cached data endpoints, and hides itself if they are unavailable.
 - **Units:** dollars, thousands, millions or billions on calculators that use amounts.
 - **Live data pages** (under the Decide menu, each loads on demand). Every page explains itself in plain words, shows where the data comes from, and says so when a source is down. No API keys are needed.
   - `/financials` company financials: ten years of annual figures from SEC EDGAR 10-K filings (`api/edgar.js`), with ratios, DuPont analysis, a plain-words summary and one-click hand-off to the DCF and comps calculators.
