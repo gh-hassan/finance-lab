@@ -1,0 +1,33 @@
+/* Home page time machine */
+.tm-body{display:grid;gap:16px;padding:20px;border-radius:26px;border:1px solid var(--line);background:var(--card);min-width:0}
+.tm-sk{min-height:260px;border-radius:18px;background:linear-gradient(90deg,var(--soft),color-mix(in srgb,var(--soft) 40%,transparent),var(--soft));background-size:200% 100%;animation:dsk 1.4s linear infinite}
+.tm-ctl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 28px;align-items:end}
+@media (max-width:700px){.tm-ctl{grid-template-columns:minmax(0,1fr)}}
+.tm-f{display:grid;gap:8px;min-width:0}
+.tm-f>span{font:600 14px var(--body);color:var(--mute);display:flex;gap:8px;align-items:baseline}
+.tm-f>span b{font:600 22px var(--mono);color:var(--ink)}
+.tm-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px;align-items:center}
+@media (max-width:860px){.tm-grid{grid-template-columns:minmax(0,1fr)}}
+.tm-out{display:grid;gap:14px;min-width:0}
+.tm-big{display:grid;gap:4px}
+.tm-big span{font:500 15px/1.4 var(--body);color:var(--mute)}
+.tm-big strong{font:600 clamp(34px,6vw,52px)/1.05 var(--display);letter-spacing:-.04em;color:var(--good);overflow-wrap:anywhere}
+.tm-big em{font:500 14.5px/1.4 var(--body);font-style:normal}
+.tm-vs{display:grid;gap:6px;font:500 14px var(--body)}
+.tm-vs span{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.tm-vs i{width:22px;height:4px;border-radius:2px;display:inline-block}
+.tm-vs i.a{background:var(--good)}.tm-vs i.b{background:var(--mute)}
+.tm-vs b{font-family:var(--mono)}
+.tm-chart{min-width:0}
+.tm-chart svg{width:100%;height:auto;display:block;overflow:visible}
+.tm-line{stroke:var(--good);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tm-cash{stroke:var(--mute);stroke-width:2;stroke-dasharray:5 5}
+.tm-axis{stroke:var(--line);stroke-width:1}
+.tm-dot{fill:var(--good);stroke:var(--panel-solid);stroke-width:2}
+.tm-tx{font:500 12px var(--mono);fill:var(--mute)}
+.tm-line.go{stroke-dasharray:1;stroke-dashoffset:1;animation:tmdraw 2.2s cubic-bezier(.3,.1,.2,1) forwards}
+.tm-area.go,.tm-dot.go{opacity:0;animation:tmfade .6s 1.7s ease forwards}
+@keyframes tmdraw{to{stroke-dashoffset:0}}
+@keyframes tmfade{to{opacity:1}}
+.tm-note{margin:0;font:500 13.5px/1.55 var(--body);color:var(--mute)}
+@media (prefers-reduced-motion:reduce){.tm-sk{animation:none}.tm-line.go,.tm-area.go,.tm-dot.go{animation:none;opacity:1;stroke-dasharray:none;stroke-dashoffset:0}}

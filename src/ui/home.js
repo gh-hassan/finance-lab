@@ -30,9 +30,11 @@ export function renderHome(main, go) {
       h('h1', { class: 'split', html: `${split('Money math,')}<br><em>${split('made playful.', 2)}</em>` }),
       h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },
-      h('div', { class: 'float f1' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
-      h('div', { class: 'float f2', html: `<span>Your savings</span><b id="heroNum">$0</b>${sparkline(range(0, 20, 1).map(t => [t, 100 * Math.pow(1.07, t)]), { w: 180, h: 60, color: 'var(--c3)' })}` }),
-      h('div', { class: 'float f3' }, h('span', {}, 'NPV'), h('b', { class: 'pos' }, '+$32,199')),
+      h('div', { class: 'float f1', id: 'heroPkr', hidden: true }, h('span', {}, 'One US dollar costs'), h('b', {}, ''), h('small', {}, 'in Pakistani rupees')),
+      h('div', { class: 'float f1', id: 'heroR72' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
+      h('div', { class: 'float f2', html: `<span>Example: $100 at 7%</span><b id="heroNum">$0</b>${sparkline(range(0, 20, 1).map(t => [t, 100 * Math.pow(1.07, t)]), { w: 180, h: 60, color: 'var(--c3)' })}` }),
+      h('div', { class: 'float f3', id: 'heroSpx', hidden: true }, h('span', {}, 'S&P 500, live'), h('b', { class: 'pos' }, ''), h('small', {}, '')),
+      h('div', { class: 'float f3', id: 'heroNpv' }, h('span', {}, 'NPV'), h('b', { class: 'pos' }, '+$32,199')),
       h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));
 
   const learnBand = h('a', { class: 'learnband tilt reveal', href: '/learn', 'data-link': true },
@@ -78,16 +80,17 @@ export function renderHome(main, go) {
   const all = h('section', { class: 'sec reveal' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Every tool')),
     groups.map(g => h('div', { class: 'agroup' }, h('h3', { class: `tint-${TOPICS[g].tint}` }, TOPICS[g].label), h('div', { class: 'chips' }, MODS.filter(m => m.group === g).map(m => h('a', { class: `chip2 tint-${TOPICS[g].tint}`, href: '/' + m.id, 'data-link': true }, m.title))))));
 
-  const liveHost = h('div', { class: 'reveal' });
-  let stopLive = () => { };
-  main.append(hero, bands, liveHost, qrow, grid2, all);
+  const liveHost = h('div', { class: 'reveal' }), tape = h('div', { class: 'hl-tape', hidden: true }), tmHost = h('div', { class: 'reveal' });
+  let stopLive = () => { }, stopTm = () => { };
+  main.append(tape, hero, bands, tmHost, liveHost, qrow, grid2, all);
   /* loaded after the page is shown, so a slow data source never delays it */
-  import('./homelive.js').then(m => { if (liveHost.isConnected) stopLive = m.mountHomeLive(liveHost) || stopLive; }).catch(() => { liveHost.hidden = true; });
+  import('./homelive.js').then(m => { if (liveHost.isConnected) stopLive = m.mountHomeLive(liveHost, { tape, hero }) || stopLive; }).catch(() => { liveHost.hidden = true; });
+  import('./timemachine.js').then(m => { if (tmHost.isConnected) stopTm = m.mountTimeMachine(tmHost) || stopTm; }).catch(() => { tmHost.hidden = true; });
 
   /* motion */
   main.querySelectorAll('[data-count]').forEach(el => { if (el.dataset.count) countUp(el, el.dataset.count, 900); });
   const hn = main.querySelector('#heroNum'); if (hn) countUp(hn, '$98,420', 1200);
   let k = 0; const ask = main.querySelector('#askText');
   const timer = setInterval(() => { if (!ask.isConnected) { clearInterval(timer); return; } ask.classList.add('swap'); setTimeout(() => { k = (k + 1) % PLACEHOLDERS.length; ask.textContent = PLACEHOLDERS[k]; ask.classList.remove('swap'); }, 220); }, 2600);
-  return () => { clearInterval(timer); stopLive(); };
+  return () => { clearInterval(timer); stopLive(); stopTm(); };
 }

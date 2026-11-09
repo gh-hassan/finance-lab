@@ -37,3 +37,41 @@
 .hl-d b{font:600 15.5px var(--body)}
 .hl-d span{color:var(--mute);font-size:13.5px;line-height:1.45}
 .hl-d em{grid-column:2;font:600 13px var(--mono);font-style:normal;color:var(--c1)}
+
+/* sector heat map */
+.hl-heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:8px}
+.hl-ht{display:grid;gap:2px;padding:14px;min-height:84px;border-radius:16px;align-content:center;border:1px solid var(--line);background:var(--panel-solid);text-decoration:none;color:inherit;min-width:0;transition:transform .2s}
+.hl-ht:hover{transform:translateY(-3px)}
+.hl-ht b{font:600 14px/1.25 var(--body)}.hl-ht span{font:600 18px var(--mono)}.hl-ht small{color:var(--mute);font-size:12px}
+.hl-ht.up{background:color-mix(in srgb,var(--good) calc(var(--s) * 52%),var(--panel-solid))}
+.hl-ht.down{background:color-mix(in srgb,var(--bad) calc(var(--s) * 52%),var(--panel-solid))}
+/* Pakistan + video */
+.hl-duo{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.hl-duo:not(:has(.hl-c)){display:none}
+@media (max-width:760px){.hl-duo{grid-template-columns:minmax(0,1fr)}}
+.hl-duo>div{display:grid;min-width:0}.hl-duo>div:empty{display:none}
+.hl-c{display:grid;gap:10px;align-content:start;padding:20px;border-radius:24px;border:1px solid var(--line);background:var(--card);text-decoration:none;color:inherit;min-width:0;transition:transform .2s,background .2s}
+.hl-c:hover{transform:translateY(-3px);background:var(--panel-solid)}
+.hl-k{font:700 12.5px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.hl-r{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.hl-r span{color:var(--mute);font-size:13.5px}.hl-r b{font:600 15px var(--body);overflow-wrap:anywhere}
+.hl-r em{font:600 14px var(--mono);font-style:normal}.hl-r em.up{color:var(--good)}.hl-r em.down{color:var(--bad)}
+.hl-r.big b{font:500 26px var(--mono);letter-spacing:-.03em}
+.hl-c p{margin:0;font:500 15px/1.5 var(--body)}.hl-c small{color:var(--mute);font-size:12.5px}
+.hl-v b{font:600 17px/1.3 var(--body);overflow-wrap:anywhere}
+.hl-th{display:block;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:var(--soft)}
+.hl-th img{width:100%;height:100%;object-fit:cover;display:block}
+/* ticker tape */
+.hl-tape{overflow:hidden;border-radius:16px;border:1px solid var(--line);background:var(--card);margin:0 0 18px;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.hl-tape[hidden]{display:none}
+.hl-tpi{display:flex;width:max-content;animation:hltape 60s linear infinite}
+.hl-tape:hover .hl-tpi,.hl-tape:focus-within .hl-tpi{animation-play-state:paused}
+.hl-tp{display:flex;flex:none}
+.hl-tp a{display:inline-flex;align-items:center;gap:8px;padding:0 20px;min-height:44px;white-space:nowrap;text-decoration:none;color:inherit;border-right:1px solid var(--line)}
+.hl-tp span{font:600 13px var(--body);color:var(--mute)}.hl-tp b{font:600 14px var(--mono)}
+.hl-tp em{font:600 13px var(--mono);font-style:normal}.hl-tp em.up{color:var(--good)}.hl-tp em.down{color:var(--bad)}
+@keyframes hltape{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.hl-tape{overflow-x:auto}.hl-tpi{animation:none}.hl-tp[aria-hidden]{display:none}}
+/* hero live cards */
+.float small.up{color:var(--good)}.float small.down{color:var(--bad)}
+.float[hidden],.hl[hidden],.hl-duo>div[hidden]{display:none}
