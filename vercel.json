@@ -26,6 +26,9 @@
     },
     "api/pulse.js": {
       "maxDuration": 20
+    },
+    "api/pkhistory.js": {
+      "maxDuration": 25
     }
   },
   "headers": [

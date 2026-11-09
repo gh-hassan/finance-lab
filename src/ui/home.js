@@ -20,6 +20,8 @@ function liveData(m) {
   } catch (e) { return { key: { label: '', value: '' }, pts: [] }; }
 }
 
+/** What $190 saved every month grows to after `years` at 7% a year (the hero card's example). */
+const heroFv = years => { const r = 0.07 / 12, n = years * 12; return n ? 190 * ((Math.pow(1 + r, n) - 1) / r) : 0; };
 const split = (text, start = 0) => text.split(' ').map((w, k) => `<span class="w"><span style="--i:${start + k}">${esc(w)}</span></span>`).join(' ');
 
 export function renderHome(main, go) {
@@ -32,7 +34,7 @@ export function renderHome(main, go) {
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },
       h('div', { class: 'float f1', id: 'heroPkr', hidden: true }, h('span', {}, 'One US dollar costs'), h('b', {}, ''), h('small', {}, 'in Pakistani rupees')),
       h('div', { class: 'float f1', id: 'heroR72' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
-      h('div', { class: 'float f2', html: `<span>Example: $100 at 7%</span><b id="heroNum">$0</b>${sparkline(range(0, 20, 1).map(t => [t, 100 * Math.pow(1.07, t)]), { w: 180, h: 60, color: 'var(--c3)' })}` }),
+      h('div', { class: 'float f2', html: `<span>Example: save $190 a month for 20 years at 7%</span><b id="heroNum">$0</b>${sparkline(range(0, 20, 1).map(t => [t, heroFv(t)]), { w: 180, h: 60, color: 'var(--c3)' })}` }),
       h('div', { class: 'float f3', id: 'heroSpx', hidden: true }, h('span', {}, 'S&P 500, live'), h('b', { class: 'pos' }, ''), h('small', {}, '')),
       h('div', { class: 'float f3', id: 'heroNpv' }, h('span', {}, 'NPV'), h('b', { class: 'pos' }, '+$32,199')),
       h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));
@@ -89,7 +91,7 @@ export function renderHome(main, go) {
 
   /* motion */
   main.querySelectorAll('[data-count]').forEach(el => { if (el.dataset.count) countUp(el, el.dataset.count, 900); });
-  const hn = main.querySelector('#heroNum'); if (hn) countUp(hn, '$98,420', 1200);
+  const hn = main.querySelector('#heroNum'); if (hn) countUp(hn, money(heroFv(20), 0), 1200);
   let k = 0; const ask = main.querySelector('#askText');
   const timer = setInterval(() => { if (!ask.isConnected) { clearInterval(timer); return; } ask.classList.add('swap'); setTimeout(() => { k = (k + 1) % PLACEHOLDERS.length; ask.textContent = PLACEHOLDERS[k]; ask.classList.remove('swap'); }, 220); }, 2600);
   return () => { clearInterval(timer); stopLive(); stopTm(); };

@@ -49,7 +49,7 @@ export function mountHomeLive(host, { tape, hero } = {}) {
   const drawPk = (pk, rate, change) => {
     const p = pkToday(pk && pk.items, rate ? { rate, change } : null);
     if (!p) { pkBox.replaceChildren(); return; }
-    const row = (label, x) => x ? h('div', { class: 'hl-r' }, h('span', {}, label), h('b', {}, x.name), h('em', { class: dir(x.chg) }, signedPct(x.chg, 1))) : null;
+    const row = (label, x) => x ? h('div', { class: 'hl-r' }, h('span', {}, label), h('div', { class: 'hl-rv' }, h('b', {}, x.name), h('em', { class: dir(x.chg) }, signedPct(x.chg, 1)))) : null;
     pkBox.replaceChildren(h('a', { class: 'hl-c', href: '/market-pulse?m=pakistan', 'data-link': true }, h('span', { class: 'hl-k' }, 'Pakistan today'), p.rate ? h('div', { class: 'hl-r hl-big' }, h('span', {}, 'One US dollar costs'), h('b', {}, 'Rs ' + num(p.rate, 1))) : null,
       row('Best stock at the last close', p.best), row('Weakest stock', p.worst), p.avg != null ? h('div', { class: 'hl-r' }, h('span', {}, 'Stocks that rose'), h('b', {}, `${p.up} of ${p.up + p.down}`)) : null, h('p', {}, p.sentence), h('small', {}, 'Pakistan prices are end of day, not live.')));
   };

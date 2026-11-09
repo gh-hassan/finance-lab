@@ -75,3 +75,5 @@
 /* hero live cards */
 .float small.up{color:var(--good)}.float small.down{color:var(--bad)}
 .float[hidden],.hl[hidden],.hl-duo>div[hidden]{display:none}
+.hl-rv{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:baseline;gap:2px 10px;text-align:right;min-width:0}
+.hl-r{display:flex;justify-content:space-between}

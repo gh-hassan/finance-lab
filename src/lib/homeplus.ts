@@ -5,15 +5,17 @@ import type { UsItem, PkItem } from './pulse';
 
 const fin = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 
+export interface PkHistory { months: readonly number[]; pkr: readonly number[]; usd: readonly number[] }
+export interface PkLine { pts: Pt[]; endUsd: number; endPkr: number; multipleUsd: number; multiplePkr: number; first: number }
 export interface TimeMachine {
   startMonth: number; endMonth: number; years: number; amount: number;
   stocks: Pt[]; cash: Pt[]; endStocks: number; endCash: number; multiple: number; yearly: number | null;
-  worstDrop: number; worstYear: { year: number; ret: number } | null; usedMonths: number;
+  pk: PkLine | null; worstDrop: number; worstYear: { year: number; ret: number } | null; usedMonths: number;
 }
 
 /** What `amount` dollars put into the whole US stock market at the start of `startYear` would be worth now, next to the same money held in cash (US Treasury bills).
  *  Monthly returns are percent numbers (1.5 means 1.5%); the stock return is the market's extra return plus the cash return. Null when there is too little data. */
-export function timeMachine(months: readonly number[], mkt: readonly Ret[], rf: readonly Ret[], startYear: number, amount: number): TimeMachine | null {
+export function timeMachine(months: readonly number[], mkt: readonly Ret[], rf: readonly Ret[], startYear: number, amount: number, pk?: PkHistory | null): TimeMachine | null {
   if (!fin(startYear) || !fin(amount) || amount <= 0 || months.length !== mkt.length || months.length !== rf.length) return null;
   const from = months.findIndex(m => m >= Math.round(startYear) * 100 + 1);
   if (from < 0) return null;
@@ -36,7 +38,24 @@ export function timeMachine(months: readonly number[], mkt: readonly Ret[], rf: 
   const last = months[months.length - 1], years = used / 12;
   let worst: { year: number; ret: number } | null = null;
   for (const [year, v] of yr) if (v.n === 12) { const ret = v.g - 1; if (!worst || ret < worst.ret) worst = { year, ret }; }
-  return { startMonth: first, endMonth: last, years, amount, stocks, cash, endStocks: s, endCash: c, multiple: s / amount, yearly: s > 0 ? Math.pow(s / amount, 1 / years) - 1 : -1, worstDrop: drop, worstYear: worst, usedMonths: used };
+  const pkLine = pakistanLine(months.slice(from), pk, amount);
+  return { startMonth: first, endMonth: last, pk: pkLine, years, amount, stocks, cash, endStocks: s, endCash: c, multiple: s / amount, yearly: s > 0 ? Math.pow(s / amount, 1 / years) - 1 : -1, worstDrop: drop, worstYear: worst, usedMonths: used };
+}
+
+/** A large-Pakistani-stocks line on the same footing as the US line: the same dollars, grown by the dollar return of an equal mix of big Pakistani companies, over the same months.
+ *  Only when the Pakistan data covers every month from the start (it begins in 2008); otherwise null. `endPkr` is what the same money would be in rupee terms, as a multiple of the start. */
+export function pakistanLine(months: readonly number[], pk: PkHistory | null | undefined, amount: number): PkLine | null {
+  if (!months.length || !pk || pk.months.length !== pk.usd.length || pk.months.length !== pk.pkr.length) return null;
+  const at = new Map(pk.months.map((m, i) => [m, i] as const));
+  if (!at.has(months[0])) return null;
+  let u = amount, r = 1;
+  const pts: Pt[] = [[monthX(prevMonth(months[0])), amount]];
+  for (const m of months) {
+    const i = at.get(m);
+    if (i != null && fin(pk.usd[i]) && fin(pk.pkr[i])) { u *= 1 + pk.usd[i] / 100; r *= 1 + pk.pkr[i] / 100; }
+    pts.push([monthX(m), u]);
+  }
+  return { pts, endUsd: u, endPkr: r * amount, multipleUsd: u / amount, multiplePkr: r, first: months[0] };
 }
 
 /** The start years offered on the slider: from the first full year in the data to ten years ago. */
