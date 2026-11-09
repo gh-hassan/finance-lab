@@ -16,12 +16,13 @@
 .tm-vs{display:grid;gap:6px;font:500 14px var(--body)}
 .tm-vs span{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
 .tm-vs i{width:22px;height:4px;border-radius:2px;display:inline-block}
-.tm-vs i.a{background:var(--good)}.tm-vs i.b{background:var(--mute)}
+.tm-vs i.a{background:var(--good)}.tm-vs i.b{background:var(--mute)}.tm-vs i.c{background:var(--bad)}.tm-real{font:500 13.5px/1.45 var(--body);color:var(--mute)}
 .tm-vs b{font-family:var(--mono)}
 .tm-chart{min-width:0}
 .tm-chart svg{width:100%;height:auto;display:block;overflow:visible}
 .tm-line{stroke:var(--good);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .tm-cash{stroke:var(--mute);stroke-width:2;stroke-dasharray:5 5}
+.tm-prices{stroke:var(--bad);stroke-width:2;stroke-dasharray:2 4;stroke-linecap:round}
 .tm-axis{stroke:var(--line);stroke-width:1}
 .tm-dot{fill:var(--good);stroke:var(--panel-solid);stroke-width:2}
 .tm-tx{font:500 12px var(--mono);fill:var(--mute)}

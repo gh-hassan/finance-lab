@@ -76,3 +76,22 @@ describe('tapeItems', () => {
   });
   it('is empty with nothing', () => { expect(tapeItems(null, null, null)).toEqual([]); expect(tapeItems({ items: [] }, NaN, 0)).toEqual([]); });
 });
+
+describe('cost of living line', () => {
+  const months = mk(240), flat = months.map(() => 0);
+  const cpi: [number, number][] = mk(260, 199901).map((m, i) => [m, 100 * 1.003 ** i]);
+  it('follows the price index from the start month', () => {
+    const t = timeMachine(months, flat, flat, 2000, 1000, cpi)!;
+    expect(t.prices![0][1]).toBe(1000);
+    expect(t.endPrices).toBeCloseTo(1000 * 1.003 ** 240, 3);
+  });
+  it('carries the last value when the index has not reached a month', () => {
+    const t = timeMachine(months, flat, flat, 2000, 1000, cpi.slice(0, 120))!;
+    expect(t.endPrices).toBeCloseTo(1000 * 1.003 ** (119 - 12 + 1) / 1, 0);
+  });
+  it('is null without enough index data', () => {
+    expect(timeMachine(months, flat, flat, 2000, 1000)!.prices).toBeNull();
+    expect(timeMachine(months, flat, flat, 2000, 1000, cpi.slice(0, 5))!.endPrices).toBeNull();
+    expect(timeMachine(months, flat, flat, 2000, 1000, [[200001, 0], ...cpi.slice(0, 5)] as any)!.prices).toBeNull();
+  });
+});
