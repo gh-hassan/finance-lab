@@ -11,7 +11,6 @@ import '../src/modules/m9.js';
 import { MODS } from '../src/lib/registry';
 import { lbo, retirement } from '../src/lib/markets';
 import { covFrom, tangency } from '../src/lib/invest';
-import { GENERATORS, mulberry32 } from '../src/lib/quizgen';
 import { relatedFor } from '../src/ui/videos.js';
 
 const near = (a: number, b: number, d = 6) => expect(a).toBeCloseTo(b, d);
@@ -42,10 +41,6 @@ describe('regressions found in the pre-push audit', () => {
   });
   it('lease: the break-even payment is a real number at a 0% discount rate', () => {
     const o = calc('lease', { rate: 0 }); expect(cardVal(o, 'Lease payment that breaks even')).toMatch(/^\$[\d,]+$/);
-  });
-  it('quiz: the Sharpe question never has a tie', () => {
-    const g = GENERATORS.find(x => x.id === 'sharpe')!;
-    for (let s = 1; s <= 400; s++) { const q = g.make(mulberry32(s * 31)), nums = [...q.explain.matchAll(/Fund [AB]: ([\d.]+)/g)].map(m => parseFloat(m[1])); expect(nums).toHaveLength(2); expect(Math.abs(nums[0] - nums[1]), `seed ${s}`).toBeGreaterThanOrEqual(0.025); }
   });
   it('videos: calculator links match whole words only', () => {
     expect(relatedFor('The Core Architecture of Corporate Finance: How Corporations Work')).toBeNull();

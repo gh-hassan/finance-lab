@@ -7,8 +7,6 @@ export const ICONS = {
   Statistics: svg('<path d="M4 20V12M9 20V5M14 20v-9M19 20V9"/><path d="M3 20h18"/>'),
   compare: svg('<path d="M7 8h12l-3-3M17 16H5l3 3"/>'),
   glossary: svg('<path d="M4 19L8.500 6 13 19M6 15h5"/><path d="M16 8h4M16 12h4M16 16h4"/>'),
-  quiz: svg('<circle cx="12" cy="12" r="8"/><path d="M9.500 12.200l1.900 1.900 3.300-3.800"/>'),
-  cases: svg('<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5.500A1.500 1.500 0 0110.500 4h3A1.500 1.500 0 0115 5.500V7M4 12h16"/>'),
   video: svg('<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M10.500 9.500l4 2.500-4 2.500z"/>'),
   'd-financials': svg('<rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8.500 16v-3M12 16V9M15.500 16v-5"/>'),
   'd-economy': svg('<path d="M3 17c4 0 5-9 9-9s5 4 9 4"/><path d="M3 20.500h18"/>'),

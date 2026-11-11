@@ -15,8 +15,6 @@ Around the calculators:
 
 - **Financial calculator** (`/calculator`): a working BA II Plus Professional handheld with time value of money, cash flows (NPV, IRR, payback), amortization, bonds, depreciation, statistics, break-even, profit margin, dates and interest conversion. Independent practice tool, not affiliated with Texas Instruments.
 - **Compare:** two versions of a calculator side by side, with the better one highlighted.
-- **Quiz:** rounds of ten questions with fresh numbers, instant explanations and saved progress.
-- **Cases:** six business situations that open calculators with the case numbers filled in.
 - **Videos:** the SmartWealth YouTube channel previewed on the site (`/videos`). A preview plays in YouTube's own player and every card links to YouTube. The list refreshes from the channel's public feed through `api/videos.js`, with a built-in snapshot in `src/data/videos.js` as the fallback.
 - **Glossary:** every term in plain words, searchable, with hover cards in lessons.
 - **Assumptions and method** under every result, plus **share link, CSV download and print/PDF**.
