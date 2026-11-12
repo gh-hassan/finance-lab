@@ -32,7 +32,7 @@ export const csvCell = x => { let s = String(x == null ? '' : x).replace(/\s+/g,
 export function toCsv(title, inputs, out) {
   const rows = [[title], [], ['Inputs'], ...inputs, [], ['Results'], ...(out.cards || []).filter(c => !c.head).map(c => [c.label, c.value, c.sub || ''])];
   (out.tables || []).forEach(t => { rows.push([], [t.title], t.cols); (t.rows || []).forEach(r => { if (!r.h) rows.push(r.map(c => (Array.isArray(c) ? c[0] : c))); }); });
-  rows.push([], ['Made with SmartWealth. For study and practice, not investment advice.']);
+  rows.push([], ['Made with LUMS Finance Lab. For study and practice, not investment advice.']);
   return rows.map(r => r.map(csvCell).join(',')).join('\n');
 }
 export function download(name, text, type = 'text/csv') {

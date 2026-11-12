@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* Home page: playful hero, question cards, live tiles, try-it widget and learning map. */
+/* Home page: hero, question cards, live tiles, try-it widget and learning map. */
 import { MODS } from '../lib/registry';
 import { money, nf, range } from '../lib/math';
 import { h, esc, sparkline, countUp } from './visuals.js';
@@ -29,7 +29,7 @@ export function renderHome(main, go) {
   main.innerHTML = '';
   const hero = h('section', { class: 'hero reveal' },
     h('div', { class: 'hero-copy' },
-      h('h1', { class: 'split', html: `${split('Money math,')}<br><em>${split('made playful.', 2)}</em>` }),
+      h('h1', { class: 'split', html: `${split('Finance,')}<br><em>${split('made clear.', 1)}</em>` }),
       h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },
       h('div', { class: 'float f1', id: 'heroPkr', hidden: true }, h('span', {}, 'One US dollar costs'), h('b', {}, ''), h('small', {}, 'in Pakistani rupees')),

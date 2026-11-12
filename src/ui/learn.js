@@ -1,5 +1,6 @@
 // @ts-nocheck
 /* Learn page: every fundamental idea, explained in very simple words with a picture that plays on hover. */
+import { facultyNote } from './faculty.js';
 import { h, esc } from './visuals.js';
 import { SCENES, SCENE_ORDER, SceneView } from './scenes.js';
 
@@ -16,9 +17,9 @@ export function renderLearn(main) {
   const views = [];
   const slug = s => s.toLowerCase().replace(/[^a-z]+/g, '-');
   const hero = h('header', { class: 'learn-hero reveal' },
-    h('p', { class: 'eyebrow' }, 'Start here'),
+    h('p', { class: 'eyebrow' }, 'SmartWealth lessons'),
     h('h1', { html: 'Money, explained <em>in motion</em>' }),
-    h('p', { class: 'lead' }, 'Short pictures of the basic ideas, in plain words. Pick any one and watch it play.'));
+    h('p', { class: 'lead' }, 'Short pictures of the basic ideas, in plain words. Pick any one and watch it play.'), facultyNote());
   const toc = h('nav', { class: 'toc reveal', 'aria-label': 'Chapters' }, h('p', { class: 'eyebrow' }, 'Chapters'), CHAPTERS.map(([c, , tint]) => h('a', { class: `tint-${tint}`, href: '#' + slug(c) }, h('i', { class: 'dot' }), c)));
   const body = h('div', { class: 'chapters' }, CHAPTERS.map(([c, sub, tint], ci) => {
     const ids = SCENE_ORDER.filter(id => SCENES[id].chapter === c);

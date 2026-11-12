@@ -5,6 +5,7 @@ import { h, esc, store } from './visuals.js';
 import { TOPICS, BEGINNER } from './beginner.js';
 import { ICONS } from './icons.js';
 import { mountModule } from './module.js';
+import { BRAND, pageTitle } from '../lib/brand';
 import { renderHome } from './home.js';
 import { renderLearn } from './learn.js';
 import { renderScenarios } from './scenarios.js';
@@ -91,9 +92,9 @@ export function startApp(root) {
     decideBtn
   ];
 
-  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<img src="/logo.png" alt="" width="38" height="38">' }), 'SmartWealth'), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop, pop2);
+  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<img src="/logo.png" alt="" width="38" height="38">' }), BRAND.name), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop, pop2);
   view = h('main', { id: 'view', tabindex: '-1' });
-  const foot = h('footer', { class: 'foot' }, h('p', {}, 'For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice.'));
+  const foot = h('footer', { class: 'foot' }, h('p', {}, `${BRAND.name} · a pilot prepared for LUMS. For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice. Market data comes from public sources and may be delayed.`));
   const shell = h('div', { class: 'shell' }, bar, view, foot);
   root.append(shell);
 
@@ -175,15 +176,15 @@ function route() {
   cleanup(); cleanup = () => { };
   document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', (m || isBa) ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isVd) ? 'learn' : (isSc || isCmp || dp) ? 'decide' : 'home')));
   const rerender = () => route();
-  if (m) { document.title = `${m.title} · SmartWealth`; cleanup = mountModule(m, view, rerender); }
-  else if (isSc) { document.title = 'Scenarios · SmartWealth'; cleanup = renderScenarios(view); }
-  else if (isCmp) { document.title = 'Compare · SmartWealth'; cleanup = renderCompare(view); }
-  else if (isBa) { document.title = 'Financial calculator · SmartWealth'; cleanup = renderCalculator(view); }
-  else if (dp) { document.title = `${dp.title} · SmartWealth`; cleanup = mountData(dp, view); }
-  else if (isVd) { document.title = 'Video tutorials · SmartWealth'; cleanup = renderVideos(view); }
-  else if (isGl) { document.title = 'Glossary · SmartWealth'; cleanup = renderGlossary(view); }
-  else if (isLearn) { document.title = 'Learn the basics · SmartWealth'; cleanup = renderLearn(view); }
-  else { document.title = 'SmartWealth · Learn money by playing with it'; cleanup = renderHome(view, navigate) || cleanup; }
+  if (m) { document.title = pageTitle(m.title); cleanup = mountModule(m, view, rerender); }
+  else if (isSc) { document.title = pageTitle('Scenarios'); cleanup = renderScenarios(view); }
+  else if (isCmp) { document.title = pageTitle('Compare'); cleanup = renderCompare(view); }
+  else if (isBa) { document.title = pageTitle('Financial calculator'); cleanup = renderCalculator(view); }
+  else if (dp) { document.title = pageTitle(dp.title); cleanup = mountData(dp, view); }
+  else if (isVd) { document.title = `Video lessons · ${BRAND.lessons} · ${BRAND.short}`; cleanup = renderVideos(view); }
+  else if (isGl) { document.title = pageTitle('Glossary'); cleanup = renderGlossary(view); }
+  else if (isLearn) { document.title = `Lessons · ${BRAND.lessons} · ${BRAND.short}`; cleanup = renderLearn(view); }
+  else { document.title = pageTitle(); cleanup = renderHome(view, navigate) || cleanup; }
   if (!isGl && !isBa && !dp) enhanceTerms(view);
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   if (location.hash && id === 'learn') setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 600);
