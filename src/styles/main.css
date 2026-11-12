@@ -1047,19 +1047,20 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
   .hero-art .coin{display:none}
 }
 
-/* lessons attribution */
-.fac-note{margin:6px 0 0;padding:12px 16px;border-radius:14px;border-left:4px solid var(--c3);background:color-mix(in srgb,var(--c3) 10%,var(--panel-solid));font:500 14.5px/1.5 var(--body);max-width:62ch}
+/* lessons credit line */
+.fac-note{display:grid;gap:2px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--line);font:500 14.5px/1.5 var(--body);color:var(--ink);max-width:62ch}
 .fac-note a{color:var(--c1);font-weight:600;text-underline-offset:3px}
+.fac-note small{color:var(--mute);font:400 13px/1.4 var(--body)}
 
 /* LUMS logo and subject name in the top bar and footer */
 .brand .logo,.foot .logo{display:grid;grid-template-columns:auto;gap:0;align-items:center;width:auto;height:auto;border-radius:0;box-shadow:none;overflow:visible}
-.brand .logo img,.foot .logo img{display:block;height:36px;width:auto;object-fit:contain}
+.brand .logo img,.foot .logo img{display:block;height:32px;width:auto;object-fit:contain}
 .brand .logo .logo-night,.foot .logo .logo-night{display:none}
 :root[data-theme="dark"] .brand .logo .logo-day,:root[data-theme="dark"] .foot .logo .logo-day{display:none}
 :root[data-theme="dark"] .brand .logo .logo-night,:root[data-theme="dark"] .foot .logo .logo-night{display:block}
 .brand{gap:12px;min-width:0}
 .subject{display:grid;line-height:1.2;min-width:0;padding-left:12px;border-left:1px solid var(--line)}
-.subject b{font:600 15px var(--display);letter-spacing:-.02em;white-space:nowrap}
+.subject b{font:600 13.5px var(--display);letter-spacing:-.02em;white-space:nowrap}
 .subject small{color:var(--mute);font:500 11.5px var(--body);white-space:nowrap}
 .foot{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .foot .logo img{height:32px}
@@ -1067,6 +1068,16 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 @media (max-width:560px){.subject small{display:none}.subject b{font-size:14px}.brand .logo img{height:30px}.subject{padding-left:10px}}
 @media (max-width:360px){.subject b{font-size:12.5px}.brand{gap:8px}.brand .logo img{height:26px}}
 
-.subject .tagrow{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
-.subject .chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--c3) 16%,var(--panel-solid));color:var(--good);font:700 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
-@media (max-width:900px){.subject .chip{display:none}}
+
+/* white pages in light mode, a centred menu and the subject line */
+:root:not([data-theme="dark"]){--bg-a:#FFFFFF;--bg-b:#FFFFFF;--bg-c:#FFFFFF}
+:root:not([data-theme="dark"]) .blob{display:none}
+:root:not([data-theme="dark"]) .bg::after{display:none}
+@media (min-width:981px){
+  .topbar{display:grid;grid-template-columns:minmax(auto,1fr) auto minmax(auto,1fr);gap:14px}
+  .topbar .brand{justify-self:start;min-width:max-content}.topbar .pillnav{margin:0}.topbar .tools{justify-self:end}
+}
+@media (max-width:1599px){.subject .kind{display:none}}
+@media (max-width:1399px){.subject small{display:none}}
+@media (min-width:981px) and (max-width:1099px){.subject{display:none}}
+@media (min-width:981px) and (max-width:1399px){.topbar .pill{padding:11px 14px;font-size:14.5px;gap:8px}}
