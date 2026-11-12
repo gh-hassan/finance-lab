@@ -1065,8 +1065,8 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .foot{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .foot .logo img{height:32px}
 .foot div{min-width:0;flex:1 1 260px}.foot p{margin:0 0 4px}
-@media (max-width:560px){.subject small{display:none}.subject b{font-size:14px}.brand .logo img{height:30px}.subject{padding-left:10px}}
-@media (max-width:360px){.subject b{font-size:12.5px}.brand{gap:8px}.brand .logo img{height:26px}}
+@media (max-width:560px){.subject small{font-size:10.5px}.subject b{font-size:14px}.brand .logo img{height:30px}.subject{padding-left:10px}}
+@media (max-width:360px){.subject small{font-size:9.5px}.subject b{font-size:12.5px}.brand{gap:8px}.brand .logo img{height:26px}}
 
 
 /* white pages in light mode, a centred menu and the subject line */
@@ -1078,6 +1078,4 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
   .topbar .brand{justify-self:start;min-width:max-content}.topbar .pillnav{margin:0}.topbar .tools{justify-self:end}
 }
 @media (max-width:1599px){.subject .kind{display:none}}
-@media (max-width:1399px){.subject small{display:none}}
-@media (min-width:981px) and (max-width:1099px){.subject{display:none}}
 @media (min-width:981px) and (max-width:1399px){.topbar .pill{padding:11px 14px;font-size:14.5px;gap:8px}}
