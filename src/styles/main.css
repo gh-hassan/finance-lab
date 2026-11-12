@@ -1048,9 +1048,9 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 }
 
 /* lessons credit line */
-.fac-note{display:grid;gap:2px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--line);font:500 14.5px/1.5 var(--body);color:var(--ink);max-width:62ch}
+.fac-note{display:block;margin:22px 0 0;padding:14px 0 0;border-top:1px solid var(--line);font:500 14.5px/1.5 var(--body);color:var(--ink);max-width:62ch}
 .fac-note a{color:var(--c1);font-weight:600;text-underline-offset:3px}
-.fac-note small{color:var(--mute);font:400 13px/1.4 var(--body)}
+.fac-note small{display:block;margin-top:2px;color:var(--mute);font:400 13px/1.4 var(--body)}
 
 /* LUMS logo and subject name in the top bar and footer */
 .brand .logo,.foot .logo{display:grid;grid-template-columns:auto;gap:0;align-items:center;width:auto;height:auto;border-radius:0;box-shadow:none;overflow:visible}
@@ -1079,3 +1079,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 }
 @media (max-width:1599px){.subject .kind{display:none}}
 @media (min-width:981px) and (max-width:1399px){.topbar .pill{padding:11px 14px;font-size:14.5px;gap:8px}}
+
+.vid-sub{margin-top:16px}
+.vid-sub .btn{background:var(--pill-on);color:var(--pill-on-text);border-color:transparent;box-shadow:0 10px 24px -12px rgba(0,37,129,.55)}
+.vid-sub .btn:hover{background:var(--c1);color:#fff}

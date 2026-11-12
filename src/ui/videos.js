@@ -68,8 +68,7 @@ export function renderVideos(main) {
 
   main.innerHTML = '';
   main.append(
-    h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, 'SmartWealth video lessons'), h('h1', { html: 'Watch and <em>learn</em>' }), h('p', { class: 'lead' }, 'Walkthroughs from the SmartWealth channel. Preview a video here and it plays in YouTube\'s own player.'), facultyNote(),
-      h('a', { class: 'btn', href: CHANNEL_URL + '?sub_confirmation=1', target: '_blank', rel: 'noopener noreferrer' }, 'Subscribe on YouTube ↗')),
+    h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, 'SmartWealth video lessons'), h('h1', { html: 'Watch and <em>learn</em>' }), h('p', { class: 'lead' }, 'Walkthroughs from the SmartWealth channel. Preview a video here and it plays in YouTube\'s own player.'), h('div', { class: 'vid-sub' }, h('a', { class: 'btn', href: CHANNEL_URL + '?sub_confirmation=1', target: '_blank', rel: 'noopener noreferrer' }, 'Subscribe on YouTube ↗')), facultyNote()),
     chips, count, grid);
   draw();
   /* refresh from the live channel feed; the built-in list stays if that fails */
