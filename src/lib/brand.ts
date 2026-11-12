@@ -4,6 +4,7 @@ export const BRAND = {
   short: 'Finance Fundamentals',
   school: 'Suleman Dawood School of Business',
   university: 'Lahore University of Management Sciences',
+  kind: 'Interactive learning',
   tagline: 'Finance, explained with real data',
   lessons: 'SmartWealth',
   /** Shown on the lessons pages. Facts come from the public LUMS faculty page (lums.edu.pk/lums_employee/2999). */

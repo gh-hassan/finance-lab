@@ -29,6 +29,7 @@ export function renderHome(main, go) {
   main.innerHTML = '';
   const hero = h('section', { class: 'hero reveal' },
     h('div', { class: 'hero-copy' },
+      h('p', { class: 'eyebrow' }, 'Interactive learning · Suleman Dawood School of Business'),
       h('h1', { class: 'split', html: `${split('Finance,')}<br><em>${split('made clear.', 1)}</em>` }),
       h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
     h('div', { class: 'hero-art', 'aria-hidden': 'true' },

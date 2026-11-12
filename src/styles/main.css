@@ -1054,9 +1054,9 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 /* LUMS logo and subject name in the top bar and footer */
 .brand .logo,.foot .logo{display:grid;grid-template-columns:auto;gap:0;align-items:center;width:auto;height:auto;border-radius:0;box-shadow:none;overflow:visible}
 .brand .logo img,.foot .logo img{display:block;height:36px;width:auto;object-fit:contain}
-.logo .logo-night{display:none}
-:root[data-theme="dark"] .logo .logo-day{display:none}
-:root[data-theme="dark"] .logo .logo-night{display:block}
+.brand .logo .logo-night,.foot .logo .logo-night{display:none}
+:root[data-theme="dark"] .brand .logo .logo-day,:root[data-theme="dark"] .foot .logo .logo-day{display:none}
+:root[data-theme="dark"] .brand .logo .logo-night,:root[data-theme="dark"] .foot .logo .logo-night{display:block}
 .brand{gap:12px;min-width:0}
 .subject{display:grid;line-height:1.2;min-width:0;padding-left:12px;border-left:1px solid var(--line)}
 .subject b{font:600 15px var(--display);letter-spacing:-.02em;white-space:nowrap}
@@ -1066,3 +1066,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .foot div{min-width:0;flex:1 1 260px}.foot p{margin:0 0 4px}
 @media (max-width:560px){.subject small{display:none}.subject b{font-size:14px}.brand .logo img{height:30px}.subject{padding-left:10px}}
 @media (max-width:360px){.subject b{font-size:12.5px}.brand{gap:8px}.brand .logo img{height:26px}}
+
+.subject .tagrow{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.subject .chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--c3) 16%,var(--panel-solid));color:var(--good);font:700 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+@media (max-width:900px){.subject .chip{display:none}}
