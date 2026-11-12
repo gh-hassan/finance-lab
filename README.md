@@ -1,4 +1,6 @@
-# LUMS Finance Lab
+# Finance Fundamentals
+
+Interactive finance tools for the Suleman Dawood School of Business, LUMS.
 
 Thirty-six finance and statistics calculators for MBA students and beginners. Every calculator has:
 

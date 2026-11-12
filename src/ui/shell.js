@@ -92,9 +92,9 @@ export function startApp(root) {
     decideBtn
   ];
 
-  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo', html: '<img src="/logo.png" alt="" width="38" height="38">' }), BRAND.name), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop, pop2);
+  const bar = h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '/', 'data-link': true }, h('span', { class: 'logo' }, h('img', { class: 'logo-day', src: '/LUMS-Logo.png', alt: 'LUMS, a not-for-profit university', width: 112, height: 42 }), h('img', { class: 'logo-night', src: '/LUMS-Logo-white.png', alt: '', width: 112, height: 42 })), h('span', { class: 'subject' }, h('b', {}, BRAND.name), h('small', {}, BRAND.school))), h('nav', { class: 'pillnav', 'aria-label': 'Topics' }, navItems), h('div', { class: 'tools' }, searchBtn, themeBtn), pop, pop2);
   view = h('main', { id: 'view', tabindex: '-1' });
-  const foot = h('footer', { class: 'foot' }, h('p', {}, `${BRAND.name} · a pilot prepared for LUMS. For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice. Market data comes from public sources and may be delayed.`));
+  const foot = h('footer', { class: 'foot' }, h('span', { class: 'logo' }, h('img', { class: 'logo-day', src: '/LUMS-Logo.png', alt: 'LUMS', width: 112, height: 42 }), h('img', { class: 'logo-night', src: '/LUMS-Logo-white.png', alt: '', width: 112, height: 42 })), h('div', {}, h('p', {}, h('b', {}, BRAND.name), ` · ${BRAND.school}, ${BRAND.university}`), h('p', {}, 'A pilot prepared for LUMS. For study and practice. Results depend on your inputs and simplifying assumptions, and are not investment advice. Market data comes from public sources and may be delayed.')));
   const shell = h('div', { class: 'shell' }, bar, view, foot);
   root.append(shell);
 
