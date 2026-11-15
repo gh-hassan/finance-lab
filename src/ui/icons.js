@@ -8,6 +8,7 @@ export const ICONS = {
   compare: svg('<path d="M7 8h12l-3-3M17 16H5l3 3"/>'),
   glossary: svg('<path d="M4 19L8.500 6 13 19M6 15h5"/><path d="M16 8h4M16 12h4M16 16h4"/>'),
   video: svg('<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M10.500 9.500l4 2.500-4 2.500z"/>'),
+  'd-options-payoff': svg('<path d="M3 20.500h18"/><path d="M4 16h6l8-10"/><path d="M10 16l4 4.500"/>'),
   'd-financials': svg('<rect x="4" y="3.5" width="16" height="17" rx="2.5"/><path d="M8.500 16v-3M12 16V9M15.500 16v-5"/>'),
   'd-economy': svg('<path d="M3 17c4 0 5-9 9-9s5 4 9 4"/><path d="M3 20.500h18"/>'),
   'd-industries': svg('<path d="M3 20.500h18"/><path d="M5 20.500V9.500l5 3v-3l5 3V5h4v15.500"/>'),

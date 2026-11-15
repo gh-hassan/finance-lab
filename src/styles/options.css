@@ -1,0 +1,26 @@
+/* Options payoff page */
+.op-chips{margin-top:2px}
+.op-chips .d-chip[aria-pressed="true"]{background:var(--pill-on);color:var(--pill-on-text);border-color:transparent}
+.op-story{display:grid;gap:6px}
+.op-view{font:600 16px/1.4 var(--body);color:var(--ink)}
+.op-result{font-size:16.5px;line-height:1.55;padding:14px 18px;border-radius:16px;background:var(--soft)}
+.op-result .good{color:var(--good)}.op-result .bad{color:var(--bad)}
+.op-mute{color:var(--mute);font-size:14px}
+.op-ctls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 28px;align-items:start}
+.op-ctl{display:grid;gap:10px;min-width:0}
+.op-ct{display:grid;gap:2px}
+.op-ct small{color:var(--mute);font-size:13px;line-height:1.4}
+.op-legs{display:grid;gap:10px}
+.op-row{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,1fr));gap:10px 16px;align-items:end;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:var(--panel-solid)}
+.op-ln{font:600 15px/1.3 var(--body);align-self:center}
+.op-fixed{color:var(--mute);font-size:14px;align-self:center;grid-column:span 2}
+.op-f{display:grid;gap:4px;min-width:0}
+.op-f span{font:600 12.5px var(--body);color:var(--mute)}
+.op-in{width:100%;flex:none}
+.op-page .d-stats .stat.good .sv{color:var(--good)}
+.op-page .d-stats .stat.bad .sv{color:var(--bad)}
+@media (max-width:760px){
+  .op-ctls{grid-template-columns:minmax(0,1fr)}
+  .op-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .op-ln,.op-fixed{grid-column:1/-1}
+}

@@ -63,7 +63,7 @@ export function startApp(root) {
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
     learn: [['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Tutorials from our YouTube channel'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
-    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], 'Live data', ...DATA_PAGES.map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
+    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/options-payoff', 'd-options-payoff', 'Options payoff', 'See how an option makes or loses money'], 'Live data', ...DATA_PAGES.filter(p => p.id !== 'options-payoff').map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
   };
   let openKey = '';
   const dropBtn = (key, icon, label) => {
