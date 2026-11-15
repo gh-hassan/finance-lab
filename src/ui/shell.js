@@ -64,7 +64,7 @@ export function startApp(root) {
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
     learn: [['/roadmap', 'roadmap', 'Roadmap', 'A step-by-step path from beginner to analyst'], ['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Tutorials from our YouTube channel'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
-    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/options-payoff', 'd-options-payoff', 'Options payoff', 'See how an option makes or loses money'], 'Live data', ...DATA_PAGES.filter(p => p.id !== 'options-payoff').map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
+    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/business-value', 'd-business-value', 'Value a business', 'Work out what a business is worth and what to pay'], ['/options-payoff', 'd-options-payoff', 'Options payoff', 'See how an option makes or loses money'], 'Live data', ...DATA_PAGES.filter(p => p.id !== 'options-payoff' && p.id !== 'business-value').map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
   };
   let openKey = '';
   const dropBtn = (key, icon, label) => {

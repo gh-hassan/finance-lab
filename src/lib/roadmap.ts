@@ -75,7 +75,7 @@ export const STAGES: readonly Stage[] = [
     why: 'Valuation pulls everything together: forecast cash, discount it, check it against similar companies, then test how deals and payouts change the answer.',
     can: ['Value a company by discounting its cash', 'Cross-check with similar companies', 'Build a three-statement forecast', 'See how a merger, buyout or payout changes value'],
     ideas: ['Free cash flow', 'Terminal value', 'Multiples', 'Synergies', 'Buyouts', 'Dividends vs buybacks'],
-    tools: ['dcf', 'comps', 'model3', 'merger', 'payout', 'lbo'],
+    tools: ['business-value', 'dcf', 'comps', 'model3', 'merger', 'payout', 'lbo'],
     quest: 'Value a company with a discounted cash flow, then with a multiple of similar firms. If they disagree, say which assumption you trust less, and why.',
     treasure: 'The Scales: you can put a defensible price on a business.' },
   { n: 10, place: 'Option Heights', title: 'Contracts on future prices', rank: 'Analyst', chapter: 'Risk', hours: 5,
