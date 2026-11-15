@@ -29,7 +29,7 @@ export const BEGINNER = {
         { id: 'years', label: 'For how many years', v: 10, unit: 'yrs', step: 1, slider: [1, 40, 1], tip: 'How long you leave the money alone.' }
       ],
       map: b => ({ solve: 'fv', pv: -b.start, pmt: -b.monthly, fv: 0, iy: b.rate, py: 12, n: b.years * 12, when: '0' }),
-      plain: (b, o, k) => [`In ${b.years} years you'd have ${k.value}.`, `You put in ${money(b.start + b.monthly * 12 * b.years, 0)}. The rest is free money from interest.`]
+      plain: (b, o, k) => [`In ${b.years} years you'd have ${k.value}.`, `You put in ${money(b.start + b.monthly * 12 * b.years, 0)}. The rest is interest your money earned.`]
     },
     scene: { id: 'growth', map: b => ({ start: b.start, add: b.monthly * 12, rate: b.rate, years: b.years, mpy: 12 }) },
     easy: [['Future value', 'Money you will have', 'At the end of your plan'], ['Rate per period', 'Interest added each month', 'The yearly rate split into 12 parts'], ['Effective annual rate', 'What you really earn in a year', 'A little more than the quoted rate, because interest earns interest'], ['Interest earned', 'Free money from interest', 'What your money made while you waited']],
@@ -56,11 +56,11 @@ export const BEGINNER = {
   loan: {
     ask: 'What will my loan really cost?', essential: ['amt', 'apr', 'years', 'extra'],
     labels: { amt: 'Amount you borrow', apr: 'Yearly interest rate', years: 'Years to repay', extra: 'Extra you pay each month' }, force: { ppy: 12 },
-    tips: { amt: 'How much money the bank lends you.', apr: 'The bank\'s yearly fee, as a percent of what you owe.', years: 'How long you have to pay it all back.', extra: 'Optional. Even a small extra amount saves a lot of fees.' },
+    tips: { amt: 'How much money the bank lends you.', apr: 'The yearly interest rate, as a percent of what you owe.', years: 'How long you have to pay it all back.', extra: 'Optional. Even a small extra amount saves a lot of interest.' },
     scene: { id: 'loan', map: v => ({ amt: v.amt, apr: v.apr, years: v.years, extra: v.extra }) },
-    easy: [['Payment each period', 'Your monthly payment', 'Fixed for the life of the loan'], ['Total interest', 'Total fees to the bank', 'The price of borrowing'], ['Total paid', 'Total you will pay back', 'The loan plus all the fees'], ['Time to pay off', 'Time until you are debt-free', ''], ['Interest saved', 'Fees you save', 'By paying extra']],
-    plain: (v, o, k) => [`You'd pay ${k.value} a month and ${cardBy(o, 'Total interest').value} in fees overall.`, 'Early payments are mostly fees. Paying extra early saves the most.'],
-    words: [['Principal', 'The money you borrowed.'], ['Interest', 'The fee for borrowing.'], ['Amortization', 'Paying a loan off in small pieces.']]
+    easy: [['Payment each period', 'Your monthly payment', 'Fixed for the life of the loan'], ['Total interest', 'Total interest paid', 'The price of borrowing'], ['Total paid', 'Total you will pay back', 'The loan plus all the interest'], ['Time to pay off', 'Time until you are debt-free', ''], ['Interest saved', 'Fees you save', 'By paying extra']],
+    plain: (v, o, k) => [`You'd pay ${k.value} a month and ${cardBy(o, 'Total interest').value} in interest overall.`, 'Early payments are mostly interest. Paying extra early saves the most.'],
+    words: [['Principal', 'The money you borrowed.'], ['Interest', 'The price you pay for borrowing.'], ['Amortization', 'Paying a loan off in small pieces.']]
   },
   bond: {
     ask: 'What is this bond worth?', essential: ['face', 'cr', 'ytm', 'yrs'],

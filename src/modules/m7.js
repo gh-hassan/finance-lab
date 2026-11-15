@@ -81,7 +81,7 @@ register({
     { id: 'K', label: 'Centre strike price', v: 100, step: 1, pre: '$' },
     { id: 'wd', label: 'Gap between strikes', v: 10, step: 1, pre: '$' },
     { id: 'T', label: 'Time to expiry', v: 0.5, step: 0.05, unit: 'yrs', slider: [0.05, 2, 0.05] },
-    { id: 'vol', label: 'Volatility', v: 25, step: 1, unit: '%', slider: [5, 80, 1] },
+    { id: 'vol', label: 'Volatility (per year)', v: 25, step: 1, unit: '%', slider: [5, 80, 1] },
     { id: 'r', label: 'Risk-free rate', v: 4, step: 0.25, unit: '%' },
     { id: 'q', label: 'Dividend yield', v: 0, step: 0.25, unit: '%' }
   ],
@@ -133,7 +133,7 @@ register({
     { id: 'S', label: 'Stock price today', v: 100, step: 1, pre: '$' },
     { id: 'K', label: 'Strike price', v: 105, step: 1, pre: '$' },
     { id: 'T', label: 'Time to expiry', v: 1, step: 0.25, unit: 'yrs', slider: [0.1, 3, 0.05] },
-    { id: 'vol', label: 'Volatility', v: 30, step: 1, unit: '%', slider: [5, 80, 1] },
+    { id: 'vol', label: 'Volatility (per year)', v: 30, step: 1, unit: '%', slider: [5, 80, 1] },
     { id: 'r', label: 'Risk-free rate', v: 5, step: 0.25, unit: '%' },
     { id: 'q', label: 'Dividend yield', v: 0, step: 0.25, unit: '%' },
     { id: 'n', label: 'Steps in the tree', v: 4, step: 1, min: 1, max: 12, slider: [1, 12, 1] },

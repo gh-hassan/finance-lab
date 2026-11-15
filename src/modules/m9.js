@@ -69,11 +69,11 @@ register({
   blurb: 'Price a forward by cost of carry, spot an arbitrage, and work out how many futures contracts hedge an exposure.',
   fields: [
     { id: 'S', label: 'Spot price today', v: 100, step: 1, pre: '$' },
-    { id: 'r', label: 'Risk-free rate', v: 5, step: 0.25, unit: '%' },
+    { id: 'r', label: 'Risk-free rate (continuously compounded)', v: 5, step: 0.25, unit: '%' },
     { id: 'u', label: 'Storage cost (% a year)', v: 1, step: 0.25, unit: '%' },
     { id: 'y', label: 'Yield or convenience benefit (% a year)', v: 2, step: 0.25, unit: '%' },
     { id: 'T', label: 'Time to delivery', v: 0.5, step: 0.25, unit: 'yrs', slider: [0.1, 3, 0.05] },
-    { id: 'mkt', label: 'Futures price in the market', v: 102, step: 0.5, pre: '$' },
+    { id: 'mkt', label: 'Futures price in the market', v: 104, step: 0.5, pre: '$' },
     { id: 'expo', label: 'Value to hedge ($)', v: 2000000, step: 100000, pre: '$' },
     { id: 'cv', label: 'Value of one futures contract ($)', v: 250000, step: 10000, pre: '$' },
     { id: 'rho', label: 'Correlation of spot and futures', v: 0.9, step: 0.05, min: -1, max: 1, slider: [0, 1, 0.01] },
@@ -96,7 +96,7 @@ register({
         { label: 'Arbitrage', value: Math.abs(diff) < 0.005 ? 'None' : diff > 0 ? 'Cash and carry' : 'Reverse cash and carry', sub: Math.abs(diff) < 0.005 ? 'the futures price matches' : diff > 0 ? 'buy the asset, sell the future, borrow' : 'sell the asset short, buy the future, lend', tone: Math.abs(diff) < 0.005 ? '' : 'good' },
         { label: 'Basis (forward − spot)', value: money(basis, 3), sub: 'closes to zero by delivery' },
         { label: 'Hedge ratio', value: nf(h, 3), sub: `ρ ${nf(v.rho, 2)} × ${v.sdS}% ÷ ${v.sdF}%` },
-        { label: 'Contracts to sell', value: nf(nC, 1), sub: `to hedge ${money(v.expo, 0)}` }
+        { label: 'Contracts to sell', value: nf(nC, 1), sub: `to hedge ${money(v.expo, 0)}; round to the nearest whole contract` }
       ],
       charts: [{ title: 'Forward price over time', sub: 'Fair forward price for each delivery date, against the market price you entered.', series: [{ name: 'Fair forward price', type: 'line', color: 'c1', pts: ts.map(t => [t, forwardPrice(v.S, r, u, y, t)]) }], hlines: [{ y: v.S, label: 'spot', color: 'c4' }], vlines: [{ x: v.T, label: 'your date', color: 'c2' }], xlab: 'Years to delivery', xFmt: x => nf(x, 1), yFmt: x => '$' + nf(x, 0), yRead: x => money(x, 3) }],
       steps: [
@@ -115,7 +115,7 @@ register({
   blurb: 'Find the fair fixed rate of a swap from the yield curve, and value an existing swap when rates have moved.',
   fields: [
     { id: 'par', label: 'Par yields for years 1, 2, 3 and so on (%)', type: 'text', v: CURVE_DEFAULT },
-    { id: 'term', label: 'Swap term', v: 5, step: 1, min: 1, max: 30, unit: 'yrs' },
+    { id: 'term', label: 'Swap term (years remaining)', v: 5, step: 1, min: 1, max: 30, unit: 'yrs' },
     { id: 'notional', label: 'Notional amount', v: 10000000, step: 500000, pre: '$' },
     { id: 'fixed', label: 'Fixed rate you pay on an existing swap', v: 4.2, step: 0.05, unit: '%' }
   ],
@@ -157,10 +157,10 @@ register({
     { id: 'sd', label: 'Risk (% a year)', v: 18, step: 0.5, unit: '%', slider: [2, 60, 0.5] },
     { id: 'days', label: 'Holding period', v: 10, step: 1, unit: 'days', slider: [1, 250, 1] },
     { id: 'conf', label: 'Confidence', v: 95, step: 0.5, unit: '%', slider: [80, 99.9, 0.1] },
-    { id: 'hist', label: 'Your past returns per period (%)', type: 'text', v: '1.2, -0.8, 2.1, -3.4, 0.6, 1.9, -1.1, 0.4, -2.2, 3.0, -0.5, 1.4, -4.8, 2.6, 0.9, -1.7, 1.1, 0.2, -0.9, 1.6', help: 'Optional. Used for historical VaR, over the same length of period.' }
+    { id: 'hist', label: 'Your past returns, one holding period each (%)', type: 'text', v: '1.2, -0.8, 2.1, -3.4, 0.6, 1.9, -1.1, 0.4, -2.2, 3.0, -0.5, 1.4, -4.8, 2.6, 0.9, -1.7, 1.1, 0.2, -0.9, 1.6', help: 'Optional. Each number is the return over one holding period (for example 10 days). It is not scaled: the historical figure is for one period of your data.' }
   ],
   concept: `<h4>The idea</h4>
-<p>Value at risk answers: "With a given confidence, what is the most I can lose over this period?" At 95% over 10 days, the loss should be larger than the VaR only on about one day in twenty of those periods. It says nothing about how bad the rare worse case is, which is what <b>expected shortfall</b> adds.</p>
+<p>Value at risk answers: "With a given confidence, what is the most I can lose over this period?" At 95% over 10 days, the loss should be larger than the VaR only about one holding period in twenty. It says nothing about how bad the rare worse case is, which is what <b>expected shortfall</b> adds.</p>
 <div class="formula">VaR = Value × (z × σ × √T − μ × T)</div>
 <div class="formula">Expected shortfall = Value × (σ√T × φ(z) ÷ (1 − confidence) − μT)</div>
 <ul><li>Risk grows with the square root of time, not in proportion to it.</li><li>The normal curve understates fat tails, so historical VaR is often larger in real markets.</li><li>Expected shortfall is always larger than VaR at the same confidence.</li></ul>`,
@@ -175,7 +175,7 @@ register({
         { key: true, label: `${nf(v.conf, 1)}% value at risk, ${nf(v.days, 0)} days`, value: money(vn, 0), sub: `${pct(vn / v.val, 2)} of the portfolio`, tone: 'bad' },
         { label: 'Expected shortfall', value: money(es, 0), sub: `average loss in the worst ${nf(100 - v.conf, 1)}% of cases`, tone: 'bad' },
         { label: 'Chance of any loss', value: pct(ncdf(-m / s), 1), sub: 'over the same period' },
-        { label: 'Historical VaR', value: h ? money(h.var, 0) : 'Need 5+ returns', sub: h ? `expected shortfall ${money(h.es, 0)}` : 'enter your past returns' },
+        { label: 'Historical VaR (one period of your data)', value: h ? money(h.var, 0) : 'Need 5+ returns', sub: h ? `expected shortfall ${money(h.es, 0)} · not scaled to ${nf(v.days, 0)} days` : 'enter your past returns' },
         { label: 'Risk over the period', value: pct(s, 2), sub: `${pct(sd, 1)} a year × √(${nf(v.days, 0)}/252)` }
       ],
       charts: [{ title: 'Where the loss line sits', sub: 'The bell curve is the spread of possible returns over your holding period. Losses beyond the line happen about as often as the confidence level allows.', series: [{ name: 'Possible returns', type: 'line', color: 'c1', pts: line }], vlines: [{ x: -(vn / v.val) * 100, label: 'VaR', color: 'c4' }, { x: m * 100, label: 'expected', color: 'c2' }], xlab: 'Return over the period (%)', xFmt: x => nf(x, 1) + '%', yFmt: x => nf(x, 2), yRead: x => nf(x, 3) }],
@@ -194,11 +194,11 @@ register({
   id: 'altman', group: 'Analysis', title: 'Credit Health (Altman Z-Score)',
   blurb: 'Score how close a company is to financial distress from five ratios, with the safe, grey and distress zones.',
   fields: [
-    { id: 'model', label: 'Type of company', type: 'select', v: 'public', options: [['public', 'Listed manufacturer'], ['private', 'Private company'], ['service', 'Service or emerging market']] },
+    { id: 'model', label: 'Type of company', type: 'select', v: 'public', options: [['public', 'Listed manufacturer'], ['private', 'Private company'], ['service', 'Service / non-manufacturer (Z″)']] },
     { id: 'wc', label: 'Working capital ($M)', v: 180, step: 10 },
     { id: 're', label: 'Retained earnings ($M)', v: 420, step: 10 },
     { id: 'ebit', label: 'EBIT ($M)', v: 210, step: 10 },
-    { id: 'eq', label: 'Equity value ($M)', v: 1500, step: 50 },
+    { id: 'eq', label: 'Equity value ($M): market value if listed, book value if private', v: 1700, step: 50 },
     { id: 'liab', label: 'Total liabilities ($M)', v: 900, step: 25 },
     { id: 'sales', label: 'Sales ($M)', v: 2100, step: 50 },
     { id: 'assets', label: 'Total assets ($M)', v: 1800, step: 50 }
@@ -240,7 +240,7 @@ register({
     { id: 'fee', label: 'Deal fees (% of price)', v: 2, step: 0.25, unit: '%' },
     { id: 'rate', label: 'Interest rate on the debt', v: 8, step: 0.25, unit: '%' },
     { id: 'g', label: 'EBITDA growth per year', v: 5, step: 0.5, unit: '%', slider: [-5, 20, 0.5] },
-    { id: 'capex', label: 'Capital spending (% of EBITDA)', v: 20, step: 1, unit: '%' },
+    { id: 'capex', label: 'Capital spending (% of EBITDA)', v: 20, step: 1, unit: '%', help: 'Also used as depreciation for tax.' },
     { id: 'tax', label: 'Tax rate', v: 25, step: 1, unit: '%' },
     { id: 'exit', label: 'Sale price (× EBITDA)', v: 8, step: 0.25, unit: '×', slider: [3, 15, 0.25] },
     { id: 'yrs', label: 'Years held', v: 5, step: 1, min: 1, max: 10, unit: 'yrs' }
@@ -308,8 +308,8 @@ register({
     return {
       cards: [
         { key: true, label: ok ? 'You are on track' : 'Shortfall at retirement', value: ok ? money(-o.gap, 0) + ' spare' : money(o.gap, 0), sub: ok ? 'pot above what you need' : 'pot below what you need', tone: ok ? 'good' : 'bad' },
-        { label: 'Pot at retirement', value: money(o.atRetire, 0), sub: `at age ${v.ret}` },
-        { label: 'Needed at retirement', value: money(o.need, 0), sub: `to pay ${money(o.firstWithdrawal, 0)} in the first year (${money(v.inc, 0)} in today's money)` },
+        { label: 'Pot at retirement', value: money(o.atRetire, 0), sub: `at age ${v.ret}, in dollars of that year (about ${money(o.atRetire / Math.pow(1 + v.inf / 100, o.yearsSaving), 0)} in today's money)` },
+        { label: 'Needed at retirement', value: money(o.need, 0), sub: `to pay ${money(o.firstWithdrawal, 0)} in the first year (${money(v.inc, 0)} in today's money). In dollars of that year; about ${money(o.need / Math.pow(1 + v.inf / 100, o.yearsSaving), 0)} in today's money` },
         { label: ok ? 'Money lasts until' : 'Money runs out at age', value: nf(Math.min(o.fundedUntil, 120), 0), sub: `plan is to age ${v.live}`, tone: o.fundedUntil >= v.live ? 'good' : 'bad' },
         { label: 'Extra to save each year', value: ok ? '$0' : money(o.extraPerYear, 0), sub: ok ? 'nothing more is needed' : 'starting now, rising with your savings' }
       ],

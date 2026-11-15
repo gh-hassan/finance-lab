@@ -24,7 +24,16 @@ export const compact = (x: number): string => {
   if (a >= 1e4) return '$' + +(x / 1e3).toFixed(1) + 'K';
   return money(x, a >= 100 ? 0 : 2);
 };
-export const parseList = (s: string): number[] => String(s).split(/[,;\s]+/).filter(x => x !== '').map(Number).filter(Number.isFinite);
+export const parseList = (s: string): number[] => String(s).replace(/[%$]/g, '').split(/[,;\s]+/).filter(x => x !== '').map(Number).filter(Number.isFinite);
+/** Plain-English check of a typed list: says what was read and warns about "30,000" style entries. */
+export function listNote(s: string): string {
+  const text = String(s), nums = parseList(text), m = /\d+,\d{3}(?!\d)/.exec(text);
+  if (!nums.length) return '';
+  const shown = nums.slice(0, 8).map(x => nf(x, 4).replace(/\.?0+$/, '')).join(', ') + (nums.length > 8 ? ', …' : '');
+  const warn = m ? ` Commas separate numbers here. Did you mean ${m[0].replace(',', '')} (no comma) instead of two numbers?` : '';
+  const dropped = text.split(/[,;\s]+/).filter(x => x !== '' && !Number.isFinite(Number(x.replace(/[%$]/g, '')))).length;
+  return `Read ${nums.length} number${nums.length === 1 ? '' : 's'}: ${shown}.` + (dropped ? ` ${dropped} entr${dropped === 1 ? 'y was' : 'ies were'} not a number and skipped.` : '') + warn;
+}
 export const sum = (a: readonly number[]): number => a.reduce((s, x) => s + x, 0);
 export const range = (a: number, b: number, step: number): number[] => { const o: number[] = []; for (let x = a; x <= b + step * 1e-9; x += step) o.push(+x.toFixed(10)); return o; };
 
@@ -126,4 +135,16 @@ export function ninv(p: number): number {
   if (p > 1 - lo) { const q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
   const q = p - 0.5, r = q * q;
   return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+}
+
+/** Exact chance of finishing ahead after n plays of a win/lose bet (binomial). Falls back to the normal curve for very large n. */
+export function chanceAhead(n: number, p: number, win: number, lose: number): number {
+  const k = Math.max(1, Math.round(n));
+  if (p <= 0) return 0;
+  if (p >= 1) return win > 0 ? 1 : 0;
+  if (k > 2000) { const ev = p * win - (1 - p) * lose, sd = Math.sqrt(p * (win - ev) ** 2 + (1 - p) * (-lose - ev) ** 2); return sd === 0 ? (ev > 0 ? 1 : 0) : 1 - ncdf(-k * ev / (sd * Math.sqrt(k))); }
+  const lf: number[] = [0]; for (let i = 1; i <= k; i++) lf.push(lf[i - 1] + Math.log(i));
+  let tot = 0;
+  for (let j = 0; j <= k; j++) if (j * win - (k - j) * lose > 1e-9) tot += Math.exp(lf[k] - lf[j] - lf[k - j] + j * Math.log(p) + (k - j) * Math.log(1 - p));
+  return Math.min(1, tot);
 }

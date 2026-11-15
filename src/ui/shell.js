@@ -14,6 +14,7 @@ import { renderVideos } from './videos.js';
 import { renderCalculator } from './calculator.js';
 import { renderGlossary, enhanceTerms } from './glossary.js';
 import { DATA_PAGES } from './datapages.js';
+import { renderRoadmap, markSeen } from './roadmap.js';
 
 let cleanup = () => { };
 let view;
@@ -62,7 +63,7 @@ export function startApp(root) {
   addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
-    learn: [['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Tutorials from our YouTube channel'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
+    learn: [['/roadmap', 'roadmap', 'Roadmap', 'A step-by-step path from beginner to analyst'], ['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Tutorials from our YouTube channel'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
     decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/options-payoff', 'd-options-payoff', 'Options payoff', 'See how an option makes or loses money'], 'Live data', ...DATA_PAGES.filter(p => p.id !== 'options-payoff').map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
   };
   let openKey = '';
@@ -172,20 +173,22 @@ function mountData(dp, root) {
 }
 
 function route() {
-  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isVd = id === 'videos', isBa = id === 'calculator', dp = DATA_PAGES.find(x => x.id === id);
+  const id = location.pathname.replace(/^\/+|\/+$/g, '') || 'home', m = MODS.find(x => x.id === id), isLearn = id === 'learn', isSc = id === 'scenarios', isCmp = id === 'compare', isGl = id === 'glossary', isVd = id === 'videos', isRm = id === 'roadmap', isBa = id === 'calculator', dp = DATA_PAGES.find(x => x.id === id);
   cleanup(); cleanup = () => { };
-  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', (m || isBa) ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isVd) ? 'learn' : (isSc || isCmp || dp) ? 'decide' : 'home')));
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('on', (m || isBa) ? p.dataset.id === 'calc' : p.dataset.id === ((isLearn || isGl || isVd || isRm) ? 'learn' : (isSc || isCmp || dp) ? 'decide' : 'home')));
   const rerender = () => route();
+  if (m) markSeen(m.id); else if (dp) markSeen(dp.id); else if (isSc) markSeen('scenarios');
   if (m) { document.title = pageTitle(m.title); cleanup = mountModule(m, view, rerender); }
   else if (isSc) { document.title = pageTitle('Scenarios'); cleanup = renderScenarios(view); }
   else if (isCmp) { document.title = pageTitle('Compare'); cleanup = renderCompare(view); }
   else if (isBa) { document.title = pageTitle('Financial calculator'); cleanup = renderCalculator(view); }
   else if (dp) { document.title = pageTitle(dp.title); cleanup = mountData(dp, view); }
+  else if (isRm) { document.title = pageTitle('Roadmap'); cleanup = renderRoadmap(view); }
   else if (isVd) { document.title = `Video lessons · ${BRAND.lessons} · ${BRAND.short}`; cleanup = renderVideos(view); }
   else if (isGl) { document.title = pageTitle('Glossary'); cleanup = renderGlossary(view); }
   else if (isLearn) { document.title = `Lessons · ${BRAND.lessons} · ${BRAND.short}`; cleanup = renderLearn(view); }
   else { document.title = pageTitle(); cleanup = renderHome(view, navigate) || cleanup; }
-  if (!isGl && !isBa && !dp) enhanceTerms(view);
+  if (!isGl && !isBa && !dp && !isRm) enhanceTerms(view);
   view.querySelectorAll('.reveal').forEach((el, i) => el.style.setProperty('--d', Math.min(i, 10) * 55 + 'ms'));
   if (location.hash && id === 'learn') setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 600);
   else window.scrollTo({ top: 0 });

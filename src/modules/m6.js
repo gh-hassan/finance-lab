@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { register } from '../lib/registry';
-import { nf, nfx, money, pct, parseList, sum, range, ncdf, ninv, npdf, mean, median, stdev, percentile, corr, linreg, isNum } from '../lib/math';
+import { chanceAhead, nf, nfx, money, pct, parseList, sum, range, ncdf, ninv, npdf, mean, median, stdev, percentile, corr, linreg, isNum } from '../lib/math';
 
 /* ================= STATISTICS TOOLKIT ================= */
 register({
@@ -37,7 +37,7 @@ register({
         ['Variance and spread', `Variance = ${nf(sum(d.map(x => (x - mu) ** 2)), 3)} ÷ (${n} − 1) = ${nf(sd * sd, 4)}\nStandard deviation = √${nf(sd * sd, 4)} = ${nf(sd, 4)}`],
         ['Rule of thumb', `About 68% of values within ${nf(mu - sd, 2)} to ${nf(mu + sd, 2)}, and about 95% within ${nf(mu - 2 * sd, 2)} to ${nf(mu + 2 * sd, 2)} (if the data is bell-shaped).`]
       ],
-      tables: [{ title: 'Each number against the average', collapsed: true, cols: ['Number', 'Distance from average', 'Spreads from average'], rows: d.slice(0, 200).map(x => [nf(x, 2), nf(x - mu, 2), nf((x - mu) / sd, 2)]) }]
+      tables: [{ title: 'Each number against the average', collapsed: true, cols: ['Number', 'Distance from average', 'Number of spreads from average'], rows: d.slice(0, 200).map(x => [nf(x, 2), nf(x - mu, 2), sd > 0 ? nf((x - mu) / sd, 2) : '—']) }]
     };
   }
 });
@@ -90,14 +90,14 @@ register({
   fields: [
     { id: 'mean', label: 'Average yearly return', v: 7, step: 0.5, unit: '%' },
     { id: 'sd', label: 'Spread (standard deviation)', v: 16, step: 0.5, unit: '%', min: 0.1 },
-    { id: 'cut', label: 'A loss you worry about', v: -20, step: 1, unit: '%' },
+    { id: 'cut', label: 'A bad year\'s return (use a minus sign, for example −20)', v: -20, step: 1, unit: '%' },
     { id: 'amount', label: 'Amount invested', v: 10000, step: 1000, pre: '$' },
     { id: 'conf', label: 'How sure do you want to be?', type: 'select', v: '95', options: [['90', '90%'], ['95', '95%'], ['99', '99%']] }
   ],
   concept: `<h4>The idea</h4>
 <p>Many returns roughly follow a bell curve. If you know the average and the spread, you can work out how likely any result is.</p>
 <div class="formula">z = (value − average) ÷ spread          chance = area of the bell below z</div>
-<div class="formula">Value at Risk = amount × (average − z_conf × spread)</div>
+<div class="formula">Value at Risk = amount × (z_conf × spread − average)</div>
 <ul><li>About 68% of years land within one spread of the average, 95% within two.</li><li><b>Value at Risk</b> answers: "with 95% confidence, how much could I lose in a year?" The loss will be worse in the other 5% of years.</li><li>Real markets have fatter tails than a bell curve, so treat this as a guide, not a guarantee.</li></ul>`,
   calc(v) {
     const mu = v.mean, sd = Math.max(1e-6, v.sd), conf = +v.conf / 100, z = (v.cut - mu) / sd, pBelow = ncdf(z), pLoss = ncdf((0 - mu) / sd), zc = ninv(conf), edge = mu - zc * sd, dollars = v.amount * edge / 100;
@@ -108,7 +108,7 @@ register({
         { key: true, label: `Chance of a year worse than ${nf(v.cut, 0)}%`, value: pct(pBelow, pBelow < 0.01 ? 2 : 1), sub: pBelow > 0.0005 ? `about 1 year in ${nf(1 / pBelow, 0)}` : 'very unlikely' },
         { label: 'Chance of any loss', value: pct(pLoss, 1), sub: 'a year below 0%' },
         { label: `Bad-year line (${v.conf}%)`, value: nf(edge, 1) + '%', sub: `only ${100 - +v.conf} years in 100 are worse` },
-        { label: 'Loss to plan for', value: edge < 0 ? money(-dollars, 0) : 'No loss', sub: `on ${money(v.amount, 0)}, ${v.conf}% sure` },
+        { label: 'Loss to plan for', value: edge < 0 ? money(Math.min(-dollars, v.amount), 0) : 'No loss', sub: `on ${money(v.amount, 0)}, ${v.conf}% sure` },
         { label: 'Typical range (68%)', value: `${nf(mu - sd, 0)}% to ${nf(mu + sd, 0)}%`, sub: 'about 2 years in 3' },
         { label: 'Wide range (95%)', value: `${nf(mu - 2 * sd, 0)}% to ${nf(mu + 2 * sd, 0)}%`, sub: 'about 19 years in 20' }
       ],
@@ -144,7 +144,7 @@ register({
 <ul><li>A positive expected value is worth taking <i>on average</i>. A single try can still lose.</li><li>The more times you repeat it, the closer your real average gets to the expected value (the law of large numbers).</li><li>This is how insurers, investors and casinos think.</li></ul>`,
   calc(v) {
     const p = Math.min(1, Math.max(0, v.pwin / 100)), ev = p * v.win - (1 - p) * v.lose, sd = Math.sqrt(p * (v.win - ev) ** 2 + (1 - p) * (-v.lose - ev) ** 2), n = Math.max(1, Math.round(v.tries));
-    const ahead = k => (sd === 0 ? (ev > 0 ? 1 : 0) : 1 - ncdf((0 - k * ev) / (sd * Math.sqrt(k)))), ks = range(1, 100, 1);
+    const ahead = k => chanceAhead(k, p, v.win, v.lose), ks = range(1, 100, 1);
     return {
       cards: [
         { key: true, label: 'Expected value per try', value: (ev >= 0 ? '+' : '−') + money(Math.abs(ev), 2), sub: ev >= 0 ? 'worth taking on average' : 'a losing bet on average', tone: ev >= 0 ? 'good' : 'bad' },
@@ -161,7 +161,7 @@ register({
         ['Expected value', `${pct(p, 0)} × ${money(v.win, 0)} − ${pct(1 - p, 0)} × ${money(v.lose, 0)} = ${money(ev, 2)}`],
         ['Spread of one try', `√[${nf(p, 2)} × (${nf(v.win - ev, 1)})² + ${nf(1 - p, 2)} × (${nf(-v.lose - ev, 1)})²] = ${money(sd, 2)}`],
         [`After ${n} tries`, `Expected total = ${n} × ${money(ev, 2)} = ${money(ev * n, 2)}\nSpread of the total = ${money(sd, 2)} × √${n} = ${money(sd * Math.sqrt(n), 2)}`],
-        ['Chance of being ahead', `${pct(ahead(n), 1)} (normal approximation)`]
+        ['Chance of being ahead', `${pct(ahead(n), 1)} (exact count of every win/lose combination)`]
       ]
     };
   }

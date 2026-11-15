@@ -14,7 +14,7 @@ export interface Output {
   id: string; label: string; better: 'high' | 'low'; fmt: (x: number) => string; short: (x: number) => string;
   calc: (v: Vals) => number; risk?: Risk;
 }
-export interface Model { id: string; title: string; pitch: string; main: string; drivers: Driver[]; outputs: Output[] }
+export interface Model { id: string; title: string; pitch: string; main: string; note?: string; drivers: Driver[]; outputs: Output[] }
 
 const m0 = (x: number): string => money(x, 0);
 const yrsFmt = (x: number): string => (isNum(x) ? `${nf(x, 1)} yrs` : 'Never');
@@ -41,6 +41,7 @@ const project: Model = {
 /* ----- model 2: a company (simple DCF) ----- */
 const company: Model = {
   id: 'company', title: 'A company\'s value', pitch: 'What is one share worth?', main: 'ps',
+  note: 'Assumes sales of $1,000M, a 25% tax rate, 70% of profit turned into cash, $300M net debt and 100M shares.',
   drivers: [
     dr('g', 'Sales growth per year', 3, 8, 13, 0.5, { unit: '%' }),
     dr('margin', 'Profit on each sale', 10, 18, 24, 0.5, { unit: '%' }),
@@ -57,9 +58,9 @@ const company: Model = {
 
 /* ----- model 3: a loan ----- */
 function loanRun(v: Vals): { pay: number; interest: number; years: number } {
-  const i = v.rate / 1200, n = 360, base = i ? v.amount * i / (1 - Math.pow(1 + i, -n)) : v.amount / n, pay = base + v.extra;
+  const i = v.rate / 1200, n = Math.round((v.term ?? 30) * 12), base = i ? v.amount * i / (1 - Math.pow(1 + i, -n)) : v.amount / n, pay = base + v.extra;
   let bal = v.amount, paid = 0, k = 0;
-  while (bal > 0.005 && k < 600) { const int = bal * i, p = Math.min(pay, bal + int); bal -= p - int; paid += int; k++; }
+  while (bal > 0.005 && k < Math.max(600, n * 2)) { const int = bal * i, p = Math.min(pay, bal + int); bal -= p - int; paid += int; k++; }
   return { pay: base, interest: paid, years: k / 12 };
 }
 const loan: Model = {
@@ -67,10 +68,11 @@ const loan: Model = {
   drivers: [
     dr('amount', 'Amount you borrow', 300000, 250000, 200000, 5000, { pre: '$' }),
     dr('rate', 'Interest rate', 8.5, 6.5, 5, 0.25, { unit: '%' }),
-    dr('extra', 'Extra you pay each month', 0, 0, 300, 50, { pre: '$' })
+    dr('extra', 'Extra you pay each month', 0, 0, 300, 50, { pre: '$' }),
+    dr('term', 'Loan term', 30, 30, 30, 1, { unit: 'yrs', int: true })
   ],
   outputs: [
-    { id: 'interest', label: 'Total fees to the bank', better: 'low', fmt: m0, short: compact, risk: { text: 'fees 20% above the base case', kind: 'above', at: b => b * 1.2 }, calc: v => loanRun(v).interest },
+    { id: 'interest', label: 'Total interest paid', better: 'low', fmt: m0, short: compact, risk: { text: 'interest 20% above the base case', kind: 'above', at: b => b * 1.2 }, calc: v => loanRun(v).interest },
     { id: 'pay', label: 'Monthly payment', better: 'low', fmt: m0, short: compact, calc: v => loanRun(v).pay },
     { id: 'years', label: 'Time to be debt-free', better: 'low', fmt: yrsFmt, short: x => nf(x, 0), calc: v => loanRun(v).years }
   ]
@@ -83,13 +85,14 @@ const savings: Model = {
     dr('monthly', 'Saved each month', 150, 300, 450, 25, { pre: '$' }),
     dr('rate', 'Yearly return', 3, 6.5, 9, 0.5, { unit: '%' }),
     dr('years', 'Years of saving', 20, 25, 30, 1, { unit: 'yrs', int: true }),
-    dr('infl', 'Price rises per year', 5, 3, 2, 0.5, { unit: '%' })
+    dr('infl', 'Price rises per year', 5, 3, 2, 0.5, { unit: '%' }),
+    dr('start', 'Starting balance', 5000, 5000, 5000, 500, { pre: '$' })
   ],
   outputs: [
     { id: 'real', label: 'Worth in today\'s money', better: 'high', fmt: m0, short: compact, risk: { text: 'ending with 20% less than planned', kind: 'below', at: b => b * 0.8 },
-      calc: v => { const i = v.rate / 1200, n = v.years * 12, fv = 5000 * Math.pow(1 + i, n) + v.monthly * (i ? (Math.pow(1 + i, n) - 1) / i : n); return fv / Math.pow(1 + v.infl / 100, v.years); } },
+      calc: v => { const i = v.rate / 1200, n = v.years * 12, fv = (v.start ?? 5000) * Math.pow(1 + i, n) + v.monthly * (i ? (Math.pow(1 + i, n) - 1) / i : n); return fv / Math.pow(1 + v.infl / 100, v.years); } },
     { id: 'final', label: 'Pile of money at the end', better: 'high', fmt: m0, short: compact,
-      calc: v => { const i = v.rate / 1200, n = v.years * 12; return 5000 * Math.pow(1 + i, n) + v.monthly * (i ? (Math.pow(1 + i, n) - 1) / i : n); } }
+      calc: v => { const i = v.rate / 1200, n = v.years * 12; return (v.start ?? 5000) * Math.pow(1 + i, n) + v.monthly * (i ? (Math.pow(1 + i, n) - 1) / i : n); } }
   ]
 };
 

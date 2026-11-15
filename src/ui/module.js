@@ -10,7 +10,7 @@ import { UNIT_LIST, fieldsHaveUnits, isUnitField, unitFactor, unitize } from './
 import { BEGINNER, TOPICS, keyCard, easyCard } from './beginner.js';
 import { SceneView, SCENES } from './scenes.js';
 import { rangeSlider } from './slider.js';
-import { nf } from '../lib/math';
+import { nf, listNote } from '../lib/math';
 
 const stepsHtml = steps => `<ol class="steps">${steps.map(s => `<li><b>${esc(s[0])}</b><code>${esc(s[1])}</code></li>`).join('')}</ol>`;
 function tableHtml(t) {
@@ -130,7 +130,9 @@ export function mountModule(m, main, onMode) {
       }
     } else Object.values(refs).forEach(r => { const sh = m.show && m.show[r.f.id]; r.wrap.hidden = sh && !simple ? !sh(eff) : false; });
     noteEl.hidden = !out.note; noteEl.textContent = out.note || '';
-    infoEl.hidden = !out.info; infoEl.textContent = out.info || '';
+    const listInfo = fieldList.filter(f => f.type === 'text' && !f.names && f.v !== '' && /^[\d\s.,;+\-−%$]*$/.test(String(f.v))).map(f => listNote(state[f.id])).filter(Boolean).join(' ');
+    const info = [out.info, listInfo].filter(Boolean).join(' ');
+    infoEl.hidden = !info; infoEl.textContent = info;
     const k = keyCard(out), cards = out.cards || [];
     let list = (out.charts || []).filter(Boolean);
     if (beginner) {

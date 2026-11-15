@@ -37,7 +37,7 @@ export function renderScenarios(main) {
     body.innerHTML = '';
     /* 1. three futures */
     const t = h('table', { class: 'sct' });
-    t.append(h('thead', {}, h('tr', {}, h('th', {}), h('th', { class: 'w' }, 'Worst'), h('th', {}, 'Base'), h('th', { class: 'b' }, 'Best'), h('th', {}, 'Likely'))));
+    t.append(h('thead', {}, h('tr', {}, h('th', {}), h('th', { class: 'w' }, 'Worst'), h('th', {}, 'Base'), h('th', { class: 'b' }, 'Best'), h('th', {}, 'Weighted average'))));
     const tb = h('tbody');
     m.drivers.forEach(d => {
       const tr = h('tr', {}, h('th', {}, d.label));
@@ -49,13 +49,13 @@ export function renderScenarios(main) {
       tr.append(h('td', { class: 'dim' }, ''));
       tb.append(tr);
     });
-    const probTr = h('tr', { class: 'probs' }, h('th', {}, 'How likely is each?'));
-    st.probs.forEach((p, i) => { const inp = h('input', { type: 'number', min: 0, max: 100, step: 5, value: p, 'aria-label': 'Chance ' + ['worst', 'base', 'best'][i] }); inp.addEventListener('input', () => { st.probs[i] = Math.max(0, inp.valueAsNumber || 0); refresh(); }); probTr.append(h('td', { 'data-label': ['Worst', 'Base', 'Best'][i] }, h('div', { class: 'inp sm' }, inp, h('span', { class: 'u' }, '%')))); });
-    probTr.append(h('td', { class: 'dim' }, ''));
+    const probTr = h('tr', { class: 'probs' }, h('th', {}, 'How likely is each?')), probTot = h('td', { class: 'dim' }), totalText = () => `Total: ${nf(st.probs.reduce((a, x) => a + x, 0), 0)}%` + (st.probs.reduce((a, x) => a + x, 0) === 100 ? '' : ' (scaled to 100%)');
+    st.probs.forEach((p, i) => { const inp = h('input', { type: 'number', min: 0, max: 100, step: 5, value: p, 'aria-label': 'Chance ' + ['worst', 'base', 'best'][i] }); inp.addEventListener('input', () => { st.probs[i] = Math.max(0, inp.valueAsNumber || 0); probTot.textContent = totalText(); refresh(); }); probTr.append(h('td', { 'data-label': ['Worst', 'Base', 'Best'][i] }, h('div', { class: 'inp sm' }, inp, h('span', { class: 'u' }, '%')))); });
+    probTot.textContent = totalText(); probTr.append(probTot);
     tb.append(probTr);
     tableRes = h('tbody', { class: 'res' });
     t.append(tb, tableRes);
-    const sec1 = h('section', { class: 'card scsec reveal' }, h('div', { class: 'sec-h2' }, h('h2', {}, 'Three possible futures'), h('p', {}, 'Edit any number.'), h('a', { class: 'learnlink', href: '/learn#idea-expected', 'data-link': true }, 'What does "Likely" mean?')), h('div', { class: 'tw2' }, t));
+    const sec1 = h('section', { class: 'card scsec reveal' }, h('div', { class: 'sec-h2' }, h('h2', {}, 'Three possible futures'), h('p', {}, 'Edit any number.'), h('a', { class: 'learnlink', href: '/learn#idea-expected', 'data-link': true }, 'What does "Weighted average" mean?')), h('div', { class: 'tw2' }, t));
 
     /* measure picker */
     measureEl = h('div', { class: 'measure reveal' });
@@ -67,7 +67,7 @@ export function renderScenarios(main) {
     tornEl = h('section', { class: 'card scsec reveal' });
     gridEl = h('section', { class: 'card scsec reveal' });
     riskEl = h('section', { class: 'card scsec reveal' });
-    body.append(sec1, measureEl, tornEl, gridEl, riskEl);
+    body.append(...(m.note ? [h('p', { class: 'sc-note' }, m.note)] : []), sec1, measureEl, tornEl, gridEl, riskEl);
     refresh(true);
   }
 
@@ -80,7 +80,7 @@ export function renderScenarios(main) {
     m.outputs.forEach(o => {
       const oc = outcome(m, o.id, r, st.probs);
       const cell = (x, cls) => `<td class="${cls || ''}" data-label="${{ wc: 'Worst', base: 'Base', bc: 'Best' }[cls] || ''}"><span class="vw"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</span></td>`;
-      const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk" data-label="Likely"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
+      const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk" data-label="Weighted average"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
       tableRes.append(tr);
       tr.querySelectorAll('td b').forEach((el, i) => tick(el, el.textContent, `sc:${st.id}:${o.id}:${i}`));
     });
@@ -115,8 +115,8 @@ export function renderScenarios(main) {
   function renderRisk(animate) {
     const m = model(), o = findOutput(m, outId());
     sim = monteCarlo(m, o.id, ranges(), 3000, st.seed);
-    const bad = o.better === 'high' ? ['Bad day', sim.p10] : ['Bad day', sim.p90], good = o.better === 'high' ? ['Good day', sim.p90] : ['Good day', sim.p10];
-    riskEl.innerHTML = `<div class="sec-h2"><h2>How risky is it?</h2><p>3,000 what-ifs, each with random numbers inside your ranges.</p><a class="learnlink" href="/learn#idea-montecarlo" data-link>How does this work?</a><button type="button" class="btn play" data-run>Run again</button></div>
+    const bad = o.better === 'high' ? ['Bad case (1 in 10)', sim.p10] : ['Bad case (1 in 10)', sim.p90], good = o.better === 'high' ? ['Good case (1 in 10)', sim.p90] : ['Good case (1 in 10)', sim.p10];
+    riskEl.innerHTML = `<div class="sec-h2"><h2>How risky is it?</h2><p>3,000 what-ifs, each with random numbers inside your ranges. The simulation uses your ranges, not the likelihood percentages.</p><a class="learnlink" href="/learn#idea-montecarlo" data-link>How does this work?</a><button type="button" class="btn play" data-run>Run again</button></div>
       <div class="hist"></div><div class="rcount"></div>
       <div class="rstats"><div><span>Typical</span><b>${esc(o.fmt(sim.p50))}</b></div><div><span>${bad[0]}</span><b class="bad">${esc(o.fmt(bad[1]))}</b></div><div><span>${good[0]}</span><b class="good">${esc(o.fmt(good[1]))}</b></div>${sim.probBad != null ? `<div class="chance"><span>Chance of ${esc(sim.riskText)}</span><b class="${sim.probBad > 0.25 ? 'bad' : sim.probBad > 0.1 ? 'warn' : 'good'}">${pct(sim.probBad, 0)}</b></div>` : ''}</div>`;
     riskEl.querySelector('[data-run]').addEventListener('click', () => { st.seed++; renderRisk(true); });

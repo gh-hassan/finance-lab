@@ -16,7 +16,7 @@ register({
     { id: 'tax', label: 'Tax rate', v: 25, step: 1, unit: '%' },
     { id: 'E', label: 'Market value of equity ($M)', v: 700, step: 50 },
     { id: 'D', label: 'Market value of debt ($M)', v: 300, step: 50 },
-    { id: 'step', label: 'Debt cost rises per +10% debt weight', v: 50, step: 10, unit: 'bps' }
+    { id: 'step', label: 'Extra interest on debt for each 10 points more borrowing', v: 50, step: 10, unit: 'bps' }
   ],
   concept: `<h4>The idea</h4>
 <p>WACC is the average return investors require, weighted by how much of the firm each group funds. It is the discount rate for a project with the firm's average risk.</p>
@@ -89,7 +89,7 @@ register({
     const eps = (ebit, I, S) => { const ebt = ebit - I; return (ebt > 0 ? ebt * (1 - t) : ebt) / S; };
     const star = SA - SB > 1e-9 ? IB * SA / (SA - SB) : NaN;
     const epsA = eps(v.ebit, 0, SA), epsB = eps(v.ebit, IB, SB), dfl = v.ebit > IB ? v.ebit / (v.ebit - IB) : NaN;
-    const VU = v.ebit * (1 - t) / ku, VL = VU + t * D, keL = EB > 0 ? ku + (ku - r) * (1 - t) * D / EB : ku;
+    const VU = v.ebit * (1 - t) / ku, VL = VU + t * D, keL = VL - D > 0 ? ku + (ku - r) * (1 - t) * D / (VL - D) : ku;
     const xs = range(0, v.ebit * 2.5, v.ebit * 2.5 / 50);
     const vl = [{ x: v.ebit, label: 'expected EBIT', color: 'c4' }];
     if (isNum(star) && star > 0 && star <= v.ebit * 2.5) vl.push({ x: star, label: `indifference ${nf(star, 1)}`, color: 'mute' });
@@ -101,7 +101,7 @@ register({
         { label: `EPS: ${nf(v.dp, 0)}% debt`, value: money(epsB), sub: `${nf(SB, 1)}M shares · interest ${money(IB, 1)}M`, tone: epsB >= epsA ? 'good' : 'bad' },
         { label: 'Indifference EBIT', value: isNum(star) ? money(star, 1) + 'M' : 'n/a', sub: 'EPS equal at this EBIT' },
         { label: 'Degree of financial leverage', value: isNum(dfl) ? nf(dfl, 3) : 'n/a', sub: '1% EBIT move → this % EPS move' },
-        { label: 'Value if unlevered (V_U)', value: money(VU, 1) + 'M', sub: 'EBIT(1−t) ÷ k_u' },
+        { label: 'Value if unlevered (V_U)', value: money(VU, 1) + 'M', sub: 'EBIT(1−t) ÷ k_u: the value of the earnings, not the capital raised' },
         { label: 'Value with debt (V_L)', value: money(VL, 1) + 'M', sub: `+ ${money(t * D, 1)}M tax shield` },
         { label: 'Levered cost of equity', value: pct(keL, 2), sub: `up from ${pct(ku, 2)}` }
       ],
@@ -129,7 +129,7 @@ register({
     { id: 'vc', label: 'Variable cost per unit', v: 30, step: 1, pre: '$' },
     { id: 'fc', label: 'Fixed costs per period', v: 100000, step: 5000, pre: '$' },
     { id: 'q', label: 'Expected units sold', v: 8000, step: 250, slider: [500, 20000, 250] },
-    { id: 'tp', label: 'Target operating profit', v: 50000, step: 5000, pre: '$' }
+    { id: 'tp', label: 'Target operating profit (before tax)', v: 50000, step: 5000, pre: '$' }
   ],
   concept: `<h4>The idea</h4>
 <p>Each unit sold contributes its price minus variable cost toward covering fixed costs. Once fixed costs are covered, every extra unit adds contribution straight to profit.</p>
@@ -214,7 +214,7 @@ register({
         { label: 'Days inventory (DIO)', value: nf(dio, 1), sub: `turns ${nf(v.days / dio, 1)}× a year` },
         { label: 'Days sales outstanding', value: nf(dso, 1), sub: 'time to collect' },
         { label: 'Days payables (DPO)', value: nf(dpo, 1), sub: 'time to pay' },
-        { label: 'Cash tied up in the cycle', value: money(ccc * v.cogs / v.days, 0), sub: 'CCC × daily COGS' },
+        { label: 'Cash tied up in the cycle', value: money(ccc * v.cogs / v.days, 0), sub: 'approximate: CCC × daily COGS' },
         { head: 'Inventory ordering' },
         { key: true, label: 'Economic order quantity', value: nf(eoq, 0) + ' units', sub: `${nf(orders, 1)} orders a year, every ${nf(v.days / orders, 0)} days` },
         { label: 'Annual ordering cost', value: money(oc, 0), sub: 'orders × cost per order' },

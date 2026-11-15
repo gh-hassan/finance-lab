@@ -1083,3 +1083,4 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .vid-sub{margin-top:16px}
 .vid-sub .btn{background:var(--pill-on);color:var(--pill-on-text);border-color:transparent;box-shadow:0 10px 24px -12px rgba(0,37,129,.55)}
 .vid-sub .btn:hover{background:var(--c1);color:#fff}
+.sc-note{margin:0 0 14px;color:var(--mute);font-size:15px}

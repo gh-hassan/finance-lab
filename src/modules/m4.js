@@ -25,7 +25,7 @@ register({
   calc(v) {
     const rf = v.rf / 100, rm = v.rm / 100, sm = v.sm / 100, b = v.beta, er = v.er / 100, sd = v.sd / 100;
     const req = rf + b * (rm - rf), alpha = er - req, sh = sd ? (er - rf) / sd : NaN, tr = b ? (er - rf) / b : NaN, shm = sm ? (rm - rf) / sm : NaN;
-    const m2 = rf + shm * sd, rho = sd ? b * sm / sd : NaN, sys = b * b * sm * sm, tot = sd * sd, r2 = tot ? sys / tot : NaN;
+    const m2 = rf + sh * sm, rho = sd ? b * sm / sd : NaN, sys = b * b * sm * sm, tot = sd * sd, r2 = tot ? sys / tot : NaN;
     const bs_ = range(0, 2.5, 0.05);
     return {
       cards: [
@@ -33,7 +33,7 @@ register({
         { label: 'Jensen\'s alpha', value: (alpha >= 0 ? '+' : '') + pct(alpha, 2), sub: alpha >= 0 ? 'above the SML: undervalued' : 'below the SML: overvalued', tone: alpha >= 0 ? 'good' : 'bad' },
         { label: 'Sharpe ratio', value: nf(sh, 3), sub: `market ${nf(shm, 3)}` },
         { label: 'Treynor ratio', value: pct(tr, 2), sub: `market ${pct(rm - rf, 2)}` },
-        { label: 'M² (Modigliani)', value: pct(m2, 2), sub: `return at market risk ${pct(sm, 0)}` },
+        { label: 'M² (Modigliani)', value: pct(m2, 2), sub: `return at market risk ${pct(sm, 0)} · market earned ${pct(rm, 2)}` },
         { label: 'Implied correlation', value: nf(rho, 3), sub: rho > 1 ? 'above 1: inputs are inconsistent' : 'β · σ_m ÷ σ', tone: rho > 1 ? 'bad' : '' },
         { label: 'Risk you can diversify', value: pct(1 - r2, 1), sub: `R² with the market = ${pct(r2, 1)}` }
       ],
@@ -98,7 +98,7 @@ register({
       info: [warn(wmv, 'Minimum variance'), warn(wt, 'Tangency')].filter(Boolean).join('. '),
       charts: [
         {
-          title: 'Risk and return of every mix', sub: 'Slide your weight with Play to trace the curve. The dashed line is the best you can do when you can also hold the risk-free asset.', series, nearest: 'xy', xlab: 'Risk (σ, %)', xFmt: x => nf(x, 0) + '%', yFmt: x => nf(x, 0) + '%',
+          title: 'Risk and return of every mix', sub: 'Press Play to trace the curve, or drag Weight in A. The dashed line is the best you can do when you can also hold the risk-free asset.', series, nearest: 'xy', xlab: 'Risk (σ, %)', xFmt: x => nf(x, 0) + '%', yFmt: x => nf(x, 0) + '%',
           readout: i => { const x = ws[i], p = port(x); return `<span class="rx">${nf(x * 100, 0)}% in A</span><span class="ri">Return <b>${pct(p.mu, 2)}</b></span><span class="ri">Risk <b>${pct(p.sd, 2)}</b></span><span class="ri">Sharpe <b>${nf((p.mu - rf) / p.sd, 3)}</b></span>`; }
         },
         {
@@ -131,7 +131,7 @@ register({
 <p>The arithmetic mean is the best guess of next period's return. The geometric mean is what you actually earned per period, because returns compound. Volatility makes the geometric mean lower.</p>
 <div class="formula">Arithmetic mean = Σ r ÷ n          Geometric mean = [Π(1 + r)]^(1/n) − 1</div>
 <div class="formula">Volatility drag ≈ σ² ÷ 2          Sharpe = (mean − r_f) ÷ σ</div>
-<div class="formula">Annualize: return × periods per year (arithmetic), σ × √periods</div>
+<div class="formula">Annualize: (1 + geometric mean)^periods per year − 1, σ × √periods</div>
 <ul><li>A +50% year followed by −50% averages 0%, but leaves you down 25%. That gap is volatility drag.</li><li><b>Maximum drawdown</b> is the worst peak-to-trough fall, which often matters more to investors than volatility.</li><li><b>Value at risk</b> is a loss level you expect to exceed only 5% of the time.</li></ul>`,
   calc(v) {
     const r = parseList(v.rets).map(x => x / 100), n = r.length;
@@ -153,7 +153,7 @@ register({
         { label: 'Ending value', value: money(path[n], 0), sub: `${pct(path[n] / v.start - 1, 1)} total` },
         { label: '95% value at risk', value: pct(-hv, 2), sub: `historical · normal ${pct(-(mean - 1.645 * sd), 2)}` },
         { label: 'Annualized', value: pct(Math.pow(1 + geo, ppy) - 1, 2), sub: `volatility ${pct(sd * Math.sqrt(ppy), 2)}` },
-        { label: 'Skewness', value: nf(skew, 3), sub: skew < 0 ? 'fatter left tail' : 'fatter right tail' }
+        { label: 'Skewness', value: nf(skew, 3), sub: !isNum(skew) ? '—' : skew < -0.1 ? 'fatter left tail' : skew > 0.1 ? 'fatter right tail' : 'roughly symmetric' }
       ],
       charts: [
         { title: 'Return in each period', sub: 'Gains above the line, losses below.', bars: 'stack', series: [{ name: 'Gain', type: 'bars', color: 'c1', pts: ks.map((k, i) => [k, r[i] > 0 ? r[i] * 100 : 0]) }, { name: 'Loss', type: 'bars', color: 'c4', pts: ks.map((k, i) => [k, r[i] < 0 ? r[i] * 100 : 0]) }], hlines: [{ y: 0 }], xlab: 'Period', yFmt: x => nf(x, 0) + '%', yRead: x => nf(x, 2) + '%' },
@@ -178,7 +178,7 @@ register({
     { id: 'S', label: 'Stock price', v: 100, step: 1, pre: '$', slider: [50, 150, 1] },
     { id: 'K', label: 'Strike price', v: 100, step: 1, pre: '$' },
     { id: 'T', label: 'Time to expiry', v: 1, step: 0.05, unit: 'yrs', slider: [0.05, 3, 0.05] },
-    { id: 'vol', label: 'Volatility', v: 25, step: 0.5, unit: '%', slider: [5, 100, 0.5] },
+    { id: 'vol', label: 'Volatility (per year)', v: 25, step: 0.5, unit: '%', slider: [5, 100, 0.5] },
     { id: 'r', label: 'Risk-free rate', v: 4, step: 0.1, unit: '%' },
     { id: 'q', label: 'Dividend yield', v: 0, step: 0.1, unit: '%' },
     { id: 'pos', label: 'Position to chart', type: 'select', v: 'lc', options: [['lc', 'Long call'], ['lp', 'Long put'], ['sc', 'Short call'], ['sp', 'Short put']] }
@@ -254,7 +254,7 @@ register({
     const rows = [
       { h: 'Liquidity' }, R('Current ratio', nf(ca / v.cl, 2), 'Current assets ÷ current liabilities', 'Can short-term assets cover short-term bills?'),
       R('Quick ratio', nf((v.cash + v.ar) / v.cl, 2), '(Cash + receivables) ÷ current liabilities', 'Same test without slow-moving inventory'), R('Cash ratio', nf(v.cash / v.cl, 2), 'Cash ÷ current liabilities', 'Strictest liquidity test'),
-      { h: 'Leverage' }, R('Debt to equity', nf(v.ltd / eq, 2), 'Long-term debt ÷ equity', 'Borrowed money per dollar of owners\' money'), R('Liabilities to assets', pct(tl / ta, 1), 'Total liabilities ÷ total assets', 'Share of assets funded by creditors'),
+      { h: 'Leverage' }, R('Long-term debt to equity', nf(v.ltd / eq, 2), 'Long-term debt ÷ equity', 'Borrowed money per dollar of owners\' money'), R('Liabilities to assets', pct(tl / ta, 1), 'Total liabilities ÷ total assets', 'Share of assets funded by creditors'),
       R('Equity multiplier', nf(ta / eq, 2), 'Total assets ÷ equity', 'Asset base per dollar of equity'), R('Interest coverage', mult(ebit / v.int, 1), 'EBIT ÷ interest', 'How easily profit covers interest'), R('Net debt to EBITDA', mult((v.ltd - v.cash) / ebitda, 2), '(Debt − cash) ÷ EBITDA', 'Years of operating cash to repay debt'),
       { h: 'Efficiency' }, R('Asset turnover', mult(v.rev / ta, 2), 'Revenue ÷ total assets', 'Sales generated per dollar of assets'), R('Inventory turnover', mult(v.cogs / v.inv, 1), 'COGS ÷ inventory', 'How often stock is sold and replaced'),
       R('Days inventory', nf(v.inv / v.cogs * 365, 1), 'Inventory ÷ COGS × 365', 'Average days stock sits'), R('Days sales outstanding', nf(v.ar / v.rev * 365, 1), 'Receivables ÷ revenue × 365', 'Average days to collect'), R('Fixed asset turnover', mult(v.rev / v.nfa, 2), 'Revenue ÷ net fixed assets', 'Sales per dollar of plant and equipment'),
@@ -267,7 +267,7 @@ register({
     const npm = ni / v.rev, at = v.rev / ta, em = ta / eq, roe = ni / eq, tb = ebt ? ni / ebt : NaN, ib = ebit ? ebt / ebit : NaN, em5 = ebit / v.rev;
     const bx = (l, val, s, i) => `<div class="dp" style="--i:${i}"><span>${l}</span><b>${val}</b><small>${s}</small></div>`, op = x => `<span class="op">${x}</span>`;
     const dup = `<div class="dupont"><p class="dl">3-step DuPont</p><div class="dprow">${bx('Return on equity', pct(roe, 1), 'net income ÷ equity', 0)}${op('=')}${bx('Net margin', pct(npm, 1), 'profit per $ of sales', 1)}${op('×')}${bx('Asset turnover', mult(at, 2), 'sales per $ of assets', 2)}${op('×')}${bx('Equity multiplier', mult(em, 2), 'assets per $ of equity', 3)}</div>
-<p class="dl">5-step DuPont</p><div class="dprow">${bx('Return on equity', pct(roe, 1), 'check', 4)}${op('=')}${bx('Tax burden', nf(tb, 3), 'NI ÷ EBT', 5)}${op('×')}${bx('Interest burden', nf(ib, 3), 'EBT ÷ EBIT', 6)}${op('×')}${bx('EBIT margin', pct(em5, 1), 'EBIT ÷ sales', 7)}${op('×')}${bx('Asset turnover', mult(at, 2), 'sales ÷ assets', 8)}${op('×')}${bx('Equity multiplier', mult(em, 2), 'assets ÷ equity', 9)}</div></div>`;
+<p class="dl">5-step DuPont</p><div class="dprow">${bx('Return on equity', pct(roe, 1), 'equals the 3-step ROE', 4)}${op('=')}${bx('Tax burden', nf(tb, 3), 'NI ÷ EBT', 5)}${op('×')}${bx('Interest burden', nf(ib, 3), 'EBT ÷ EBIT', 6)}${op('×')}${bx('EBIT margin', pct(em5, 1), 'EBIT ÷ sales', 7)}${op('×')}${bx('Asset turnover', mult(at, 2), 'sales ÷ assets', 8)}${op('×')}${bx('Equity multiplier', mult(em, 2), 'assets ÷ equity', 9)}</div></div>`;
     return {
       cards: [
         { key: true, label: 'Return on equity', value: pct(roe, 1), sub: `${pct(npm, 1)} × ${nf(at, 2)} × ${nf(em, 2)}` },

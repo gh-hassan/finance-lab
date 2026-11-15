@@ -11,10 +11,10 @@ register({
     { id: 'solve', label: 'Solve for', type: 'select', v: 'fv', options: [['fv', 'Future value (FV)'], ['pv', 'Present value (PV)'], ['pmt', 'Payment (PMT)'], ['n', 'Number of periods (N)'], ['iy', 'Interest rate (I/Y)']] },
     { id: 'n', label: 'N · number of periods', v: 10, step: 1, min: 0, slider: [1, 60, 1] },
     { id: 'iy', label: 'I/Y · annual interest rate', v: 6, step: 0.05, unit: '%', slider: [0, 20, 0.25] },
-    { id: 'pv', label: 'PV · present value', v: -1000, step: 100, pre: '$' },
-    { id: 'pmt', label: 'PMT · payment each period', v: -100, step: 10, pre: '$' },
-    { id: 'fv', label: 'FV · future value', v: 0, step: 100, pre: '$' },
-    { id: 'py', label: 'Periods per year (P/Y = C/Y)', v: 1, step: 1, min: 1 },
+    { id: 'pv', label: 'PV · present value', v: -1000, step: 100, pre: '$', help: 'Money you pay in is negative, money you receive is positive.' },
+    { id: 'pmt', label: 'PMT · payment each period', v: -100, step: 10, pre: '$', help: 'Money you pay in is negative, money you receive is positive.' },
+    { id: 'fv', label: 'FV · future value', v: 0, step: 100, pre: '$', help: 'Money you pay in is negative, money you receive is positive.' },
+    { id: 'py', label: 'Payments per year (also compounding per year)', v: 1, step: 1, min: 1 },
     { id: 'when', label: 'Payments are made', type: 'select', v: '0', options: [['0', 'At the end of each period'], ['1', 'At the start of each period']] }
   ],
   concept: `<h4>The idea</h4>
@@ -109,7 +109,7 @@ register({
         { label: 'Rate per period', value: pct(i, 4), sub: `${pct(apr, 2)} ÷ ${m}` },
         { label: 'Continuous compounding', value: pct(cont, 3), sub: 'e^APR − 1' },
         { label: 'Real rate (Fisher)', value: pct(real, 3), sub: `after ${pct(infl, 1)} inflation`, tone: real < 0 ? 'bad' : '' },
-        { label: 'Doubling time', value: yrs(dbl, 2), sub: `rule of 72 says ${nf(72 / v.apr, 2)} yrs` },
+        { label: 'Doubling time', value: yrs(dbl, 2), sub: `rule of 72 on the APR: ${nf(72 / v.apr, 2)} yrs; this figure uses the effective rate` },
         { label: `Value after ${v.years} yrs`, value: money(fvN), sub: `${money(fvReal)} in today's dollars` }
       ],
       steps: [

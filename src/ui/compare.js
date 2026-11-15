@@ -16,7 +16,7 @@ const METRICS = {
   portfolio: [['Portfolio expected return', 'high'], ['Portfolio risk', 'low'], ['Sharpe ratio', 'high']],
   returns: [['Geometric mean', 'high'], ['Standard deviation', 'low'], ['Sharpe ratio', 'high']],
   capm: [['Sharpe ratio', 'high'], ['Jensen', 'high']],
-  merger: [['EPS accretion', 'high']],
+  merger: [['EPS accretion|EPS dilution', 'high']],
   ratios: [['Return on equity', 'high'], ['Current ratio', 'high']]
 };
 const PLAIN = { loan: 'Compare two loans', tvm: 'Compare two savings plans', capbud: 'Compare two projects', wacc: 'Compare two funding mixes', breakeven: 'Compare two businesses', wc: 'Compare two cash cycles', portfolio: 'Compare two portfolios', returns: 'Compare two return histories', capm: 'Compare two stocks', merger: 'Compare two deal terms', ratios: 'Compare two companies' };
@@ -59,8 +59,8 @@ export function renderCompare(main) {
   }
   const save = () => store.set('fl:cmp:' + cur.m.id, { a: cur.a, b: cur.b });
 
-  function calc(state) { try { return U(cur.m.calc(state)); } catch (e) { return { cards: [] }; } }
-  function measure(out, label) { const c = (out.cards || []).find(x => !x.head && String(x.label || '').startsWith(label)); return c || null; }
+  function calc(state) { try { return U(cur.m.calc(cur.m.id === 'tvm' ? { ...state, solve: 'fv' } : state)); } catch (e) { return { cards: [] }; } }
+  function measure(out, label) { const opts = String(label).split('|'); const c = (out.cards || []).find(x => !x.head && opts.some(o => String(x.label || '').startsWith(o))); return c || null; }
 
   function fieldBox(side) {
     const st = cur[side], box = h('div', { class: 'cmp-fields' });
@@ -96,7 +96,7 @@ export function renderCompare(main) {
     const oa = calc(cur.a), ob = calc(cur.b), score = { a: 0, b: 0 };
     rowEls.forEach((r, i) => {
       const ca = measure(oa, r.label), cb = measure(ob, r.label);
-      r.name.textContent = (ca || cb || { label: r.label }).label;
+      r.name.textContent = (ca || cb || { label: String(r.label).split('|')[0] }).label;
       tick(r.a, ca ? ca.value : '—', `cmp:${cur.m.id}:${i}:a`); tick(r.b, cb ? cb.value : '—', `cmp:${cur.m.id}:${i}:b`);
       const va = ca ? parseValue(ca.value) : NaN, vb = cb ? parseValue(cb.value) : NaN, w = winner(va, vb, r.better);
       r.cellA.classList.toggle('win', w === 'a'); r.cellB.classList.toggle('win', w === 'b');

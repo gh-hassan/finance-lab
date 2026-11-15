@@ -24,7 +24,7 @@ export function mountTimeMachine(host) {
   const S = scope(); let data = null, pk = null, year = 0, amount = 10000, played = false, io = null;
   const out = h('div', { class: 'tm-out' }), note = h('p', { class: 'tm-note' }), yv = h('b', {}, ''), chart = h('div', { class: 'tm-chart' });
   const body = h('div', { class: 'tm-body' }, h('div', { class: 'tm-sk' }));
-  host.replaceChildren(h('section', { class: 'hl tm', 'aria-label': 'Time machine' }, h('div', { class: 'hl-head' }, h('h2', {}, 'The time machine'), h('span', { class: 'hl-stat' }, 'Real US market returns since 1963')), body));
+  host.replaceChildren(h('section', { class: 'hl tm', 'aria-label': 'Time machine' }, h('div', { class: 'hl-head' }, h('h2', {}, 'The time machine'), h('span', { class: 'hl-stat' }, 'Actual US market returns since 1963')), body));
 
   function draw(animate) {
     const t = timeMachine(data.months, data.factors.MKT, data.factors.RF, year, amount, pk);

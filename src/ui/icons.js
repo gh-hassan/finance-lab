@@ -3,6 +3,7 @@ const svg = d => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" st
 export const ICONS = {
   home: svg('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/>'),
   learn: svg('<path d="M4 5.5A2.500 2.500 0 016.500 3H20v15H6.500A2.500 2.500 0 004 20.500z"/><path d="M4 20.500A2.500 2.500 0 016.500 18H20v3H6.500"/><path d="M9 8h7"/>'),
+  roadmap: svg('<path d="M5 21V4M5 5h12l-2.500 3.500L17 12H5"/><circle cx="12" cy="18" r="1.600"/>'),
   scenarios: svg('<path d="M4 18l5-6 4 3 7-9"/><path d="M4 6v12h16"/><circle cx="9" cy="12" r="1.2"/><circle cx="13" cy="15" r="1.2"/>'),
   Statistics: svg('<path d="M4 20V12M9 20V5M14 20v-9M19 20V9"/><path d="M3 20h18"/>'),
   compare: svg('<path d="M7 8h12l-3-3M17 16H5l3 3"/>'),

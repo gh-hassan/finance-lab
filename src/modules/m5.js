@@ -14,7 +14,7 @@ register({
     { id: 'T', label: 'Time to delivery', v: 1, step: 0.25, unit: 'yrs', slider: [0.25, 5, 0.25] },
     { id: 'pd', label: 'Home inflation (annual)', v: 3, step: 0.1, unit: '%' },
     { id: 'pf', label: 'Foreign inflation (annual)', v: 2, step: 0.1, unit: '%' },
-    { id: 'A', label: 'Amount to invest (home currency)', v: 1000000, step: 50000, pre: '$' },
+    { id: 'A', label: 'Amount to invest (home currency)', v: 1000000, step: 50000 },
     { id: 'Fm', label: 'Market forward quote (optional)', v: 1.1, step: 0.005, help: 'Enter your dealer\'s forward to test for arbitrage. Use 0 to skip.' }
   ],
   concept: `<h4>The idea</h4>
@@ -22,23 +22,22 @@ register({
 <div class="formula">Covered interest parity: F = S × (1 + r_home)^T ÷ (1 + r_foreign)^T</div>
 <div class="formula">Purchasing power parity: E[S_T] = S × [(1 + π_home) ÷ (1 + π_foreign)]^T</div>
 <div class="formula">Quote convention: rates are home currency per 1 unit of foreign currency</div>
-<ul><li><b>Forward premium</b> (F above S) means the foreign currency is expected to be dearer, which happens when foreign interest rates are lower than home rates.</li><li>If the market forward differs from the parity forward, a riskless profit exists: borrow in the cheap side, lock in the exchange rate with a forward, and collect the difference.</li><li>PPP is a long-run tendency, not a short-run law. Parity-implied forwards are exact; PPP forecasts are approximate.</li></ul>`,
+<ul><li><b>Forward premium</b> (F above S) means the foreign currency is dearer for delivery later, because interest rates abroad are lower. It is set by the interest gap, not by a forecast.</li><li>If the market forward differs from the parity forward, a riskless profit exists: borrow in the cheap side, lock in the exchange rate with a forward, and collect the difference.</li><li>PPP is a long-run tendency, not a short-run law. Parity-implied forwards are exact; PPP forecasts are approximate.</li></ul>`,
   calc(v) {
     const id = v.id / 100, ifr = v.if / 100, pd = v.pd / 100, pf = v.pf / 100, T = v.T, S = v.S;
     if (!(S > 0) || !(T > 0)) return { note: 'Spot rate and time must be positive.', cards: [], charts: [], steps: [] };
     const F = S * Math.pow((1 + id) / (1 + ifr), T), prem = Math.pow(F / S, 1 / T) - 1, ppp = S * Math.pow((1 + pd) / (1 + pf), T);
     const homeRet = v.A * Math.pow(1 + id, T), foreignUnits = v.A / S, foreignGrow = foreignUnits * Math.pow(1 + ifr, T);
-    const hedged = foreignGrow * F;
     const cards = [
       { key: true, label: 'Parity forward rate', value: nfx(F, 4), sub: `${prem >= 0 ? 'premium' : 'discount'} of ${pct(Math.abs(prem), 2)} a year` },
       { label: 'Expected spot (PPP)', value: nfx(ppp, 4), sub: `${pct(ppp / S - 1, 2)} over ${T} yrs` },
       { label: 'Interest differential', value: pct(id - ifr, 2), sub: 'home − foreign' },
-      { label: 'Inflation differential', value: pct(pd - pf, 2), sub: 'home − foreign' },
-      { label: 'Hedged foreign investment', value: money(hedged, 0), sub: `vs ${money(homeRet, 0)} at home`, tone: Math.abs(hedged - homeRet) < 1 ? '' : 'warn' }
+      { label: 'Inflation differential', value: pct(pd - pf, 2), sub: 'home − foreign' }
     ];
     let info = '';
     if (v.Fm > 0) {
       const R2 = foreignUnits * Math.pow(1 + ifr, T) * v.Fm, profit = R2 - homeRet;
+      cards.push({ label: 'Hedged foreign investment', value: money(R2, 0), sub: `at your forward, vs ${money(homeRet, 0)} at home`, tone: Math.abs(profit) > 0.5 ? 'warn' : '' });
       cards.push({ label: 'Arbitrage profit', value: money(profit, 0), sub: profit > 0.5 ? 'invest abroad, sell foreign forward' : profit < -0.5 ? 'borrow abroad, invest at home' : 'no arbitrage', tone: Math.abs(profit) > 0.5 ? 'good' : '' });
       info = Math.abs(profit) > 0.5 ? (profit > 0 ? `Your forward of ${nfx(v.Fm, 4)} is above the parity forward of ${nfx(F, 4)}. Convert at spot, invest abroad, and sell the proceeds forward at ${nfx(v.Fm, 4)}.` : `Your forward of ${nfx(v.Fm, 4)} is below the parity forward of ${nfx(F, 4)}. Borrow abroad, convert to home currency, invest at home, and buy foreign currency forward to repay.`) : 'The quoted forward matches parity, so there is no arbitrage.';
     }

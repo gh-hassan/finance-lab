@@ -15,7 +15,7 @@ register({
     { id: 'price', label: 'Market price', v: 925, step: 1, pre: '$' },
     { id: 'yrs', label: 'Years to maturity', v: 10, step: 1, min: 0.5, slider: [1, 30, 1] },
     { id: 'm', label: 'Coupons per year', type: 'select', v: '2', options: [['1', 'Annual'], ['2', 'Semi-annual'], ['4', 'Quarterly'], ['12', 'Monthly']] },
-    { id: 'shock', label: 'Yield shock for the risk test', v: 100, step: 25, unit: 'bps', slider: [-300, 300, 25] }
+    { id: 'shock', label: 'Yield shock for the risk test (basis points; 100 bps = 1%)', v: 100, step: 25, unit: 'bps', slider: [-300, 300, 25] }
   ],
   concept: `<h4>The idea</h4>
 <p>A bond is a stream of coupons plus a face value at maturity. Its price is the present value of those cash flows at the market yield. When yields rise, price falls, and the relationship is curved, not straight.</p>
@@ -91,7 +91,7 @@ register({
     { id: 'g', label: 'Stable growth rate', v: 4, step: 0.25, unit: '%', slider: [0, 9, 0.25] },
     { id: 'g1', label: 'High growth rate (stage 1)', v: 12, step: 0.5, unit: '%' },
     { id: 'n', label: 'Years of high growth', v: 5, step: 1, min: 1 },
-    { id: 'e1', label: 'Expected EPS next year', v: 3.5, step: 0.1, pre: '$' },
+    { id: 'e1', label: 'Expected EPS next year', v: 3.0, step: 0.1, pre: '$' },
     { id: 'mkt', label: 'Market price (optional)', v: 40, step: 1, pre: '$' }
   ],
   show: { g1: v => v.model === 'two', n: v => v.model === 'two' },
@@ -120,7 +120,7 @@ register({
     const noGrowth = v.e1 / ke, pvgo = P0 - noGrowth, D1 = divs(1);
     const cards = [
       { key: true, label: 'Intrinsic value per share', value: money(P0), sub: two ? 'two-stage model' : 'Gordon growth' },
-      { label: 'Dividend yield', value: pct(D1 / P0, 2), sub: `D₁ ${money(D1)} ÷ price` },
+      { label: 'Dividend yield', value: pct(D1 / P0, 2), sub: `D₁ ${money(D1)} ÷ intrinsic value` },
       { label: 'Value if no growth', value: money(noGrowth), sub: `EPS ${money(v.e1)} ÷ k` },
       { label: 'Growth opportunities (PVGO)', value: money(pvgo), sub: `${nf(pvgo / P0 * 100, 1)}% of the price`, tone: pvgo < 0 ? 'bad' : '' }
     ];
@@ -270,9 +270,9 @@ register({
   fields: [
     { id: 'rate', label: 'Discount rate (hurdle)', v: 10, step: 0.25, unit: '%', slider: [0, 30, 0.25] },
     { id: 'rr', label: 'Reinvestment rate (for MIRR)', v: 10, step: 0.25, unit: '%' },
-    { id: 'i0A', label: 'Project A · initial investment', v: 100000, step: 5000, pre: '$' },
+    { id: 'i0A', label: 'Project A · initial investment (enter as a positive number)', v: 100000, step: 5000, pre: '$' },
     { id: 'cfA', label: 'Project A · cash flows, years 1…n', type: 'text', v: '30000, 35000, 40000, 40000, 30000', help: 'Separate with commas. Use a minus sign for outflows.' },
-    { id: 'i0B', label: 'Project B · initial investment', v: 100000, step: 5000, pre: '$' },
+    { id: 'i0B', label: 'Project B · initial investment (enter as a positive number)', v: 100000, step: 5000, pre: '$' },
     { id: 'cfB', label: 'Project B · cash flows (leave empty to skip)', type: 'text', v: '0, 0, 0, 0, 200000' }
   ],
   concept: `<h4>The idea</h4>

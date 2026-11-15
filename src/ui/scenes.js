@@ -61,7 +61,7 @@ export const SCENES = {
       g += T(c1, base - hmax - 16, M(dep), { z: 18 }) + T(c2, base - hmax - 16, M(bank), { z: 18, c: 'var(--c3)' });
       g += T(c1, base + 18, 'In a jar', { z: 15 }) + T(c1, base + 37, 'no interest', { z: 12.5, w: 600, c: 'var(--mute)' }) + T(c2, base + 18, 'In the bank', { z: 15 }) + T(c2, base + 37, `${M(Math.max(0, bank - dep))} from interest`, { z: 12.5, w: 600, c: 'var(--c3)' });
       g += prog(t, W, H, `Year ${Math.round(y)} of ${p.years}`);
-      return { svg: g, cap: `Year ${Math.round(y)}: the jar has ${M(dep)}. The bank has ${M(bank)}. That is ${M(bank - dep)} of free money from interest.` };
+      return { svg: g, cap: `Year ${Math.round(y)}: the jar has ${M(dep)}. The bank has ${M(bank)}. That is ${M(bank - dep)} of interest earned.` };
     }
   },
   snowball: {
@@ -130,8 +130,8 @@ export const SCENES = {
     }
   },
   loan: {
-    chapter: 'Borrowing and lending', title: 'How a loan gets paid off', plain: 'Each payment has two parts: a fee to the bank (interest) and a real payment on what you owe. At first, most is fee.',
-    how: ['The tank on the left is what you still owe.', 'Each month you pay. The bank takes its fee first (rose).', 'The rest (green) empties the tank. As the tank drops, the fee shrinks.'],
+    chapter: 'Borrowing and lending', title: 'How a loan gets paid off', plain: 'Each payment has two parts: interest to the bank and a real payment on what you owe. At first, most is interest.',
+    how: ['The tank on the left is what you still owe.', 'Each month you pay. The bank takes its interest first (rose).', 'The rest (green) empties the tank. As the tank drops, the interest shrinks.'],
     words: [['Loan balance', 'What you still owe.'], ['Principal', 'The part of a payment that reduces what you owe.'], ['Mortgage', 'A loan to buy a home.']],
     params: [{ id: 'amt', label: 'Loan amount', min: 5000, max: 500000, step: 5000, v: 200000, fmt: M }, { id: 'apr', label: 'Interest rate', min: 1, max: 15, step: 0.25, v: 6.5, fmt: x => x + '%' }, { id: 'years', label: 'Years to repay', min: 1, max: 40, step: 1, v: 30, fmt: x => x + ' yrs' }], link: '/loan',
     draw(t, p, W, H) {
@@ -141,11 +141,11 @@ export const SCENES = {
       const pad = Math.max(18, W * 0.06), tw = Math.min(110, W * 0.22), ty = 34, th = H - 100, lvl = bal / p.amt, rx = pad + tw + Math.max(20, W * 0.06), rw = W - pad - rx, share = int / Math.max(0.01, int + pr);
       let g = T(pad + tw / 2, 14, 'You still owe', { z: 13, w: 600, c: 'var(--mute)' }) + R(pad, ty, tw, th, 'var(--soft)', { r: 14 }) + R(pad, ty + th * (1 - lvl), tw, th * lvl, 'color-mix(in srgb, var(--c4) 55%, transparent)', { r: 14 }) + T(pad + tw / 2, ty + th / 2, M(bal), { z: 17 });
       g += T(rx, 22, `Your monthly payment: ${M(pay)}`, { a: 'start', z: 16 }) + R(rx, 44, rw, 34, 'var(--c3)', { r: 10 }) + R(rx, 44, rw * share, 34, 'var(--c4)', { r: 10 });
-      if (rw * share > 70) g += T(rx + (rw * share) / 2, 61, 'fee', { z: 13, c: '#fff' });
+      if (rw * share > 70) g += T(rx + (rw * share) / 2, 61, 'interest', { z: 13, c: '#fff' });
       if (rw * (1 - share) > 90) g += T(rx + rw * share + (rw * (1 - share)) / 2, 61, 'pays the loan', { z: 13, c: '#fff' });
       g += T(rx, 100, `Fee ${M(int)}`, { a: 'start', z: 14, c: 'var(--c4)' }) + T(rx + rw, 100, `Loan ${M(pr)}`, { a: 'end', z: 14, c: 'var(--c3)' });
-      g += T(rx, 140, 'Paid so far', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(rx, 164, `${M(iPaid)} in fees`, { a: 'start', z: 16, c: 'var(--c4)' }) + T(rx, 190, `${M(pPaid)} on the loan`, { a: 'start', z: 16, c: 'var(--c3)' });
-      return { svg: g + prog(t, W, H, `Year ${nf(mth / 12, 1)} of ${p.years}`), cap: `Month ${mth}: out of ${M(pay)}, ${M(int)} is the bank's fee and ${M(pr)} reduces what you owe. You still owe ${M(bal)}.` };
+      g += T(rx, 140, 'Paid so far', { a: 'start', z: 13, w: 600, c: 'var(--mute)' }) + T(rx, 164, `${M(iPaid)} in interest`, { a: 'start', z: 16, c: 'var(--c4)' }) + T(rx, 190, `${M(pPaid)} on the loan`, { a: 'start', z: 16, c: 'var(--c3)' });
+      return { svg: g + prog(t, W, H, `Year ${nf(mth / 12, 1)} of ${p.years}`), cap: `Month ${mth}: out of ${M(pay)}, ${M(int)} is interest and ${M(pr)} reduces what you owe. You still owe ${M(bal)}.` };
     }
   },
   bond: {
@@ -262,7 +262,7 @@ export const SCENES = {
       let g = legend([['var(--c1)', 'A'], ['var(--c2)', 'B'], ['var(--ink)', 'Your mix']], pad, 14) + L(pad, cy, W - pad, cy, 'var(--line)', 1.5, true) + pathOf(A, 'var(--c1)', 2.5) + pathOf(B, 'var(--c2)', 2.5) + pathOf(P, 'var(--ink)', 4);
       const tw = (W - 2 * pad - 20) / 3, ty = H - 92;
       [['A', sd(A), 'var(--c1)'], ['B', sd(B), 'var(--c2)'], ['Your mix', sd(P), 'var(--ink)']].forEach((r, i) => { const x = pad + i * (tw + 10); g += R(x, ty, tw, 58, 'var(--soft)', { r: 12 }) + T(x + tw / 2, ty + 16, r[0] + ' swings', { z: 12.5, w: 600, c: 'var(--mute)' }) + T(x + tw / 2, ty + 40, '±' + nf(r[1], 1) + '%', { z: 20, c: r[2] }); });
-      return { svg: g, cap: `A swings about ${nf(sd(A), 1)}% and B about ${nf(sd(B), 1)}%. Your mix swings only ${nf(sd(P), 1)}%${rho < 0.5 ? ', because one often rises when the other falls' : ''}.` };
+      return { svg: g, cap: `A swings about ${nf(sd(A), 1)}% and B about ${nf(sd(B), 1)}%. Your mix swings only ${nf(sd(P), 1)}%${rho < 0 ? ', because one often rises when the other falls' : ''}.` };
     }
   },
   journey: {
@@ -316,6 +316,7 @@ export const SCENES = {
     words: [['Fixed costs', 'Bills you pay no matter how much you sell.'], ['Break-even', 'The point where you stop losing money.'], ['Margin', 'What is left of a sale after its own cost.']],
     params: [{ id: 'price', label: 'Price per cup', min: 2, max: 10, step: 0.5, v: 5, fmt: x => '$' + x }, { id: 'cost', label: 'Cost per cup', min: 0.5, max: 8, step: 0.5, v: 2, fmt: x => '$' + x }, { id: 'fixed', label: 'Fixed costs (rent)', min: 100, max: 2000, step: 50, v: 300, fmt: M }], link: '/breakeven',
     draw(t, p, W, H) {
+      if (p.price <= p.cost) return { svg: T(W / 2, H * 0.4, 'Every cup loses money', { z: 24, c: 'var(--c4)' }) + T(W / 2, H * 0.58, `Cost $${p.cost} is not below price $${p.price}`, { z: 15, c: 'var(--mute)' }), cap: `The cost per cup ($${p.cost}) is at or above the price ($${p.price}), so every cup loses money and the rent is never paid. Lower the cost or raise the price.` };
       const mg = Math.max(0.01, p.price - p.cost), be = Math.ceil(p.fixed / mg), maxC = Math.ceil(be * 2.2), cups = Math.round(t * maxC), paid = Math.min(p.fixed, cups * mg), profit = Math.max(0, cups * mg - p.fixed), pad = Math.max(24, W * 0.08), BW = W - 2 * pad, pmax = Math.max(1, maxC * mg - p.fixed);
       let g = T(W / 2, 30, `${cups} cups sold`, { z: 30 });
       g += T(pad, 84, 'Step 1: pay the rent', { a: 'start', z: 14 }) + T(W - pad, 84, `${M(paid)} of ${M(p.fixed)}`, { a: 'end', z: 14, c: 'var(--mute)' }) + R(pad, 98, BW, 28, 'var(--soft)', { r: 14 }) + R(pad, 98, BW * paid / p.fixed, 28, paid >= p.fixed ? 'var(--c3)' : 'var(--c2)', { r: 14 });
@@ -402,7 +403,7 @@ export const SCENES = {
         for (let j = 0; j < Math.min(N, k + 1); j++) g += C(X(j), clamp(Y(avg + sd * z[j]), top + 20, top + 24 + lh), 4.5, c);
       });
       g += prog(t, W, H, `Year ${Math.min(N, k + 1)} of ${N}`);
-      return { svg: g, cap: `Both average ${avg}% a year. The calm lane stays near it (±4%). The bumpy lane lands anywhere from ${nf(avg - p.wild, 0)}% to ${nf(avg + p.wild, 0)}% in a typical year. Spread is the bumpiness.` };
+      return { svg: g, cap: `Both average ${avg}% a year. The calm lane stays near it (±4%). The bumpy lane usually lands between ${nf(avg - p.wild, 0)}% and ${nf(avg + p.wild, 0)}% (about 2 years in 3). Spread is the bumpiness.` };
     }
   },
   bell: {

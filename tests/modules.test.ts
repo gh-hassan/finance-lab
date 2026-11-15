@@ -79,7 +79,7 @@ describe('beginner layer', () => {
   });
   it('relabels result cards in plain words', () => {
     const c = easyCard(raw.loan, { label: 'Total interest', value: '$1', sub: 'x' });
-    expect(c.label).toBe('Total fees to the bank');
+    expect(c.label).toBe('Total interest paid');
     expect(easyCard(raw.loan, { label: 'Unknown', value: '$1' }).label).toBe('Unknown');
   });
 });
