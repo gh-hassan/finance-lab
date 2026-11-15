@@ -1,0 +1,7 @@
+/* A slider with a number box beside it */
+.sb{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:center}
+.sb-box{display:flex;align-items:center;gap:6px;color:var(--mute);font-weight:600}
+.sb-in{flex:none;width:84px;min-height:44px;padding:0 12px;text-align:right}
+.sb-in[aria-invalid="true"]{outline:2px solid var(--warn);outline-offset:1px}
+.sb-range{grid-column:1/-1;color:var(--mute);font-size:12.5px;display:none}
+.sb:has(.sb-in[aria-invalid="true"]) .sb-range{display:block}

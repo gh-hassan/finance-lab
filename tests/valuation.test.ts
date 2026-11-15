@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ownerEarnings, requiredReturn, marginOfSafety, growthPath, dcfValue, earningsPower, valueBusiness, verdictFor, dealView, sensitivity, MINORITY_DISCOUNT, type BusinessInputs, type Deal } from '../src/lib/valuation';
+import { ownerEarnings, normalisedProfit, volatility, effectivePredictability, requiredReturn, marginOfSafety, growthPath, dcfValue, project, reinvestRate, earningsPower, valueBusiness, scenarios, impliedGrowth, earningsBridge, terminalCap, verdictFor, dealView, sensitivity, MINORITY_DISCOUNT, type BusinessInputs, type Deal } from '../src/lib/valuation';
 
 const biz = (o: Partial<BusinessInputs> = {}): BusinessInputs => ({ profit: 600_000, depreciation: 150_000, upkeep: 150_000, cash: 400_000, debt: 800_000, growth: 0.06, predictability: 'bumpy', edge: 'some', ...o });
 const deal = (o: Partial<Deal> = {}): Deal => ({ kind: 'whole', stakePct: 25, newMoney: 0, offeredPct: 0, ask: 0, ...o });
@@ -159,11 +159,123 @@ describe('sensitivity grid', () => {
     expect(g.values).toHaveLength(5);
     expect(g.values[0]).toHaveLength(5);
     const oe = ownerEarnings(b);
-    expect(g.values[2][2]).toBe(Math.round(dcfValue(oe, b.growth, b.edge, requiredReturn(b), b.cash)));
+    expect(g.values[2][2]).toBe(Math.round(dcfValue(oe, b.growth, b.edge, requiredReturn(b), b.cash, 'medium', terminalCap(0.04))));
   });
   it('values rise with growth and fall as the required return rises', () => {
     const g = sensitivity(biz());
     expect(g.values[2][4]).toBeGreaterThan(g.values[2][0]);
     expect(g.values[0][2]).toBeGreaterThan(g.values[4][2]);
+  });
+});
+
+describe('normalising earnings', () => {
+  it('averages the years given and removes one-offs', () => {
+    expect(normalisedProfit(biz({ history: [300_000, 300_000] }))).toBe(400_000);
+    expect(normalisedProfit(biz({ oneOffGains: 100_000 }))).toBe(500_000);
+    expect(normalisedProfit(biz({ oneOffCosts: 50_000 }))).toBe(650_000);
+  });
+  it('replaces the owner\u2019s pay with the cost of a manager', () => {
+    expect(normalisedProfit(biz({ ownerPay: 200_000, managerCost: 120_000 }))).toBe(680_000);
+    expect(normalisedProfit(biz({ ownerPay: 0, managerCost: 120_000 }))).toBe(480_000);
+  });
+  it('treats a business whose profit swings as less steady', () => {
+    const wild = biz({ predictability: 'steady', history: [100_000, 900_000] });
+    expect(volatility(wild)).toBeGreaterThan(0.3);
+    expect(effectivePredictability(wild)).not.toBe('steady');
+    expect(effectivePredictability(biz({ predictability: 'steady', history: [590_000, 610_000] }))).toBe('steady');
+    expect(effectivePredictability(biz({ predictability: 'risky', history: [600_000, 600_000] }))).toBe('risky');
+  });
+  it('one boom year is not enough to set the price', () => {
+    const boom = valueBusiness(biz({ profit: 1_200_000 })), spread = valueBusiness(biz({ profit: 1_200_000, history: [400_000, 400_000] }));
+    expect(spread.fair).toBeLessThan(boom.fair);
+  });
+  it('the bridge walks from profit to owner earnings', () => {
+    const b = biz({ ownerPay: 200_000, managerCost: 120_000, oneOffGains: 50_000, history: [500_000] });
+    const steps = earningsBridge(b);
+    expect(steps[0].label).toBe('Profit last year');
+    expect(steps.at(-1)!.final).toBe(true);
+    expect(steps.at(-1)!.total).toBeCloseTo(ownerEarnings(b));
+    expect(earningsBridge(biz()).map(x => x.label)).toEqual(['Profit last year', 'Add back depreciation (no cash leaves)', 'Subtract upkeep spending', 'Owner earnings']);
+  });
+});
+
+describe('growth costs money', () => {
+  it('heavier businesses keep less of their growth', () => {
+    expect(reinvestRate(0.06, 'light')).toBeLessThan(reinvestRate(0.06, 'medium'));
+    expect(reinvestRate(0.06, 'medium')).toBeLessThan(reinvestRate(0.06, 'heavy'));
+    expect(reinvestRate(-0.05, 'heavy')).toBe(0);
+    expect(reinvestRate(0.3, 'heavy')).toBeLessThanOrEqual(0.9);
+  });
+  it('with no growth the capital need does not matter', () => {
+    expect(dcfValue(100, 0, 'some', 0.12, 0, 'light')).toBeCloseTo(dcfValue(100, 0, 'some', 0.12, 0, 'heavy'));
+  });
+  it('the same growth is worth less when the business needs lots of capital', () => {
+    expect(dcfValue(100, 0.08, 'some', 0.12, 0, 'heavy')).toBeLessThan(dcfValue(100, 0.08, 'some', 0.12, 0, 'light'));
+    expect(valueBusiness(biz({ capital: 'heavy' })).fair).toBeLessThan(valueBusiness(biz({ capital: 'light' })).fair);
+  });
+  it('the projection adds up to the cash-flow value', () => {
+    const p = project(100, 0.06, 'some', 0.12, 20, 'medium');
+    expect(p.rows).toHaveLength(10);
+    expect(p.rows.reduce((a, r) => a + r.pv, 0) + p.terminalPv + p.cash).toBeCloseTo(p.total);
+    for (const r of p.rows) expect(r.free).toBeLessThanOrEqual(r.earnings);
+  });
+});
+
+describe('currency and interest rates', () => {
+  it('a higher safe rate raises the return asked and lowers the value', () => {
+    const usd = valueBusiness(biz({ riskFree: 0.04 })), pkr = valueBusiness(biz({ riskFree: 0.12 }));
+    expect(pkr.required).toBeCloseTo(usd.required + 0.08);
+    expect(pkr.fair).toBeLessThan(usd.fair);
+    expect(pkr.multiple).toBeLessThan(usd.multiple);
+  });
+  it('long-run growth follows interest rates, within sensible limits', () => {
+    expect(terminalCap(0.04)).toBeCloseTo(0.024);
+    expect(terminalCap(0.12)).toBe(0.06);
+    expect(terminalCap(0.01)).toBe(0.015);
+  });
+});
+
+describe('asset floor', () => {
+  it('adds a method that never drives the blend but sets a floor', () => {
+    const none = valueBusiness(biz()), some = valueBusiness(biz({ assets: 2_000_000 }));
+    expect(none.methods).toHaveLength(3);
+    expect(some.methods).toHaveLength(4);
+    expect(some.methods[3].weight).toBe(0);
+    expect(some.fair).toBe(none.fair);
+    const big = valueBusiness(biz({ assets: 50_000_000 }));
+    expect(big.fair).toBe(big.methods[3].mid);
+    expect(big.zones.bargain).toBeLessThan(big.zones.sweet);
+  });
+  it('subtracts debt from what the assets are worth', () => {
+    const v = valueBusiness(biz({ assets: 1_000_000, debt: 600_000, cash: 0 }));
+    expect(v.methods[3].mid).toBe(Math.round(1_000_000 * 0.7 - 600_000));
+  });
+});
+
+describe('scenarios', () => {
+  it('bear is below base, and base below bull', () => {
+    const [bear, base, bull] = scenarios(biz());
+    expect(bear.fair).toBeLessThan(base.fair);
+    expect(base.fair).toBeLessThan(bull.fair);
+    expect(base.fair).toBe(valueBusiness(biz()).fair);
+  });
+});
+
+describe('what a price assumes', () => {
+  it('finds the growth that gives the price back', () => {
+    const b = biz({ growth: 0.06 }), v = valueBusiness(b);
+    const r = impliedGrowth(b, v.methods[1].mid);
+    expect(r.status).toBe('ok');
+    if (r.status === 'ok') expect(r.growth).toBeCloseTo(0.06, 2);
+  });
+  it('a higher price needs more growth', () => {
+    const b = biz(), mid = valueBusiness(b).methods[1].mid, a = impliedGrowth(b, mid), c = impliedGrowth(b, mid * 1.3);
+    expect(a.status).toBe('ok');
+    expect(c.status).toBe('ok');
+    if (a.status === 'ok' && c.status === 'ok') expect(c.growth).toBeGreaterThan(a.growth);
+  });
+  it('says so when no growth could justify the price', () => {
+    expect(impliedGrowth(biz(), 1_000_000_000)).toEqual({ status: 'none', why: 'too-high' });
+    expect(impliedGrowth(biz(), 1)).toEqual({ status: 'none', why: 'too-low' });
   });
 });

@@ -3,6 +3,7 @@
 import '../styles/options.css';
 import { h, head, segmented, statGrid, chartBox, explainer, fill } from './dataui.js';
 import { rangeSlider } from './slider.js';
+import { withNumberBox } from './slidebox.js';
 import { store } from './visuals.js';
 import { num } from '../lib/format';
 import { STRATEGIES, buildStrategy, analyze, curve, positionPnl, optionPrice, legLabel } from '../lib/payoff';
@@ -27,8 +28,8 @@ export function renderOptions(main) {
 
   const spotIn = h('input', { class: 'd-in op-in', type: 'text', inputmode: 'decimal', value: String(st.spot), 'aria-label': 'Stock price today in dollars' });
   const vol = segmented({ options: VOLS, value: String(st.iv), label: 'How much the stock jumps around', onChange: v => { st.iv = +v; reset(); drawLegs(); update(); } });
-  const endS = rangeSlider({ min: 50, max: 150, step: 1, value: 100, label: 'Stock price at expiry', fmt: v => '$' + num(v, 0) });
-  const leftS = rangeSlider({ min: 0, max: TERM, step: 1, value: st.left, label: 'Days left on the option', fmt: v => v + (v === 1 ? ' day' : ' days') });
+  const endS = withNumberBox(rangeSlider({ min: 50, max: 150, step: 1, value: 100, label: 'Stock price at expiry', fmt: v => '$' + num(v, 0) }), { label: 'Stock price at expiry', unit: '$', decimals: 2 });
+  const leftS = withNumberBox(rangeSlider({ min: 0, max: TERM, step: 1, value: st.left, label: 'Days left on the option', fmt: v => v + (v === 1 ? ' day' : ' days') }), { label: 'Days left on the option', unit: 'days' });
 
   const bounds = () => [Math.max(0.5, st.spot * 0.5), st.spot * 1.5];
 
@@ -88,6 +89,7 @@ export function renderOptions(main) {
     const [lo, hi] = bounds();
     endS.input.min = String(Math.floor(lo)); endS.input.max = String(Math.ceil(hi)); endS.input.step = p >= 200 ? '5' : p >= 20 ? '1' : '0.5';
     endS.input.value = String(p);
+    endS.input.dispatchEvent(new Event('input'));
     reset(); drawLegs(); update();
   }
   spotIn.addEventListener('change', () => setSpot(spotIn.value));
