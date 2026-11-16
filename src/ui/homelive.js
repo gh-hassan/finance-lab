@@ -16,26 +16,26 @@ const VID = /^[A-Za-z0-9_-]{11}$/;
 const dir = c => (c > 0.0001 ? 'up' : c < -0.0001 ? 'down' : '');
 
 const PAGES = [
-  ['market-pulse', 'Market today', 'Are stocks up or down, and why? In plain English.'],
-  ['financials', 'Company financials', 'Ten years of any US company\'s real numbers.'],
-  ['economy', 'Rates and economy', 'Interest rates, inflation, jobs and the yield curve.'],
-  ['currency', 'Currency converter', 'About 165 currencies, with history.'],
-  ['crypto', 'Crypto prices', 'Top coins and how risky they have been.'],
-  ['countries', 'Countries compared', '104 countries: growth, inflation, debt and more.'],
-  ['industries', 'Industry benchmarks', 'What is normal for risk and profit in an industry.'],
-  ['factor-returns', 'Factor returns', 'What has beaten the market since 1963.']
+  ['market-pulse', 'Share market today', 'Are share prices going up or down, and why?'],
+  ['financials', 'Company money numbers', 'Ten years of real money numbers for US companies.'],
+  ['economy', 'Interest rates and jobs', 'Interest rates, rising prices and jobs.'],
+  ['currency', 'Currency converter', 'Change money between 165 currencies.'],
+  ['crypto', 'Crypto prices', 'Top crypto coins and how much their prices jump.'],
+  ['countries', 'Countries compared', 'Compare 104 countries: growth, prices, debt and more.'],
+  ['industries', 'Industry comparison', 'What profit and risk are normal in each industry.'],
+  ['factor-returns', 'What beats the market', 'Which kinds of shares did better than the market since 1963.']
 ];
 
 export function mountHomeLive(host, { tape, hero } = {}) {
   const S = scope(); let timer = 0, alive = true, shown = false;
   const live = h('span', { class: 'hl-stat' }, h('i'), 'Loading'), strip = h('div', { class: 'hl-tiles' }, Array.from({ length: 8 }, () => h('div', { class: 'hl-sk' }))), sums = h('div', { class: 'hl-sum' });
-  const grid = h('div', { class: 'hl-grid' }), heatBox = h('div', { class: 'hl-heat' }), heatSec = h('section', { class: 'hl', hidden: true, 'aria-label': 'Which parts of the economy are doing well' }, h('div', { class: 'hl-head' }, h('h2', {}, 'Which parts of the economy are doing well?'), h('a', { href: '/market-pulse', 'data-link': true }, 'What this means →')), heatBox);
+  const grid = h('div', { class: 'hl-grid' }), heatBox = h('div', { class: 'hl-heat' }), heatSec = h('section', { class: 'hl', hidden: true, 'aria-label': 'Which kinds of business are doing well today' }, h('div', { class: 'hl-head' }, h('h2', {}, 'Which kinds of business are doing well today?'), h('a', { href: '/market-pulse', 'data-link': true }, 'What this means →')), heatBox);
   const pkBox = h('div', {}), vidBox = h('div', {}), duo = h('section', { class: 'hl hl-duo', 'aria-label': 'Pakistan today and our latest video' }, pkBox, vidBox);
   let video = (VIDEOS || []).find(v => VID.test(v.id)) || null;
   host.replaceChildren(
-    h('section', { class: 'hl', 'aria-label': 'The markets right now' }, h('div', { class: 'hl-head' }, h('h2', {}, 'The markets right now'), live), sums, strip, h('div', { class: 'hl-head' }, h('a', { href: '/market-pulse', 'data-link': true }, 'See the full story in plain English →'))),
+    h('section', { class: 'hl', 'aria-label': 'The markets right now' }, h('div', { class: 'hl-head' }, h('h2', {}, 'The markets right now'), live), sums, strip, h('div', { class: 'hl-head' }, h('a', { href: '/market-pulse', 'data-link': true }, 'See the full story in simple words →'))),
     heatSec, duo,
-    h('section', { class: 'hl', 'aria-label': 'Explore the live data' }, h('div', { class: 'hl-head' }, h('h2', {}, 'Explore the live data'), h('span', { class: 'hl-stat' }, 'Real numbers, explained simply')), grid));
+    h('section', { class: 'hl', 'aria-label': 'Explore live numbers' }, h('div', { class: 'hl-head' }, h('h2', {}, 'Explore live numbers'), h('span', { class: 'hl-stat' }, 'Real numbers, explained simply')), grid));
 
   const tile = t => h('a', { class: 'hl-t', href: t.href, 'data-link': true }, h('span', { class: 'l' }, t.label), h('span', { class: 'v' }, t.value), t.change != null ? h('span', { class: 'c ' + (t.tone || '') }, `${t.change >= 0 ? '+' : '−'}${(Math.abs(t.change) * 100).toFixed(t.key === 'pk' ? 1 : 2)}%`) : null,
     t.spark && t.spark.length > 2 ? h('span', { html: sparkline(t.spark.map((y, i) => [i, y]), { w: 140, h: 34, color: t.tone === 'down' ? 'var(--bad)' : 'var(--good)' }) }) : null, h('small', {}, t.sub));

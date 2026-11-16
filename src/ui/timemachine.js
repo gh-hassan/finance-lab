@@ -24,11 +24,11 @@ export function mountTimeMachine(host) {
   const S = scope(); let data = null, pk = null, year = 0, amount = 10000, played = false, io = null;
   const out = h('div', { class: 'tm-out' }), note = h('p', { class: 'tm-note' }), yv = h('b', {}, ''), chart = h('div', { class: 'tm-chart' });
   const body = h('div', { class: 'tm-body' }, h('div', { class: 'tm-sk' }));
-  host.replaceChildren(h('section', { class: 'hl tm', 'aria-label': 'Time machine' }, h('div', { class: 'hl-head' }, h('h2', {}, 'The time machine'), h('span', { class: 'hl-stat' }, 'Actual US market returns since 1963')), body));
+  host.replaceChildren(h('section', { class: 'hl tm', 'aria-label': 'Time machine' }, h('div', { class: 'hl-head' }, h('h2', {}, 'The time machine'), h('span', { class: 'hl-stat' }, 'Real US share results since 1963')), body));
 
   function draw(animate) {
     const t = timeMachine(data.months, data.factors.MKT, data.factors.RF, year, amount, pk);
-    if (!t) { out.replaceChildren(h('p', { class: 'tm-note' }, 'There is not enough data for that start year. Try an earlier one.')); chart.replaceChildren(); return; }
+    if (!t) { out.replaceChildren(h('p', { class: 'tm-note' }, 'We do not have enough data for that year. Try an earlier year.')); chart.replaceChildren(); return; }
     const p = chartPaths(t), svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `$${num(t.amount)} invested in ${Math.floor(t.startMonth / 100)} would be worth ${money(t.endStocks)} today in US stocks, or ${money(t.endCash)} in cash.` });
     const grad = el('linearGradient', { id: 'tmg', x1: 0, y1: 0, x2: 0, y2: 1 }); grad.append(el('stop', { offset: 0, 'stop-color': 'var(--good)', 'stop-opacity': '.3' }), el('stop', { offset: 1, 'stop-color': 'var(--good)', 'stop-opacity': '0' }));
     const defs = el('defs'); defs.append(grad);
@@ -42,12 +42,12 @@ export function mountTimeMachine(host) {
     if (animate && !reduced()) { stocks.classList.add('go'); area.classList.add('go'); dot.classList.add('go'); }
     const worst = t.worstYear, x = t.multiple;
     out.replaceChildren(
-      h('div', { class: 'tm-big' }, h('span', {}, `$${num(t.amount)} in ${Math.floor(t.startMonth / 100)} would be worth`), h('strong', {}, money(t.endStocks)), h('em', {}, `${num(x, x < 10 ? 1 : 0)}× your money, about ${pct(t.yearly, 1)} a year`)),
-      h('div', { class: 'tm-vs' }, h('span', {}, h('i', { class: 'a' }), 'US stocks ', h('b', {}, money(t.endStocks))), h('span', {}, h('i', { class: 'b' }), 'Cash in a safe account ', h('b', {}, money(t.endCash))),
-        t.pk ? h('span', {}, h('i', { class: 'c' }), 'Pakistan stocks ', h('b', {}, money(t.pk.endUsd))) : null,
-        pk && !t.pk ? h('span', { class: 'tm-real' }, `Pakistan stocks join in when you start in ${Math.floor(pk.months[0] / 100) + 1} or later (the data begins in ${Math.floor(pk.months[0] / 100)}).`) : null));
-    const pkNote = t.pk ? ` Pakistan stocks are shown in US dollars so the lines compare fairly. In rupees the same money grew ${num(t.pk.multiplePkr, 1)}×, but the rupee lost value against the dollar, which is why the dollar line is lower. It is an equal mix of 13 big companies that are listed today, so real results would have been lower.` : '';
-    note.textContent = `The ride was not smooth: the biggest fall from a peak was ${pct(Math.abs(t.worstDrop), 0)}${worst ? `, and the worst full year was ${pct(worst.ret, 0)} (${worst.year})` : ''}. Dividends are included. Taxes, fees and inflation are not. The past does not promise the future.${pkNote}`;
+      h('div', { class: 'tm-big' }, h('span', {}, `$${num(t.amount)} in ${Math.floor(t.startMonth / 100)} would be worth`), h('strong', {}, money(t.endStocks)), h('em', {}, `${num(x, x < 10 ? 1 : 0)} times your money, about ${pct(t.yearly, 1)} growth a year`)),
+      h('div', { class: 'tm-vs' }, h('span', {}, h('i', { class: 'a' }), 'US shares ', h('b', {}, money(t.endStocks))), h('span', {}, h('i', { class: 'b' }), 'Cash in a safe account ', h('b', {}, money(t.endCash))),
+        t.pk ? h('span', {}, h('i', { class: 'c' }), 'Pakistan shares ', h('b', {}, money(t.pk.endUsd))) : null,
+        pk && !t.pk ? h('span', { class: 'tm-real' }, `Pakistan shares show only if you start in ${Math.floor(pk.months[0] / 100) + 1} or later. Our data starts in ${Math.floor(pk.months[0] / 100)}.`) : null));
+    const pkNote = t.pk ? ` Pakistan shares are shown in US dollars so the lines can be compared. In rupees the same money grew ${num(t.pk.multiplePkr, 1)} times. But the rupee lost value against the dollar, so the dollar line is lower. We used an equal mix of 13 big companies that still exist today, so real results would have been lower.` : '';
+    note.textContent = `It was not a smooth ride. The biggest fall from a high point was ${pct(Math.abs(t.worstDrop), 0)}${worst ? `, and the worst full year was ${pct(worst.ret, 0)} (${worst.year})` : ''}. Money paid out by companies is counted. Tax, fees and rising prices are not. The past does not promise the future.${pkNote}`;
   }
 
   function build() {
@@ -58,9 +58,9 @@ export function mountTimeMachine(host) {
     rs.input.addEventListener('input', () => { year = +rs.input.value; yv.textContent = String(year); draw(false); });
     yv.textContent = String(year);
     const seg = segmented({ options: AMOUNTS, value: String(amount), label: 'Amount to invest', onChange: v => { amount = +v; draw(false); } });
-    body.replaceChildren(h('div', { class: 'tm-ctl' }, h('div', { class: 'tm-f' }, h('span', {}, 'If you had invested in ', yv), rs.el), h('div', { class: 'tm-f' }, h('span', {}, 'The amount'), seg.el)),
+    body.replaceChildren(h('div', { class: 'tm-ctl' }, h('div', { class: 'tm-f' }, h('span', {}, 'If you started in ', yv), rs.el), h('div', { class: 'tm-f' }, h('span', {}, 'How much money'), seg.el)),
       h('div', { class: 'tm-grid' }, out, chart), note,
-      h('div', { class: 'hl-head' }, h('a', { href: '/factor-returns', 'data-link': true }, 'Explore all the data behind this →'), h('a', { href: '/tvm', 'data-link': true }, 'Try your own numbers →')));
+      h('div', { class: 'hl-head' }, h('a', { href: '/factor-returns', 'data-link': true }, 'See the data behind this →'), h('a', { href: '/tvm', 'data-link': true }, 'Try your own numbers →')));
     draw(false);
     io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting) && !played) { played = true; draw(true); io.disconnect(); } }, { threshold: 0.35 });
     io.observe(body);

@@ -78,7 +78,7 @@ export function pkToday(items: readonly PkItem[] | null | undefined, fx: { rate:
   const w = sorted[sorted.length - 1], worst = sorted.length && w.c1 < 0 ? { name: w.name, chg: w.c1 } : null;
   const up = rows.filter(i => i.c1 > 0.0005).length, down = rows.filter(i => i.c1 < -0.0005).length, avg = rows.length ? rows.reduce((a, i) => a + i.c1, 0) / rows.length : null;
   const parts: string[] = [];
-  if (avg != null) parts.push(up > down * 1.3 && avg > 0 ? 'Most large Pakistani stocks rose at the last close.' : down > up * 1.3 && avg < 0 ? 'Most large Pakistani stocks fell at the last close.' : 'Pakistani stocks had no clear direction at the last close.');
+  if (avg != null) parts.push(up > down * 1.3 && avg > 0 ? 'Most large Pakistani stocks rose at the last close.' : down > up * 1.3 && avg < 0 ? 'Most large Pakistani stocks fell at the last close.' : 'Pakistani stocks did not go one way at the last close.');
   if (rateChange != null && Math.abs(rateChange) >= 0.001) parts.push(`The rupee has ${rateChange > 0 ? 'weakened' : 'strengthened'} ${num(Math.abs(rateChange) * 100, 1)}% against the dollar over the last month.`);
   else if (rate != null) parts.push('The rupee has been steady against the dollar over the last month.');
   return { best, worst, up, down, avg, rate, rateChange, sentence: parts.join(' ') };

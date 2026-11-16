@@ -55,7 +55,7 @@ export function usStory(items: readonly UsItem[], live: boolean): { headline: st
   const m = movers(items, 1);
   if (m.up[0] && m.down[0]) bullets.push(`Among well-known giants, ${m.up[0].name} is the biggest riser (${signedPct(m.up[0].chg, 1)}) and ${m.down[0].name} the biggest faller (${signedPct(m.down[0].chg, 1)}).`);
   const mood = riskMood(items), best = sec[0], worst = sec[sec.length - 1];
-  const takeaway = mood.label === 'Bold' ? `In short: investors are feeling bold ${live ? 'today' : 'at the last close'}. More money is going into shares${best ? `, especially in ${best.name.toLowerCase()}` : ''}.` : mood.label === 'Cautious' ? `In short: investors are playing it safe ${live ? 'today' : 'at the last close'}. They are selling shares${worst ? `, especially in ${worst.name.toLowerCase()}` : ''}, and moving money to safer places.` : `In short: there is no clear direction ${live ? 'today' : 'at the last close'}. Buyers and sellers are about even.`;
+  const takeaway = mood.label === 'Bold' ? `In short: investors feel sure ${live ? 'today' : 'at the last close'}. More money is going into shares${best ? `, mostly in ${best.name.toLowerCase()}` : ''}.` : mood.label === 'Cautious' ? `In short: investors are being careful ${live ? 'today' : 'at the last close'}. They are selling shares${worst ? `, mostly in ${worst.name.toLowerCase()}` : ''}, and keeping money in safer places.` : `In short: prices are not going one way ${live ? 'today' : 'at the last close'}. About as many people are buying as selling.`;
   return { headline, bullets, takeaway };
 }
 
@@ -87,7 +87,7 @@ export function pkStory(items: readonly PkItem[], p: Period): { headline: string
   if (sec.length >= 3) bullets.push(`A sector is a group of similar companies. ${sec[0].sector} did best (${signedPct(sec[0].avg, 1)} on average) and ${sec[sec.length - 1].sector} did worst (${signedPct(sec[sec.length - 1].avg, 1)}).`);
   const m = pkMovers(items, p, 1);
   if (m.up[0] && m.down[0]) bullets.push(`The best single stock was ${m.up[0].name} (${signedPct(m.up[0][p], 1)}) and the weakest was ${m.down[0].name} (${signedPct(m.down[0][p], 1)}).`);
-  const takeaway = b.up > b.down * 1.3 && b.avg > 0 ? `In short: most stocks rose over ${span}. Buyers were in charge.` : b.down > b.up * 1.3 && b.avg < 0 ? `In short: most stocks fell over ${span}. Sellers were in charge.` : `In short: no clear direction over ${span}. Buyers and sellers were about even.`;
+  const takeaway = b.up > b.down * 1.3 && b.avg > 0 ? `In short: most stocks rose over ${span}. More people were buying.` : b.down > b.up * 1.3 && b.avg < 0 ? `In short: most stocks fell over ${span}. More people were selling.` : `In short: prices did not go one way over ${span}. About as many people bought as sold.`;
   return { headline, bullets, takeaway };
 }
 

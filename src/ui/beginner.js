@@ -4,14 +4,14 @@
 import { money, nf, parseList, bs } from '../lib/math';
 
 export const TOPICS = {
-  Foundations: { label: 'Money basics', tint: 'coral', blurb: 'Interest, savings and loans' },
-  Valuation: { label: 'What things are worth', tint: 'lav', blurb: 'Bonds, stocks and companies' },
-  'Corporate Finance': { label: 'Company decisions', tint: 'sun', blurb: 'Projects, funding and deals' },
-  Investments: { label: 'Investing', tint: 'mint', blurb: 'Risk, return and portfolios' },
-  Derivatives: { label: 'Options', tint: 'sky', blurb: 'Tickets on future prices' },
+  Foundations: { label: 'Money basics', tint: 'coral', blurb: 'Interest, saving and borrowing' },
+  Valuation: { label: 'What things are worth', tint: 'lav', blurb: 'Bonds, shares and companies' },
+  'Corporate Finance': { label: 'Company decisions', tint: 'sun', blurb: 'Business choices and money' },
+  Investments: { label: 'Investing', tint: 'mint', blurb: 'Risk, profit and mixing investments' },
+  Derivatives: { label: 'Options', tint: 'sky', blurb: 'Deals on future prices' },
   International: { label: 'Global money', tint: 'pink', blurb: 'Exchange rates' },
-  Analysis: { label: 'Company health', tint: 'peach', blurb: 'Report cards for companies' },
-  Statistics: { label: 'Chance and numbers', tint: 'teal', blurb: 'Averages, spread and probability' }
+  Analysis: { label: 'Company health', tint: 'peach', blurb: 'How well a company is doing' },
+  Statistics: { label: 'Chance and numbers', tint: 'teal', blurb: 'Averages and chances' }
 };
 
 const cardBy = (o, label) => (o.cards || []).find(c => c.label === label) || { value: '—' };
@@ -72,7 +72,7 @@ export const BEGINNER = {
     words: [['Coupon', 'The yearly payment a bond makes.'], ['Yield', 'The return a buyer gets.'], ['Maturity', 'The day you get your money back.']]
   },
   ddm: {
-    ask: 'Is this stock worth its price?', essential: ['d0', 'ke', 'g', 'mkt'],
+    ask: 'Is this share worth its price?', essential: ['d0', 'ke', 'g', 'mkt'],
     labels: { d0: 'Yearly payout per share', ke: 'Return you want', g: 'Payout growth per year', mkt: 'Price on the market' }, force: { model: 'gordon' },
     tips: { d0: 'Cash the company paid out per share last year (the dividend).', ke: 'The yearly return you need to be happy owning the stock.', g: 'How fast you expect the payout to grow. Keep it below the return you want.', mkt: 'What the stock costs right now. Used to compare.' },
     scene: { id: 'present', map: (v, o) => ({ flows: rows(10, k => ({ y: k + 1, a: v.d0 * Math.pow(1 + v.g / 100, k + 1) })), rate: v.ke, years: 10 }) },
@@ -99,7 +99,7 @@ export const BEGINNER = {
     words: [['NPV', 'Value added, measured in today\'s money.'], ['IRR', 'The project\'s own yearly return.'], ['Payback', 'How long to get your money back.']]
   },
   wacc: {
-    ask: 'What return do investors expect from this company?', essential: ['rf', 'beta', 'erp', 'kd', 'tax', 'E', 'D'],
+    ask: 'What profit do investors expect from this company?', essential: ['rf', 'beta', 'erp', 'kd', 'tax', 'E', 'D'],
     labels: { rf: 'Safe return', beta: 'How jumpy is the stock?', erp: 'Extra return for stock risk', kd: 'Interest rate on its debt', tax: 'Tax rate', E: 'Value of its shares ($M)', D: 'Value of its debt ($M)' },
     tips: { rf: 'What a government bond pays. The no-risk return.', beta: '1 moves like the market. 2 jumps twice as much. 0.5 is calmer.', erp: 'How much more stocks pay than safe bonds, on average.', kd: 'What the company pays on its loans.', tax: 'Interest is tax-deductible, so debt costs less after tax.', E: 'What all its shares are worth together.', D: 'How much it owes lenders.' },
     scene: { id: 'blend', map: v => ({ wE: Math.round(v.E / (v.E + v.D) * 100), ke: +(v.rf + v.beta * v.erp).toFixed(2), kd: +(v.kd * (1 - v.tax / 100)).toFixed(2) }) },
@@ -117,7 +117,7 @@ export const BEGINNER = {
     words: [['EPS', 'Earnings (profit) per share.'], ['Leverage', 'Using borrowed money.'], ['EBIT', 'Profit before interest and tax.']]
   },
   breakeven: {
-    ask: 'How many do I need to sell to break even?', essential: ['p', 'vc', 'fc', 'q'],
+    ask: 'How much must I sell to cover my costs?', essential: ['p', 'vc', 'fc', 'q'],
     labels: { p: 'Selling price each', vc: 'Cost to make each', fc: 'Fixed bills (rent, salaries)', q: 'How many you expect to sell' },
     tips: { p: 'What one customer pays.', vc: 'Ingredients or parts for one item.', fc: 'Bills you pay even if you sell nothing.', q: 'Your sales guess for the period.' },
     scene: { id: 'breakeven', map: v => ({ price: v.p, cost: v.vc, fixed: v.fc }) },
@@ -144,7 +144,7 @@ export const BEGINNER = {
     words: [['Beta', 'How much a stock moves compared with the market.'], ['Alpha', 'Return above what the risk justifies.'], ['Sharpe ratio', 'Return for each unit of risk.']]
   },
   portfolio: {
-    ask: 'Does mixing two investments reduce risk?', essential: ['muA', 'sdA', 'muB', 'sdB', 'rho', 'wA'],
+    ask: 'Does owning two investments make it safer?', essential: ['muA', 'sdA', 'muB', 'sdB', 'rho', 'wA'],
     labels: { muA: 'Investment A: expected return', sdA: 'Investment A: how bumpy', muB: 'Investment B: expected return', sdB: 'Investment B: how bumpy', rho: 'Do they move together? (−1 to 1)', wA: 'Share of your money in A' },
     tips: { muA: 'Average yearly return you expect.', sdA: 'How much the return jumps around. Bigger is riskier.', muB: 'Average yearly return you expect.', sdB: 'How much the return jumps around.', rho: '1 = move together, 0 = unrelated, −1 = opposite. Lower mixes better.', wA: 'The rest goes into B.' },
     scene: { id: 'mix2', map: v => ({ rho: v.rho, wA: v.wA, sdA: v.sdA, sdB: v.sdB }) },
@@ -179,7 +179,7 @@ export const BEGINNER = {
     words: [['ROE', 'Profit for each dollar the owners put in.'], ['Liquidity', 'Ability to pay bills soon.'], ['Assets', 'Everything the company owns.']]
   },
   fx: {
-    ask: 'What will the exchange rate be?', essential: ['S', 'id', 'if', 'T'],
+    ask: 'How much is one currency worth in another?', essential: ['S', 'id', 'if', 'T'],
     labels: { S: 'Rate today (home per 1 foreign)', id: 'Home interest rate', if: 'Foreign interest rate', T: 'Years ahead' }, force: { Fm: 0 },
     tips: { S: 'How much home currency 1 unit of foreign currency costs today.', id: 'What a bank pays at home.', if: 'What a bank pays abroad.', T: 'How far ahead you want the rate for.' },
     scene: { id: 'exchange', map: v => ({ S: v.S, id: v.id, if: v.if, T: Math.max(1, Math.round(v.T)) }) },
@@ -188,7 +188,7 @@ export const BEGINNER = {
     words: [['Spot rate', 'Today\'s exchange rate.'], ['Forward rate', 'A rate agreed today for a later date.'], ['Parity', 'No free-money gap between markets.']]
   },
   merger: {
-    ask: 'Will this takeover help profit per share?', essential: ['prem', 'stock', 'syn'],
+    ask: 'Will buying this company help our profit?', essential: ['prem', 'stock', 'syn'],
     labels: { prem: 'Extra paid over the market price', stock: 'Share paid in new stock', syn: 'Yearly cost savings ($M)' },
     tips: { prem: 'Buyers pay more than the market price to win the deal.', stock: 'The rest is paid with borrowed money.', syn: 'Savings from combining the two companies.' },
     scene: { id: 'merge', map: v => ({ aNI: v.aNI, aSh: v.aSh, aPx: v.aPx, tNI: v.tNI, tSh: v.tSh, tPx: v.tPx, prem: v.prem, stock: v.stock, rate: v.rate, tax: v.tax, syn: v.syn }) },

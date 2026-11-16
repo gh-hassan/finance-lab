@@ -1,0 +1,33 @@
+/* The home page story: one hand-drawn scene on dotted paper */
+.hero-doodle{margin:0 0 clamp(22px,3vw,34px)}
+.dd{border-radius:26px;border:1px solid var(--line);background-color:var(--panel-solid);background-image:radial-gradient(var(--line) 1px,transparent 1.3px);background-size:22px 22px;overflow:hidden}
+.dd-stage{position:relative;padding:clamp(6px,1.4vw,16px) clamp(6px,1.4vw,16px) 0;cursor:pointer;outline:none}
+.dd-stage:focus-visible{outline:2px solid var(--c1);outline-offset:-4px;border-radius:24px}
+.dd svg{display:block;width:100%;height:auto;max-height:640px;overflow:hidden}
+.dd-toast{position:absolute;right:18px;top:14px;padding:6px 12px;border-radius:999px;background:var(--pill-on);color:var(--pill-on-text);font:600 13px var(--body);opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .25s;pointer-events:none}
+.dd-toast.on{opacity:1;transform:none}
+.dd-s{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.dd-s[data-k="draw"]{stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+[data-k="pop"],[data-k="fade"],[data-k="tint"]{opacity:0}
+.dd-dot{fill:var(--ink)}
+.dd-t{fill:var(--ink);font-family:var(--body)}
+.dd-t.hand{font-family:'Segoe Print','Bradley Hand','Chalkboard SE','Comic Sans MS',cursive;font-weight:600}
+.dd-cursor{fill:var(--ink);stroke:var(--panel-solid);stroke-width:2;opacity:0}
+.dd-ripple{fill:none;stroke:var(--c4);stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
+.dd-tint{fill:#F2C14E}
+.dd-knob{fill:var(--panel-solid);stroke:var(--pill-on);stroke-width:4}
+.dd-fill{fill:none;stroke:var(--pill-on);stroke-width:6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:.8}
+.dd-bar{transform-box:fill-box;transform-origin:left;transform:scaleX(0)}
+.dd-bar1{fill:color-mix(in srgb,var(--pill-on) 24%,transparent)}
+.dd-bar2{fill:var(--c4);opacity:.85}
+
+/* when the story is over, the resting student can be pressed to play it again */
+.dd-stage.rest #dd-hit{cursor:pointer}
+
+/* he keeps studying: the pencil scribbles and the coffee steams */
+.dd-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dd-write{animation:ddScribble .7s ease-in-out infinite}
+.dd-steam{opacity:0;animation:ddSteam 2.6s ease-in-out infinite}
+@keyframes ddScribble{0%,100%{transform:translate(0,0)}50%{transform:translate(6px,2px)}}
+@keyframes ddSteam{0%{opacity:0;transform:translateY(4px)}45%{opacity:.8}100%{opacity:0;transform:translateY(-9px)}}
+@media (prefers-reduced-motion:reduce){.dd-write,.dd-steam{animation:none}.dd-steam{opacity:.6}}

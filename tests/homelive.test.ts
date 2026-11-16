@@ -12,7 +12,7 @@ describe('home live summary', () => {
   it('builds summaries and tiles from complete data', () => {
     const r = homeLive(us, pks, { rate: 276.8 }, macro, 1000 * 1000 + 60e3);
     expect(r.live).toBe(true); expect(r.summaries.map(s => s.market)).toEqual(['us', 'pakistan']);
-    expect(r.summaries[0]).toMatchObject({ mood: 'Investors feel bold', tone: 'on', live: true }); expect(r.summaries[0].text).not.toMatch(/^In short/); expect(r.summaries[1].mood).toBe('Most stocks rising');
+    expect(r.summaries[0]).toMatchObject({ mood: 'Investors feel sure', tone: 'on', live: true }); expect(r.summaries[0].text).not.toMatch(/^In short/); expect(r.summaries[1].mood).toBe('Most stocks rising');
     const k = r.tiles.map(t => t.key); expect(k).toEqual(['^GSPC', '^IXIC', 'vix', 'dgs10', 'mortgage', 'btc', 'pk', 'pkr']);
     expect(r.tiles.find(t => t.key === 'dgs10')).toMatchObject({ value: '4.84%', sub: 'up 0.67 points from a year ago', href: '/economy' });
     expect(r.tiles.find(t => t.key === 'pkr')!.value).toBe('Rs 276.8'); expect(r.tiles.find(t => t.key === 'vix')!.sub).toBe('Calm');

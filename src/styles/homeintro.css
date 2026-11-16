@@ -1,7 +1,7 @@
 /* Home: plain hero and the "learn by doing" explainer */
 .hero.solo{grid-template-columns:minmax(0,1fr);margin:clamp(28px,5vw,64px) 0 clamp(48px,7vw,88px)}
 .hero.solo .eyebrow{margin-bottom:clamp(14px,2vw,22px)}
-.hero.solo h1{font-size:clamp(36px,5.6vw,76px);line-height:1.08;margin-bottom:clamp(28px,4vw,44px)}
+.hero.solo h1{font-size:clamp(36px,5.6vw,76px);line-height:1.08;margin-bottom:clamp(20px,3vw,32px)}
 .hero.solo .hero-copy{max-width:780px}
 .hi{display:grid;gap:18px;margin:0 0 clamp(64px,8vw,104px);padding:clamp(26px,4vw,44px);border-radius:24px;background:var(--panel-solid);border:1px solid var(--line)}
 .hi h2{font:600 clamp(22px,2.6vw,30px)/1.15 var(--display);letter-spacing:-.03em}
@@ -17,3 +17,25 @@
 .home-gap{margin-bottom:clamp(56px,7vw,88px)}
 .home-gap .hl{margin-bottom:clamp(40px,5vw,64px)}
 .home-gap .hl:last-child{margin-bottom:0}
+
+/* sections that open and close, simplest first */
+.home-gap{margin-bottom:0}
+.hs{margin:0 0 14px;border-radius:22px;background:var(--panel-solid);border:1px solid var(--line)}
+.hs>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:72px;padding:18px clamp(18px,3vw,30px);cursor:pointer;list-style:none}
+.hs>summary::-webkit-details-marker{display:none}
+.hs-t{display:grid;gap:3px;min-width:0}
+.hs-t h2{font:600 clamp(19px,2.2vw,26px)/1.2 var(--display);letter-spacing:-.03em}
+.hs-t small{font:400 15px/1.4 var(--body);color:var(--mute)}
+.hs-c{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--soft);transition:transform .25s cubic-bezier(.2,.9,.2,1)}
+.hs-c svg{width:18px;height:18px}
+.hs[open]>summary .hs-c{transform:rotate(90deg)}
+.hs>summary:focus-visible{outline:2px solid var(--c1);outline-offset:-2px;border-radius:22px}
+.hs-body{padding:4px clamp(18px,3vw,30px) clamp(20px,3vw,30px)}
+.hs-body .sec{margin-bottom:0}
+/* the section titles now live in the bar, so hide the repeats inside */
+.hs-body .tm>.hl-head h2,.hs-body>div>.hl:first-child>.hl-head h2,.hs-body>div>.hl:only-child>.hl-head h2{display:none}
+.hs:not(:has(.hl:not([hidden]))):not(:has(.qrow)):not(:has(.cols2)),.hs:has(.hs-body>[hidden]){display:none}
+.hs>summary::before{content:none;display:none}
+
+/* the story animation is left out completely on phones */
+@media (max-width:700px){.hero-doodle{display:none}}

@@ -1,0 +1,3 @@
+/* Lesson pictures drawn by hand: dotted paper behind them, like the home page story */
+.sv-stage.dd-paper{background-color:var(--panel-solid);background-image:radial-gradient(var(--line) 1px,transparent 1.3px);background-size:22px 22px}
+.sv-stage.dd-paper .sv-svg text{paint-order:stroke;stroke:var(--panel-solid);stroke-width:3px;stroke-linejoin:round}

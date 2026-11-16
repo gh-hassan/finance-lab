@@ -1,0 +1,16 @@
+/* Learn page: each chapter opens and closes, simplest first */
+.learn-layout .chapters{gap:14px}
+.lc{border-radius:22px;background:var(--panel-solid);border:1px solid var(--line)}
+.lc>summary{display:flex;align-items:center;gap:16px;min-height:76px;padding:16px clamp(16px,3vw,28px);cursor:pointer;list-style:none}
+.lc>summary::-webkit-details-marker{display:none}
+.lc>summary::before{content:none;display:none}
+.lc>summary:focus-visible{outline:2px solid var(--c1);outline-offset:-2px;border-radius:22px}
+.lc-t{display:grid;gap:2px;min-width:0;flex:1}
+.lc-t h2{font:600 clamp(19px,2vw,26px)/1.2 var(--display);letter-spacing:-.03em}
+.lc-t p{color:var(--mute);font-size:15px;line-height:1.4}
+.lc-k{flex:none;font:600 13px var(--body);color:var(--mute);padding:5px 12px;border-radius:999px;background:var(--soft)}
+.lc-c{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--soft);transition:transform .25s cubic-bezier(.2,.9,.2,1)}
+.lc-c svg{width:18px;height:18px}
+.lc[open]>summary .lc-c{transform:rotate(90deg)}
+.lc-body{padding:4px clamp(14px,3vw,28px) clamp(18px,3vw,28px)}
+@media (max-width:640px){.lc-k{display:none}.lc>summary{gap:12px}}
