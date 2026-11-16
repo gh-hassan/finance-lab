@@ -22,7 +22,7 @@ const cell = o => h('td', { class: [o.tone, o.t === '—' ? 'na' : ''].filter(Bo
 
 /** The markets table. rows are clickable, with a real button in the first cell for keyboards. */
 export function marketsTable(coins, selected, onPick) {
-  const head = ['Coin', 'Price', '24h', '7d', '30d', '1y', 'Market cap', 'Last 7 days'];
+  const head = ['Coin', 'Price', '24 hours', '7 days', '30 days', '1 year', 'Market cap (total value)', 'Last 7 days'];
   const rows = coins.map(c => {
     const on = c.id === selected;
     const btn = h('button', { type: 'button', class: 'cr-pick', 'aria-pressed': String(on), 'aria-label': `Show ${c.name}`, onclick: e => { e.stopPropagation(); onPick(c.id); } },
@@ -46,7 +46,7 @@ function riskTiles(pts, days) {
   if (!r) return null;
   const x = volVsStocks(r.vol), dd = r.drawdown, d = r.days;
   return [
-    { label: 'Volatility a year', value: r.vol == null ? '—' : pct(r.vol, 0), sub: x == null ? '' : `about ${x < 1.5 ? x.toFixed(1) : Math.round(x)}× a stock index` },
+    { label: 'Ups and downs (volatility) a year', value: r.vol == null ? '—' : pct(r.vol, 0), sub: x == null ? '' : `about ${x < 1.5 ? x.toFixed(1) : Math.round(x)}× a stock index` },
     { label: 'Worst fall from a peak', value: dd && dd.depth > 0 ? signedPct(-dd.depth) : dd ? '0%' : '—', sub: dd && dd.depth > 0 ? `${dayText(dd.peakAt)} to ${dayText(dd.troughAt)}` : 'no fall in this range', tone: dd && dd.depth > 0 ? 'bad' : '' },
     { label: 'Best day', value: d ? signedPct(d.best.change) : '—', sub: d ? dayText(d.best.at) : '' },
     { label: 'Worst day', value: d ? signedPct(d.worst.change) : '—', sub: d ? dayText(d.worst.at) : '', tone: d && d.worst.change < 0 ? 'bad' : '' },
@@ -88,7 +88,7 @@ export function coinCard({ onDays, days }) {
         h('h3', { class: 'cr-h3' }, 'Risk lens'),
         tiles ? statGrid(tiles) : h('p', { class: 'd-cap' }, 'Not enough price history to measure risk yet.'),
         words,
-        h('p', { class: 'd-cap' }, 'Volatility is the size of the daily ups and downs, scaled to a year with √365 because crypto trades every day (stocks trade about 252 days). Short ranges are only a rough guide.'));
+        h('p', { class: 'd-cap' }, 'Volatility is how big the daily ups and downs are, scaled to a year. We use √365 because crypto trades every day (stocks trade about 252 days a year). Short ranges are only a rough guide.'));
     },
     destroy: kill
   };
@@ -109,15 +109,15 @@ export function whatIfCard({ onDays, days, amount, onAmount }) {
       const w = pts ? whatIf(pts, n) : null;
       if (!w) { out.innerHTML = '<p class="cu-hint warn">We need a positive amount and some price history.</p>'; return; }
       const up = w.gain >= 0, half = fmtUsdExact(w.value / 2);
-      out.innerHTML = `<p class="cu-eq">${esc(fmtUsdExact(n))} in ${esc(name)} ${esc(DAYS_WORDS[dd])} would be worth</p><p class="cu-big">${esc(fmtUsdExact(w.value))}</p><p class="cu-hint">${up ? 'A gain' : 'A loss'} of <b class="${up ? '' : 'neg'}">${esc(fmtUsdExact(Math.abs(w.gain)))}</b> (${esc(signedPct(w.change))}). Past results do not predict the future: the price could just as easily go the other way, and a 50% fall from here would leave ${esc(half)}.</p>`;
+      out.innerHTML = `<p class="cu-eq">${esc(fmtUsdExact(n))} in ${esc(name)} ${esc(DAYS_WORDS[dd])} would be worth</p><p class="cu-big">${esc(fmtUsdExact(w.value))}</p><p class="cu-hint">${up ? 'A gain' : 'A loss'} of <b class="${up ? '' : 'neg'}">${esc(fmtUsdExact(Math.abs(w.gain)))}</b> (${esc(signedPct(w.change))}). Past results do not predict the future. The price could go the other way. A 50% fall from here would leave ${esc(half)}.</p>`;
     }
   };
 }
 
 export function explainers() {
   return h('div', { class: 'cu-ex' },
-    explainer('What is a cryptocurrency?', '<p>A cryptocurrency is digital money that lives on a shared computer network rather than at a bank. <b>Bitcoin</b> was the first. Nobody issues it and no government backs it; its value comes only from what people are willing to pay.</p><p>It is not the same as a share in a company: there are no profits or dividends behind the price.</p>'),
-    explainer('Why is crypto so volatile?', '<ul><li>There are <b>no earnings or cash flows</b> to anchor a fair price, so moods drive it.</li><li>The market is <b>young and thin</b>: a few big trades can move the price.</li><li>It trades <b>24 hours a day</b>, so news hits at once.</li><li>Many buyers are <b>speculators</b> who sell fast when prices drop.</li></ul>'),
-    explainer('What is market cap?', '<p><b>Market cap</b> (market capitalisation) is the price of one coin times the number of coins in circulation. It is a way to compare size, like a company\'s market value. It is <b>not</b> money that was put in: a coin worth $1 trading thinly can show a large market cap.</p>'),
-    explainer('What is volatility?', '<p><b>Volatility</b> measures how much a price jumps around. We take each day\'s percentage move, measure how spread out they are (the standard deviation), and scale it to a year. Higher means a bumpier ride.</p><p><b>Maximum drawdown</b> is the biggest fall from a high point to a later low, the pain an owner would have felt at the worst moment.</p>'));
+    explainer('What is a cryptocurrency?', '<p>A cryptocurrency is digital money that lives on a shared computer network rather than at a bank. <b>Bitcoin</b> was the first. Nobody issues it and no government backs it. Its value comes only from what people will pay.</p><p>A coin is not a share in a company. No profits or dividends sit behind the price.</p>'),
+    explainer('Why do crypto prices jump so much?', '<ul><li>There are <b>no profits or cash coming in</b> to set a fair price, so moods drive it.</li><li>The market is <b>young and small</b>. A few big trades can move the price.</li><li>It trades <b>24 hours a day</b>, so news hits at once.</li><li>Many buyers are <b>speculators</b> (people betting on quick price moves). They sell fast when prices drop.</li></ul>'),
+    explainer('What is market cap?', '<p><b>Market cap</b> (market capitalisation) is the price of one coin times the number of coins out there. It is the total value of all the coins. Use it to compare size, like a company\'s market value. It is <b>not</b> money that was put in: a coin worth $1 trading thinly can show a large market cap.</p>'),
+    explainer('What is volatility?', '<p><b>Volatility</b> measures how much a price jumps around. We take each day\'s percentage move, measure how spread out they are (the standard deviation), and scale it to a year. Higher means a bumpier ride.</p><p><b>Maximum drawdown</b> is the biggest fall from a high point to a later low. It shows the pain an owner felt at the worst moment.</p>'));
 }

@@ -27,31 +27,31 @@ const project: Model = {
     dr('cost', 'What it costs today', 120000, 100000, 90000, 5000, { pre: '$' }),
     dr('cash', 'Cash it brings in each year', 22000, 30000, 38000, 1000, { pre: '$' }),
     dr('years', 'Years it lasts', 4, 5, 7, 1, { unit: 'yrs', int: true }),
-    dr('rate', 'Return you need', 13, 10, 8, 0.5, { unit: '%' })
+    dr('rate', 'Yearly return you need', 13, 10, 8, 0.5, { unit: '%' })
   ],
   outputs: [
     { id: 'npv', label: 'Value it adds (NPV)', better: 'high', fmt: m0, short: compact, risk: { text: 'losing money', kind: 'below', at: () => 0 },
       calc: v => { let s = -v.cost; for (let t = 1; t <= v.years; t++) s += v.cash / Math.pow(1 + v.rate / 100, t); return s; } },
-    { id: 'irr', label: 'Its own yearly return (IRR)', better: 'high', fmt: x => (isNum(x) ? pct(x, 1) : '—'), short: x => pct(x, 0),
+    { id: 'irr', label: 'Its yearly return (IRR)', better: 'high', fmt: x => (isNum(x) ? pct(x, 1) : '—'), short: x => pct(x, 0),
       calc: v => irr([-v.cost, ...Array.from({ length: Math.max(1, Math.round(v.years)) }, () => v.cash)]) },
-    { id: 'pay', label: 'Time to get your money back', better: 'low', fmt: yrsFmt, short: x => nf(x, 1), calc: v => (v.cash * v.years >= v.cost ? v.cost / v.cash : NaN) }
+    { id: 'pay', label: 'Years to get your money back', better: 'low', fmt: yrsFmt, short: x => nf(x, 1), calc: v => (v.cash * v.years >= v.cost ? v.cost / v.cash : NaN) }
   ]
 };
 
 /* ----- model 2: a company (simple DCF) ----- */
 const company: Model = {
   id: 'company', title: 'A company\'s value', pitch: 'What is one share worth?', main: 'ps',
-  note: 'Assumes sales of $1,000M, a 25% tax rate, 70% of profit turned into cash, $300M net debt and 100M shares.',
+  note: 'We assume yearly sales of $1,000M, 25% tax, and 70% of profit turned into cash. We also assume $300M of debt (after cash) and 100M shares.',
   drivers: [
     dr('g', 'Sales growth per year', 3, 8, 13, 0.5, { unit: '%' }),
     dr('margin', 'Profit on each sale', 10, 18, 24, 0.5, { unit: '%' }),
-    dr('wacc', 'Return investors want', 11, 9, 8, 0.25, { unit: '%' }),
-    dr('tg', 'Growth after year 5', 1.5, 2.5, 3.5, 0.25, { unit: '%' })
+    dr('wacc', 'Yearly return investors want', 11, 9, 8, 0.25, { unit: '%' }),
+    dr('tg', 'Yearly growth after year 5', 1.5, 2.5, 3.5, 0.25, { unit: '%' })
   ],
   outputs: [
-    { id: 'ps', label: 'Value per share', better: 'high', fmt: x => money(x, 2), short: x => money(x, 0), risk: { text: 'a value 20% below the base case', kind: 'below', at: b => b * 0.8 },
+    { id: 'ps', label: 'Value per share', better: 'high', fmt: x => money(x, 2), short: x => money(x, 0), risk: { text: 'a value 20% below the normal case', kind: 'below', at: b => b * 0.8 },
       calc: v => { const w = v.wacc / 100, g = v.tg / 100; if (w <= g) return NaN; let ev = 0, f = 0; for (let t = 1; t <= 5; t++) { f = 1000 * Math.pow(1 + v.g / 100, t) * (v.margin / 100) * 0.75 * 0.7; ev += f / Math.pow(1 + w, t); } ev += (f * (1 + g) / (w - g)) / Math.pow(1 + w, 5); return (ev - 300) / 100; } },
-    { id: 'ev', label: 'Whole company ($M)', better: 'high', fmt: x => money(x, 0) + 'M', short: x => nf(x, 0),
+    { id: 'ev', label: 'Whole company, in $ millions', better: 'high', fmt: x => money(x, 0) + 'M', short: x => nf(x, 0),
       calc: v => { const w = v.wacc / 100, g = v.tg / 100; if (w <= g) return NaN; let ev = 0, f = 0; for (let t = 1; t <= 5; t++) { f = 1000 * Math.pow(1 + v.g / 100, t) * (v.margin / 100) * 0.75 * 0.7; ev += f / Math.pow(1 + w, t); } return ev + (f * (1 + g) / (w - g)) / Math.pow(1 + w, 5); } }
   ]
 };
@@ -72,9 +72,9 @@ const loan: Model = {
     dr('term', 'Loan term', 30, 30, 30, 1, { unit: 'yrs', int: true })
   ],
   outputs: [
-    { id: 'interest', label: 'Total interest paid', better: 'low', fmt: m0, short: compact, risk: { text: 'interest 20% above the base case', kind: 'above', at: b => b * 1.2 }, calc: v => loanRun(v).interest },
+    { id: 'interest', label: 'Total interest you pay', better: 'low', fmt: m0, short: compact, risk: { text: 'interest 20% above the normal case', kind: 'above', at: b => b * 1.2 }, calc: v => loanRun(v).interest },
     { id: 'pay', label: 'Monthly payment', better: 'low', fmt: m0, short: compact, calc: v => loanRun(v).pay },
-    { id: 'years', label: 'Time to be debt-free', better: 'low', fmt: yrsFmt, short: x => nf(x, 0), calc: v => loanRun(v).years }
+    { id: 'years', label: 'Years until debt-free', better: 'low', fmt: yrsFmt, short: x => nf(x, 0), calc: v => loanRun(v).years }
   ]
 };
 
@@ -85,13 +85,13 @@ const savings: Model = {
     dr('monthly', 'Saved each month', 150, 300, 450, 25, { pre: '$' }),
     dr('rate', 'Yearly return', 3, 6.5, 9, 0.5, { unit: '%' }),
     dr('years', 'Years of saving', 20, 25, 30, 1, { unit: 'yrs', int: true }),
-    dr('infl', 'Price rises per year', 5, 3, 2, 0.5, { unit: '%' }),
+    dr('infl', 'Price rise each year', 5, 3, 2, 0.5, { unit: '%' }),
     dr('start', 'Starting balance', 5000, 5000, 5000, 500, { pre: '$' })
   ],
   outputs: [
-    { id: 'real', label: 'Worth in today\'s money', better: 'high', fmt: m0, short: compact, risk: { text: 'ending with 20% less than planned', kind: 'below', at: b => b * 0.8 },
+    { id: 'real', label: 'Worth in today\'s prices', better: 'high', fmt: m0, short: compact, risk: { text: 'ending with 20% less than planned', kind: 'below', at: b => b * 0.8 },
       calc: v => { const i = v.rate / 1200, n = v.years * 12, fv = (v.start ?? 5000) * Math.pow(1 + i, n) + v.monthly * (i ? (Math.pow(1 + i, n) - 1) / i : n); return fv / Math.pow(1 + v.infl / 100, v.years); } },
-    { id: 'final', label: 'Pile of money at the end', better: 'high', fmt: m0, short: compact,
+    { id: 'final', label: 'Money you have at the end', better: 'high', fmt: m0, short: compact,
       calc: v => { const i = v.rate / 1200, n = v.years * 12; return (v.start ?? 5000) * Math.pow(1 + i, n) + v.monthly * (i ? (Math.pow(1 + i, n) - 1) / i : n); } }
   ]
 };
@@ -107,7 +107,7 @@ const business: Model = {
   ],
   outputs: [
     { id: 'profit', label: 'Profit each month', better: 'high', fmt: m0, short: compact, risk: { text: 'making a loss', kind: 'below', at: () => 0 }, calc: v => v.sold * (v.price - v.vc) - v.fixed },
-    { id: 'be', label: 'Items to sell to break even', better: 'low', fmt: x => (isNum(x) ? nf(x, 0) : 'Never'), short: x => nf(x, 0), calc: v => (v.price > v.vc ? v.fixed / (v.price - v.vc) : NaN) }
+    { id: 'be', label: 'Items to sell to cover all costs', better: 'low', fmt: x => (isNum(x) ? nf(x, 0) : 'Never'), short: x => nf(x, 0), calc: v => (v.price > v.vc ? v.fixed / (v.price - v.vc) : NaN) }
   ]
 };
 
@@ -116,11 +116,11 @@ const stock: Model = {
   id: 'stock', title: 'A stock', pitch: 'What is a fair price?', main: 'price',
   drivers: [
     dr('d0', 'Yearly payout per share', 1.6, 2, 2.4, 0.1, { pre: '$' }),
-    dr('g', 'Payout growth per year', 3, 4, 5, 0.25, { unit: '%' }),
-    dr('k', 'Return you want', 10, 9, 8.5, 0.25, { unit: '%' })
+    dr('g', 'Payout growth each year', 3, 4, 5, 0.25, { unit: '%' }),
+    dr('k', 'Yearly return you want', 10, 9, 8.5, 0.25, { unit: '%' })
   ],
   outputs: [
-    { id: 'price', label: 'Fair price per share', better: 'high', fmt: x => money(x, 2), short: x => money(x, 0), risk: { text: 'a price 20% below the base case', kind: 'below', at: b => b * 0.8 }, calc: v => (v.k > v.g ? v.d0 * (1 + v.g / 100) / ((v.k - v.g) / 100) : NaN) }
+    { id: 'price', label: 'Fair price per share', better: 'high', fmt: x => money(x, 2), short: x => money(x, 0), risk: { text: 'a price 20% below the normal case', kind: 'below', at: b => b * 0.8 }, calc: v => (v.k > v.g ? v.d0 * (1 + v.g / 100) / ((v.k - v.g) / 100) : NaN) }
   ]
 };
 

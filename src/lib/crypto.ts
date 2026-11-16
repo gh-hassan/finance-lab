@@ -11,7 +11,7 @@ export const STOCK_VOL_HIGH = 0.2;
 
 export const DAYS = [7, 30, 90, 365] as const;
 export type Days = (typeof DAYS)[number];
-export const DAYS_LABEL: Record<Days, string> = { 7: '7D', 30: '30D', 90: '90D', 365: '1Y' };
+export const DAYS_LABEL: Record<Days, string> = { 7: '7 days', 30: '30 days', 90: '90 days', 365: '1 year' };
 export const DAYS_WORDS: Record<Days, string> = { 7: 'a week ago', 30: '30 days ago', 90: '90 days ago', 365: 'a year ago' };
 export const isDays = (x: unknown): x is Days => (DAYS as readonly unknown[]).includes(x);
 

@@ -104,7 +104,7 @@ describe('plain words and DuPont shift', () => {
   const t = s({ revenue: [1000, 1100, 1210], grossProfit: [400, 440, 500], operatingIncome: [200, 220, 250], da: [50, 55, 60], netIncome: [120, 140, 160], incomeTax: [40, 45, 50], assets: [2000, 2200, 2500], equity: [800, 900, 1000], debt: [500, 500, 600], cash: [100, 150, 100], currentAssets: [600, 700, 800], currentLiabilities: [400, 400, 500], interestExpense: [20, 20, 25], cfo: [180, 200, 230], capex: [60, 70, 80], shares: [100, 100, 100] });
   it('writes sentences from the numbers', () => {
     const w = plainWords(t, 'Acme').join(' ');
-    expect(w).toContain('Acme'); expect(w).toContain('$1.2K'); expect(w).toMatch(/13 cents/); expect(w).toMatch(/free cash flow/); expect(w).toMatch(/net debt is <b>\$500<\/b>/); expect(w).toMatch(/return on equity/);
+    expect(w).toContain('Acme'); expect(w).toContain('$1.2K'); expect(w).toMatch(/13 cents/); expect(w).toMatch(/free cash flow/); expect(w).toMatch(/owes <b>\$500<\/b> more than it holds \(net debt\)/); expect(w).toMatch(/return on equity/);
   });
   it('escapes the company name', () => { expect(plainWords(t, '<img src=x onerror=alert(1)>').join('')).not.toContain('<img'); });
   it('says a loss is a loss and a cash shortfall is a shortfall', () => {

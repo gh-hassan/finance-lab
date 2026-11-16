@@ -9,66 +9,66 @@ const M1 = x => money(x, 1);
 
 /* ================= Comparable companies ================= */
 register({
-  id: 'comps', group: 'Valuation', title: 'Relative Valuation (Comps)',
-  blurb: 'Value a company from the multiples that similar companies trade at: EV/EBITDA, P/E, P/B and EV/Sales.',
+  id: 'comps', group: 'Valuation', title: 'Value by Comparing Companies',
+  blurb: 'Value a company using the price multiples of similar companies: EV/EBITDA, P/E, P/B and EV/Sales.',
   fields: [
-    { id: 'ebitda', label: 'EBITDA ($M)', v: 250, step: 10 },
-    { id: 'ni', label: 'Net income ($M)', v: 120, step: 5 },
+    { id: 'ebitda', label: 'EBITDA: operating profit ($M)', v: 250, step: 10 },
+    { id: 'ni', label: 'Net income: final profit ($M)', v: 120, step: 5 },
     { id: 'rev', label: 'Revenue ($M)', v: 1400, step: 50 },
-    { id: 'book', label: 'Book value of equity ($M)', v: 600, step: 25 },
-    { id: 'debt', label: 'Net debt ($M)', v: 400, step: 25 },
-    { id: 'sh', label: 'Shares outstanding (M)', v: 80, step: 5 },
+    { id: 'book', label: 'Book value: owners\' stake on paper ($M)', v: 600, step: 25 },
+    { id: 'debt', label: 'Net debt: debt minus cash ($M)', v: 400, step: 25 },
+    { id: 'sh', label: 'Number of shares (M)', v: 80, step: 5 },
     { id: 'px', label: 'Current share price (optional)', v: 22, step: 1, pre: '$' },
-    { id: 'evE', label: 'Peers: EV/EBITDA', type: 'text', v: '9.5, 11, 8.2, 12.4, 10.1', help: 'One multiple per peer company, separated by commas.' },
-    { id: 'pe', label: 'Peers: P/E', type: 'text', v: '17, 21, 15, 19, 23' },
-    { id: 'pb', label: 'Peers: P/B', type: 'text', v: '2.2, 3.1, 1.8, 2.6' },
-    { id: 'evS', label: 'Peers: EV/Sales', type: 'text', v: '1.6, 2.1, 1.3, 1.9' }
+    { id: 'evE', label: 'Similar companies: EV/EBITDA', type: 'text', v: '9.5, 11, 8.2, 12.4, 10.1', help: 'One number per similar company, separated by commas.' },
+    { id: 'pe', label: 'Similar companies: P/E', type: 'text', v: '17, 21, 15, 19, 23' },
+    { id: 'pb', label: 'Similar companies: P/B', type: 'text', v: '2.2, 3.1, 1.8, 2.6' },
+    { id: 'evS', label: 'Similar companies: EV/Sales', type: 'text', v: '1.6, 2.1, 1.3, 1.9' }
   ],
   concept: `<h4>The idea</h4>
-<p>Instead of forecasting cash flows, ask what the market pays for similar companies. Take their multiples, apply them to this company's own numbers, and read off a value. It is the fastest check on a DCF and how most analysts quote a price range.</p>
-<div class="formula">Enterprise value = multiple × EBITDA (or Sales)     Equity = EV − net debt</div>
-<div class="formula">Equity = P/E × net income     Equity = P/B × book value     Price = equity ÷ shares</div>
-<ul><li>Use the <b>median</b>, not the mean: one odd peer can drag the average.</li><li>EV-based multiples ignore how the company is financed; P/E and P/B do not.</li><li>Peers must be genuinely alike in business, growth and risk, or the multiples mean little.</li></ul>`,
+<p>Instead of forecasting cash, ask what the market pays for similar companies. Take their multiples (price ratios), apply them to this company's own numbers, and read off a value. It is a fast check on a DCF (value from future cash) and how most analysts quote a price range.</p>
+<div class="formula">Enterprise value (EV, the value of the whole company) = multiple × EBITDA (or Sales)     Owners' value = EV − net debt</div>
+<div class="formula">Owners' value = P/E × net income     Owners' value = P/B × book value     Price = owners' value ÷ shares</div>
+<ul><li>Use the <b>median</b> (middle value), not the average: one odd company can drag the average.</li><li>EV multiples ignore how the company is paid for (debt or shares). P/E and P/B do not.</li><li>Similar companies must really be alike in business, growth and risk, or the multiples mean little.</li></ul>`,
   calc(v) {
-    if (!(v.sh > 0)) return { note: 'Shares outstanding must be above zero.', cards: [], charts: [], steps: [] };
+    if (!(v.sh > 0)) return { note: 'Number of shares must be above zero.', cards: [], charts: [], steps: [] };
     const methods = [
       { id: 'evE', name: 'EV / EBITDA', base: v.ebitda, ev: true, list: parseList(v.evE) },
       { id: 'pe', name: 'P / E', base: v.ni, ev: false, list: parseList(v.pe) },
       { id: 'pb', name: 'P / B', base: v.book, ev: false, list: parseList(v.pb) },
       { id: 'evS', name: 'EV / Sales', base: v.rev, ev: true, list: parseList(v.evS) }
     ].map(m => ({ ...m, st: multipleStats(m.list) })).filter(m => m.st && m.base > 0);
-    if (!methods.length) return { note: 'Add peer multiples (positive numbers, separated by commas) and a matching company figure for at least one method.', cards: [], charts: [], steps: [] };
+    if (!methods.length) return { note: 'Add multiples of similar companies (positive numbers, separated by commas) and a matching company figure for at least one method.', cards: [], charts: [], steps: [] };
     const price = (m, x) => ((m.ev ? x * m.base - v.debt : x * m.base) / v.sh);
     const rows = methods.map(m => ({ ...m, lo: price(m, m.st.low), mid: price(m, m.st.mid), hi: price(m, m.st.high) }));
     const blended = rows.reduce((s, r) => s + r.mid, 0) / rows.length, lowB = rows.reduce((s, r) => s + r.lo, 0) / rows.length, highB = rows.reduce((s, r) => s + r.hi, 0) / rows.length;
     const up = v.px > 0 ? blended / v.px - 1 : NaN;
     const colors = ['c1', 'c2', 'c3', 'c4'];
-    const hb = hbars([...rows.map((r, i) => ({ label: r.name, from: Math.max(0, r.lo), to: Math.max(0, r.hi), color: colors[i % 4], text: `${money(r.lo, 2)} to ${money(r.hi, 2)} · median ${money(r.mid, 2)}` })), { label: 'Blended range', from: Math.max(0, lowB), to: Math.max(0, highB), color: 'good', text: `${money(lowB, 2)} to ${money(highB, 2)} · ${money(blended, 2)}` }]);
+    const hb = hbars([...rows.map((r, i) => ({ label: r.name, from: Math.max(0, r.lo), to: Math.max(0, r.hi), color: colors[i % 4], text: `${money(r.lo, 2)} to ${money(r.hi, 2)} · median ${money(r.mid, 2)}` })), { label: 'Combined range', from: Math.max(0, lowB), to: Math.max(0, highB), color: 'good', text: `${money(lowB, 2)} to ${money(highB, 2)} · ${money(blended, 2)}` }]);
     return {
       cards: [
         { key: true, label: 'Value per share (blended median)', value: money(blended, 2), sub: `average of ${rows.length} method${rows.length > 1 ? 's' : ''}` },
-        { label: 'Likely range', value: `${money(lowB, 2)} to ${money(highB, 2)}`, sub: '25th to 75th percentile of peers' },
+        { label: 'Likely range', value: `${money(lowB, 2)} to ${money(highB, 2)}`, sub: 'the middle half of similar companies' },
         ...(isNum(up) ? [{ label: 'Versus current price', value: `${up >= 0 ? '+' : ''}${nf(up * 100, 1)}%`, sub: `${money(v.px, 2)} today`, tone: up >= 0 ? 'good' : 'bad' }] : []),
-        ...rows.map(r => ({ label: `${r.name} (median ${nf(r.st.mid, 1)}×)`, value: money(r.mid, 2), sub: `${r.st.n} peers` }))
+        ...rows.map(r => ({ label: `${r.name} (median ${nf(r.st.mid, 1)}×)`, value: money(r.mid, 2), sub: `${r.st.n} similar companies` }))
       ],
-      charts: [{ type: 'html', title: 'Football field: value per share by method', sub: 'Each bar spans the 25th to 75th percentile of the peer multiples applied to this company.', html: hb }],
-      tables: [{ title: 'Multiples and implied values', cols: ['Method', 'Peers', 'Low (25th)', 'Median', 'High (75th)', 'Implied price low', 'median', 'high'], rows: rows.map(r => [r.name, r.st.n, nf(r.st.low, 2) + '×', nf(r.st.mid, 2) + '×', nf(r.st.high, 2) + '×', money(r.lo, 2), money(r.mid, 2), money(r.hi, 2)]) }],
-      steps: rows.map(r => [r.name, r.ev ? `EV = ${nf(r.st.mid, 2)}× × ${M1(r.base)} = ${M1(r.st.mid * r.base)}M; equity = EV − net debt ${M1(v.debt)}M = ${M1(r.st.mid * r.base - v.debt)}M; ÷ ${nf(v.sh, 1)}M shares = ${money(r.mid, 2)}` : `Equity = ${nf(r.st.mid, 2)}× × ${M1(r.base)}M = ${M1(r.st.mid * r.base)}M; ÷ ${nf(v.sh, 1)}M shares = ${money(r.mid, 2)}`])
+      charts: [{ type: 'html', title: 'Value per share by method', sub: 'Each bar covers the middle half (25th to 75th percentile) of the multiples of similar companies.', html: hb }],
+      tables: [{ title: 'Multiples and the values they give', cols: ['Method', 'Similar companies', 'Low (25th percentile)', 'Median', 'High (75th percentile)', 'Price from low', 'Price from median', 'Price from high'], rows: rows.map(r => [r.name, r.st.n, nf(r.st.low, 2) + '×', nf(r.st.mid, 2) + '×', nf(r.st.high, 2) + '×', money(r.lo, 2), money(r.mid, 2), money(r.hi, 2)]) }],
+      steps: rows.map(r => [r.name, r.ev ? `EV = ${nf(r.st.mid, 2)}× × ${M1(r.base)} = ${M1(r.st.mid * r.base)}M; owners\' value = EV − net debt ${M1(v.debt)}M = ${M1(r.st.mid * r.base - v.debt)}M; ÷ ${nf(v.sh, 1)}M shares = ${money(r.mid, 2)}` : `Owners\' value = ${nf(r.st.mid, 2)}× × ${M1(r.base)}M = ${M1(r.st.mid * r.base)}M; ÷ ${nf(v.sh, 1)}M shares = ${money(r.mid, 2)}`])
     };
   }
 });
 
 /* ================= Three-statement model ================= */
 register({
-  id: 'model3', group: 'Analysis', title: 'Three-Statement Model',
-  blurb: 'Project the income statement, cash flow and balance sheet for five years, and watch the balance sheet balance.',
+  id: 'model3', group: 'Analysis', title: 'Company Accounts: 5-Year Forecast',
+  blurb: 'Forecast a company\'s profit statement, cash flow and balance sheet for five years. Check that the balance sheet balances.',
   fields: [
     { id: 'rev0', label: 'Revenue this year ($M)', v: 1000, step: 50 },
     { id: 'growth', label: 'Revenue growth, years 1 to 5 (%)', type: 'text', v: '10, 8, 6, 5, 4', help: 'Five numbers separated by commas.' },
     { id: 'cogs', label: 'Cost of goods (% of revenue)', v: 60, step: 1, unit: '%', slider: [20, 90, 1] },
     { id: 'opex', label: 'Operating expenses (% of revenue)', v: 15, step: 1, unit: '%', slider: [0, 50, 1] },
     { id: 'da', label: 'Depreciation (% of revenue)', v: 4, step: 0.5, unit: '%' },
-    { id: 'capex', label: 'Capital spending (% of revenue)', v: 5, step: 0.5, unit: '%' },
+    { id: 'capex', label: 'Spending on equipment (% of revenue)', v: 5, step: 0.5, unit: '%' },
     { id: 'nwc', label: 'Working capital (% of revenue growth)', v: 10, step: 1, unit: '%' },
     { id: 'tax', label: 'Tax rate', v: 25, step: 1, unit: '%' },
     { id: 'rate', label: 'Interest rate on debt', v: 6, step: 0.25, unit: '%' },
@@ -80,11 +80,11 @@ register({
     { id: 'nwc0', label: 'Working capital today ($M)', v: 100, step: 10 }
   ],
   concept: `<h4>The idea</h4>
-<p>The three statements are one story told three ways. Profit from the income statement flows into the cash flow statement, which changes cash and debt on the balance sheet, which in turn sets next year's interest. If the balance sheet does not balance, something is wrong.</p>
-<div class="formula">Net income = (Revenue − COGS − Opex − D&A − Interest) × (1 − tax)</div>
-<div class="formula">Cash flow from operations = Net income + D&A − increase in working capital</div>
-<div class="formula">Assets = Cash + Working capital + Plant   must equal   Debt + Equity</div>
-<ul><li>Free cash flow = operating cash flow − capital spending.</li><li>Equity grows by retained profit: net income minus dividends.</li><li>The check row below the balance sheet should read zero in every year.</li></ul>`,
+<p>The three statements tell one story in three ways. Profit from the income statement flows into the cash flow statement. That changes cash and debt on the balance sheet, which sets next year's interest. If the balance sheet does not balance, something is wrong.</p>
+<div class="formula">Net income (final profit) = (Revenue − cost of goods − operating expenses − depreciation − interest) × (1 − tax)</div>
+<div class="formula">Cash flow from operations = Net income + depreciation − rise in working capital</div>
+<div class="formula">Assets = Cash + Working capital + Plant and equipment   must equal   Debt + Equity (owners' money)</div>
+<ul><li>Free cash flow (cash left after running and investing) = operating cash flow − spending on equipment.</li><li>Equity grows by profit kept: net income minus dividends.</li><li>The check row below the balance sheet should read zero in every year.</li></ul>`,
   calc(v) {
     const g = parseList(v.growth).slice(0, 5).map(x => x / 100); while (g.length < 5) g.push(g.length ? g[g.length - 1] : 0.05);
     if (!(v.rev0 > 0)) return { note: 'Revenue must be above zero.', cards: [], charts: [], steps: [] };
@@ -110,9 +110,9 @@ register({
         hlines: [{ y: 0 }], xlab: 'Year', xFmt: x => 'Y' + nf(x, 0), yFmt: x => '$' + nf(x, 0), yRead: x => '$' + nf(x, 1) + 'M'
       }],
       tables: [
-        tbl('Income statement ($M)', [row('Revenue', y => nf(y.rev, 1)), row('Cost of goods', y => '−' + nf(y.cogs, 1)), row('Gross profit', y => nf(y.gross, 1), bold), row('Operating expenses', y => '−' + nf(y.opex, 1)), row('EBITDA', y => nf(y.ebitda, 1), bold), row('Depreciation', y => '−' + nf(y.da, 1)), row('EBIT', y => nf(y.ebit, 1), bold), row('Interest', y => '−' + nf(y.interest, 1)), row('Tax', y => '−' + nf(y.taxes, 1)), row('Net income', y => nf(y.ni, 1), bold)]),
+        tbl('Income statement ($M)', [row('Revenue', y => nf(y.rev, 1)), row('Cost of goods', y => '−' + nf(y.cogs, 1)), row('Gross profit', y => nf(y.gross, 1), bold), row('Operating expenses', y => '−' + nf(y.opex, 1)), row('EBITDA (profit before interest, tax, depreciation)', y => nf(y.ebitda, 1), bold), row('Depreciation', y => '−' + nf(y.da, 1)), row('EBIT (profit before interest and tax)', y => nf(y.ebit, 1), bold), row('Interest', y => '−' + nf(y.interest, 1)), row('Tax', y => '−' + nf(y.taxes, 1)), row('Net income', y => nf(y.ni, 1), bold)]),
         tbl('Cash flow statement ($M)', [row('Net income', y => nf(y.ni, 1)), row('Add back depreciation', y => nf(y.da, 1)), row('Cash flow from operations', y => nf(y.cfo, 1), bold), row('Capital spending', y => '−' + nf(y.capex, 1)), row('Free cash flow', y => nf(y.fcf, 1), bold), row('Debt repaid', y => '−' + nf(y.repay, 1)), row('Dividends', y => '−' + nf(y.div, 1)), row('Change in cash', y => nf(y.dcash, 1), bold)]),
-        tbl('Balance sheet ($M)', [row('Cash', y => nf(y.cash, 1)), row('Working capital', y => nf(y.nwc, 1)), row('Plant and equipment', y => nf(y.ppe, 1)), row('Total assets', y => nf(y.assets, 1), bold), row('Debt', y => nf(y.debt, 1)), row('Equity', y => nf(y.equity, 1)), row('Debt + equity', y => nf(y.debt + y.equity, 1), bold), row('Check (should be 0)', y => nf(y.check, 6))].map(r => r))
+        tbl('Balance sheet ($M)', [row('Cash', y => nf(y.cash, 1)), row('Working capital', y => nf(y.nwc, 1)), row('Plant and equipment', y => nf(y.ppe, 1)), row('Total assets', y => nf(y.assets, 1), bold), row('Debt', y => nf(y.debt, 1)), row('Equity (owners\' money)', y => nf(y.equity, 1)), row('Debt + equity', y => nf(y.debt + y.equity, 1), bold), row('Check (should be 0)', y => nf(y.check, 6))].map(r => r))
       ],
       steps: [
         ['Revenue', `Year 1 = ${nf(v.rev0, 1)} × (1 + ${pct(g[0], 1)}) = ${nf(ys[0].rev, 1)}`],
@@ -126,23 +126,23 @@ register({
 
 /* ================= Depreciation and lease versus buy ================= */
 register({
-  id: 'lease', group: 'Corporate Finance', title: 'Depreciation & Lease vs Buy',
-  blurb: 'Compare depreciation methods and decide whether to lease or buy an asset by the net advantage to leasing.',
+  id: 'lease', group: 'Corporate Finance', title: 'Lease or Buy? (with Depreciation)',
+  blurb: 'Compare ways to spread an asset\'s cost over time (depreciation). Then decide whether to lease or buy it.',
   fields: [
     { id: 'cost', label: 'Cost of the asset', v: 100000, step: 5000, pre: '$' },
     { id: 'salv', label: 'Value at the end (salvage)', v: 10000, step: 1000, pre: '$' },
     { id: 'life', label: 'Years of use', v: 5, step: 1, min: 1, max: 20, unit: 'yrs' },
     { id: 'method', label: 'Depreciation method', type: 'select', v: 'sl', options: [['sl', 'Straight line'], ['ddb', 'Double declining balance'], ['syd', 'Sum of the years digits'], ['macrs5', 'MACRS 5-year (US tax)'], ['macrs7', 'MACRS 7-year (US tax)']] },
     { id: 'tax', label: 'Tax rate', v: 25, step: 1, unit: '%' },
-    { id: 'rate', label: 'After-tax cost of debt', v: 5, step: 0.25, unit: '%' },
+    { id: 'rate', label: 'Loan interest rate after tax', v: 5, step: 0.25, unit: '%' },
     { id: 'pay', label: 'Lease payment each year', v: 24000, step: 1000, pre: '$' },
     { id: 'term', label: 'Lease term', v: 5, step: 1, min: 1, max: 20, unit: 'yrs' }
   ],
   concept: `<h4>The idea</h4>
-<p>Depreciation spreads the cost of an asset over its life. It is not a cash cost, but it lowers taxable profit, so it creates a <b>tax shield</b>. Faster methods move the shield earlier, which is worth more in present value.</p>
+<p>Depreciation spreads the cost of an asset over its life. It is not a cash cost, but it lowers taxable profit, so it creates a <b>tax shield</b> (less tax to pay). Faster methods give the tax saving sooner, and money sooner is worth more today.</p>
 <div class="formula">Tax shield each year = depreciation × tax rate</div>
-<div class="formula">Net advantage to leasing = cost − PV(after-tax lease payments) − PV(depreciation tax shields) − PV(after-tax salvage)</div>
-<ul><li>If the net advantage is positive, leasing is cheaper than buying with cash.</li><li>Discount at the <b>after-tax cost of debt</b>, because a lease is a substitute for borrowing.</li><li>Lease payments are tax deductible, so each payment costs only (1 − tax) of its size.</li></ul>`,
+<div class="formula">Net advantage to leasing = cost − PV(lease payments after tax) − PV(depreciation tax shields) − PV(scrap value after tax). PV means value in today's money.</div>
+<ul><li>If the net advantage is positive, leasing is cheaper than buying with cash.</li><li>Bring future money back to today at the <b>loan rate after tax</b>, because a lease takes the place of borrowing.</li><li>Lease payments reduce your tax, so each payment costs only (1 − tax) of its size.</li></ul>`,
   calc(v) {
     if (!(v.cost > 0) || v.salv < 0 || v.salv >= v.cost) return { note: 'Cost must be above zero and the end value must be below the cost.', cards: [], charts: [], steps: [] };
     const t = v.tax / 100, r = v.rate / 100, res = leaseVsBuy(v.cost, v.salv, v.life, v.method, t, r, v.pay, v.term);
@@ -157,18 +157,18 @@ register({
         { label: 'PV of lease payments (after tax)', value: money(res.pvLease, 0), sub: `${nf(v.term, 0)} payments of ${money(v.pay, 0)}` },
         { label: 'PV of depreciation tax shield', value: money(res.pvShield, 0), sub: names[v.method] },
         { label: 'PV of salvage (after tax)', value: money(res.pvSalvage, 0), sub: `${money(v.salv, 0)} at the end` },
-        { label: 'NPV of buying', value: money(res.buyNpv, 0), sub: 'cost less shields and salvage' },
+        { label: 'NPV of buying', value: money(res.buyNpv, 0), sub: 'cost less tax savings and scrap value' },
         { label: 'Lease payment that breaks even', value: money((v.cost - res.pvShield - res.pvSalvage) / Math.max(1e-9, (1 - t) * (r === 0 ? Math.round(v.term) : (1 - Math.pow(1 + r, -Math.round(v.term))) / r)), 0), sub: 'above this, buying wins' }
       ],
       charts: [
         { title: 'Value left on the books', sub: 'Book value falls faster under accelerated methods.', series: all.map((a, i) => ({ name: names[a.k], type: 'line', color: ['c1', 'c2', 'c3', 'c4', 'c1'][i], dash: i === 4, pts: book(a.dep) })), xlab: 'Year', xFmt: x => 'Y' + nf(x, 0), yFmt: x => '$' + nf(x / 1000, 0) + 'K', yRead: x => money(x, 0) },
-        { title: 'Present value of the tax shield by method', sub: 'Same asset, different timing. MACRS depreciates the full cost; the other methods stop at salvage.', series: [{ name: 'PV of tax shield', type: 'bars', color: 'c1', pts: pvs.map((p, i) => [i + 1, p]) }], xlab: 'Method (1 straight, 2 double declining, 3 sum of years, 4 MACRS 5, 5 MACRS 7)', xFmt: x => nf(x, 0), yFmt: x => '$' + nf(x / 1000, 0) + 'K', yRead: x => money(x, 0) }
+        { title: 'Tax saving by method, in today\'s money', sub: 'Same asset, different timing. MACRS depreciates the full cost. The other methods stop at the scrap value.', series: [{ name: 'PV of tax shield', type: 'bars', color: 'c1', pts: pvs.map((p, i) => [i + 1, p]) }], xlab: 'Method (1 straight, 2 double declining, 3 sum of years, 4 MACRS 5, 5 MACRS 7)', xFmt: x => nf(x, 0), yFmt: x => '$' + nf(x / 1000, 0) + 'K', yRead: x => money(x, 0) }
       ],
-      tables: [{ title: 'Depreciation schedule: ' + names[v.method], cols: ['Year', 'Depreciation', 'Tax shield', 'Present value of shield'], rows: dep.map((d, i) => [i + 1, money(d, 0), money(d * t, 0), money((d * t) / Math.pow(1 + r, i + 1), 0)]) }],
+      tables: [{ title: 'Depreciation schedule: ' + names[v.method], cols: ['Year', 'Depreciation', 'Tax saving', 'Tax saving in today\'s money'], rows: dep.map((d, i) => [i + 1, money(d, 0), money(d * t, 0), money((d * t) / Math.pow(1 + r, i + 1), 0)]) }],
       steps: [
         ['Depreciation', `${names[v.method]} on ${money(v.cost, 0)} gives ${dep.map(d => money(d, 0)).join(', ')}.`],
-        ['Tax shield', `Each year: depreciation × ${v.tax}% , discounted at ${v.rate}%. Total present value ${money(res.pvShield, 0)}.`],
-        ['Lease payments', `${money(v.pay, 0)} × (1 − ${v.tax}%) = ${money(v.pay * (1 - t), 0)} a year for ${nf(v.term, 0)} years, discounted at ${v.rate}%: ${money(res.pvLease, 0)}.`],
+        ['Tax saving', `Each year: depreciation × ${v.tax}%, brought back to today at ${v.rate}%. Total in today\'s money ${money(res.pvShield, 0)}.`],
+        ['Lease payments', `${money(v.pay, 0)} × (1 − ${v.tax}%) = ${money(v.pay * (1 - t), 0)} a year for ${nf(v.term, 0)} years, brought back to today at ${v.rate}%: ${money(res.pvLease, 0)}.`],
         ['Net advantage', `${money(v.cost, 0)} − ${money(res.pvLease, 0)} − ${money(res.pvShield, 0)} − ${money(res.pvSalvage, 0)} = ${money(res.nal, 0)}. ${res.nal >= 0 ? 'Positive, so lease.' : 'Negative, so buy.'}`]
       ]
     };
@@ -177,22 +177,22 @@ register({
 /* ================= Dividends versus buybacks ================= */
 register({
   id: 'payout', group: 'Corporate Finance', title: 'Dividends vs Buybacks',
-  blurb: 'Return cash to shareholders as a dividend or a share buyback, and see what each does to per-share numbers and to after-tax wealth.',
+  blurb: 'Give cash back to owners as a dividend or by buying back shares. See what each does to profit per share and to your wealth after tax.',
   fields: [
-    { id: 'earn', label: 'Net income ($M)', v: 500, step: 25 },
-    { id: 'sh', label: 'Shares outstanding (M)', v: 100, step: 5 },
+    { id: 'earn', label: 'Net income: final profit ($M)', v: 500, step: 25 },
+    { id: 'sh', label: 'Number of shares (M)', v: 100, step: 5 },
     { id: 'px', label: 'Share price', v: 60, step: 1, pre: '$' },
     { id: 'cash', label: 'Cash to return ($M)', v: 200, step: 10 },
     { id: 'td', label: 'Tax on dividends', v: 30, step: 1, unit: '%' },
-    { id: 'tg', label: 'Tax on capital gains', v: 15, step: 1, unit: '%' },
+    { id: 'tg', label: 'Tax on profit from selling shares', v: 15, step: 1, unit: '%' },
     { id: 'basis', label: 'What you paid per share', v: 30, step: 1, pre: '$' },
     { id: 'hold', label: 'Shares you own', v: 1000, step: 100 }
   ],
   concept: `<h4>The idea</h4>
-<p>With no taxes, returning cash by dividend or buyback makes no difference to shareholders (Modigliani and Miller): the price drops by the dividend, or the share count drops by the buyback, and wealth is unchanged. Taxes break the tie.</p>
+<p>With no taxes, a dividend or a buyback makes no difference to owners (Modigliani and Miller). The price drops by the dividend, or the share count drops by the buyback, and wealth stays the same. Taxes break the tie.</p>
 <div class="formula">Dividend: price falls by cash ÷ shares; you pay dividend tax on all of it</div>
-<div class="formula">Buyback: price stays; you sell shares for the same cash and pay capital gains tax only on the gain</div>
-<ul><li>Buybacks raise EPS because the same profit is shared by fewer shares.</li><li>If capital gains are taxed less than dividends, or you paid a high price already, a buyback leaves you better off.</li><li>A buyback makes sense only when the shares are not overpriced; a company cannot create value by buying at too high a price.</li></ul>`,
+<div class="formula">Buyback: price stays; you sell shares for the same cash and pay tax only on the gain</div>
+<ul><li>Buybacks raise EPS (profit per share) because the same profit is shared by fewer shares.</li><li>If profit from selling shares is taxed less than dividends, or you paid a high price already, a buyback leaves you better off.</li><li>A buyback makes sense only when the shares are not overpriced; a company cannot create value by buying at too high a price.</li></ul>`,
   calc(v) {
     if (!(v.sh > 0) || !(v.px > 0) || !(v.earn > 0)) return { note: 'Net income, shares and share price must all be above zero.', cards: [], charts: [], steps: [] };
     if (v.cash >= v.px * v.sh) return { note: 'The cash to return is as large as the whole company. Lower it.', cards: [], charts: [], steps: [] };

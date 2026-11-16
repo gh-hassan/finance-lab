@@ -110,7 +110,7 @@ export function renderOptions(main) {
         ctl('Stock price today', 'In dollars', spotIn),
         ctl('How much the stock jumps around', 'Wilder stocks make options cost more', vol.el)),
       legsHost),
-    explainer('What is an option?', '<p>An option is a contract that gives you the <b>right, but not the duty</b>, to buy or sell a stock at a fixed price (the <b>strike price</b>) before a set date. A <b>call</b> is the right to buy. A <b>put</b> is the right to sell. You pay a price for that right, called the <b>premium</b>.</p><p>One contract covers 100 shares, so every dollar figure on this page is for 100 shares.</p>'),
+    explainer('What is an option?', '<p>An option is a contract. It gives you the <b>right, but not the duty</b>, to buy or sell a stock at a fixed price (the <b>strike price</b>) before a set date. A <b>call</b> is the right to buy. A <b>put</b> is the right to sell. You pay a price for that right, called the <b>premium</b>.</p><p>One contract covers 100 shares, so every dollar figure on this page is for 100 shares.</p>'),
     explainer('How are the prices worked out?', '<p>The starting prices come from the Black-Scholes formula, a standard way to price options. We assume 30 days to expiry, a 4% interest rate and no dividends. Real market prices differ a little, so treat this as a teaching tool, not a quote.</p><p>Taxes, trading fees and early exercise are left out. This page is for learning and is not financial advice.</p>')));
   drawChips(); drawLegs(); update();
   return () => chart.destroy();

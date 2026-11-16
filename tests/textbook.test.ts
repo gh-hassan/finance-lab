@@ -35,7 +35,7 @@ describe('textbook answers', () => {
   });
   it('capital budgeting: -1000 then 400, 400, 400 at 10% has NPV $0.74', () => {
     const m = MODS.find(x => x.id === 'capbud')!, v = Object.fromEntries(m.fields.map(f => [f.id, f.v]));
-    const idInit = m.fields.find((f: any) => /initial investment/.test(f.label))!.id, idCf = m.fields.find((f: any) => /cash flows/.test(f.label))!.id, idRate = m.fields.find((f: any) => /Discount rate/.test(f.label))!.id;
+    const idInit = m.fields.find((f: any) => /money put in at the start/.test(f.label))!.id, idCf = m.fields.find((f: any) => /cash each year/.test(f.label))!.id, idRate = m.fields.find((f: any) => /Return you need/.test(f.label))!.id;
     const o = m.calc({ ...v, [idInit]: 1000, [idCf]: '400, 400, 400', [idRate]: 10 });
     const npv = parseValue((o.cards || []).find((c: any) => String(c.label).startsWith('NPV'))!.value as string);
     expect(npv).toBeCloseTo(400 * (1 - Math.pow(1.1, -3)) / 0.1 - 1000, 0);

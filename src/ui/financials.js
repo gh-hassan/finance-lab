@@ -68,7 +68,7 @@ export function renderFinancials(main) {
     h('div', { class: 'd-page' },
       h('section', { class: 'd-card' }, h('div', { class: 'd-search' }, form, sug), chips),
       out, status,
-      explainer('How to read this page', '<ul><li><b>Sales</b> is what customers paid. <b>Net income</b> is what the company kept after all costs.</li><li><b>Free cash flow</b> is real cash left after the business pays to keep itself running.</li><li><b>Return on equity</b> shows how well the owners\' money is working. The DuPont panel shows why it moved.</li><li>Use the buttons at the bottom to send the latest numbers into the DCF or comps calculator.</li></ul>')));
+      explainer('How to read this page', '<ul><li><b>Sales</b> is what customers paid. <b>Net income</b> is what the company kept after all costs.</li><li><b>Free cash flow</b> is real cash left after the business pays to keep itself running.</li><li><b>Return on equity</b> shows how well the owners\' money is working. The DuPont panel shows why it moved.</li><li>Use the buttons at the bottom to send the latest numbers into a calculator. DCF values the company from future cash. Comps compares it with similar companies.</li></ul>')));
   const t = new URLSearchParams(location.search).get('t');
   load(t && TICKER.test(t) ? t.toUpperCase() : 'AAPL');
   return () => { S.run(); };

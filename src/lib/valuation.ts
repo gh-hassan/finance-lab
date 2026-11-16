@@ -175,15 +175,15 @@ const EMPTY: Zones = { bargain: 0, sweet: 0, ceiling: 0 };
 function warningsFor(b: BusinessInputs, oe: number, pred: Predictability): string[] {
   const out: string[] = [];
   const vol = volatility(b);
-  if (b.growth > 0.15) out.push('A growth rate above 15% a year is rare and rarely lasts. We hold it for a few years, then let it fade, so the price does not rely on it.');
-  if (b.growth < 0) out.push('You entered shrinking profits. We assume that continues for a while and then levels off.');
-  if (reinvestRate(clamp(b.growth, -0.2, 0.3), b.capital ?? 'medium') > 0.6) out.push('Growing this fast would take most of the cash the business makes. Check whether you could really fund it.');
-  if (vol != null && pred !== b.predictability) out.push(`Profits swung a lot between years, so we treated this business as ${pred}, not ${b.predictability}.`);
-  if (b.history?.some(fin) && b.profit > 1.25 * (b.history.filter(fin).reduce((a, x) => a + x, 0) / b.history.filter(fin).length) && b.profit > 0) out.push('Last year was much better than the years before it. We averaged the years so one good year does not set the price.');
-  if (b.upkeep < b.depreciation * 0.5) out.push('Upkeep spending is much lower than depreciation. Machines and equipment wear out, so check that the business is not skipping repairs and replacements.');
-  if (oe > 0 && b.profit > 0 && oe < b.profit * 0.5) out.push('Less than half of the reported profit is real spare cash once upkeep is paid. Profit on paper is not the same as cash you can take home.');
-  if (oe > 0 && b.debt > 4 * oe) out.push('Debt is more than four years of owner earnings. We asked for a higher return to cover this risk. Check when the loans must be repaid.');
-  if (oe > 0 && b.cash > 5 * oe) out.push('Cash is more than five years of owner earnings. Check it is really spare and not needed to run the business.');
+  if (b.growth > 0.15) out.push('Growth above 15% a year is rare and rarely lasts. We use it for a few years, then slow it down, so the price does not depend on it.');
+  if (b.growth < 0) out.push('You entered shrinking profit. We assume it keeps shrinking for a while, then stops.');
+  if (reinvestRate(clamp(b.growth, -0.2, 0.3), b.capital ?? 'medium') > 0.6) out.push('Growing this fast would use most of the cash the business makes. Check that you could really pay for it.');
+  if (vol != null && pred !== b.predictability) out.push(`Profit changed a lot between years, so we treated this business as ${pred}, not ${b.predictability}.`);
+  if (b.history?.some(fin) && b.profit > 1.25 * (b.history.filter(fin).reduce((a, x) => a + x, 0) / b.history.filter(fin).length) && b.profit > 0) out.push('Last year was much better than the years before. We averaged the years so one good year does not set the price.');
+  if (b.upkeep < b.depreciation * 0.5) out.push('Upkeep spending is much lower than depreciation. Machines wear out. Check that the business is not skipping repairs and replacements.');
+  if (oe > 0 && b.profit > 0 && oe < b.profit * 0.5) out.push('Less than half of the reported profit is real spare cash after upkeep. Profit on paper is not the same as cash you can take home.');
+  if (oe > 0 && b.debt > 4 * oe) out.push('Debt is more than four years of owner earnings. We asked for a higher return to cover this risk. Check when the loans must be paid back.');
+  if (oe > 0 && b.cash > 5 * oe) out.push('Cash is more than five years of owner earnings. Check that it is really spare and not needed to run the business.');
   return out;
 }
 
@@ -195,16 +195,16 @@ export function valueBusiness(input: BusinessInputs): Valuation {
   const cap = terminalCap(b.riskFree as number), baseReq = RISK_FREE + PREMIUM[pred];
   const mult = fairMultiple(b.edge, pred) * (req > 0 ? clamp(baseReq / req, 0.5, 1.2) : 1);
   const base = { ownerEarnings: oe, normalised: normalisedProfit(b), required: req, margin, multiple: mult, predictability: pred, volatility: volatility(b), terminal: Math.min(cap, b.growth), reinvest: reinvestRate(b.growth, b.capital as Capital), methods: [] as MethodRange[], fair: 0, zones: EMPTY, warnings: warningsFor(b, oe, pred) };
-  if (bad) return { ...base, ok: false, reason: 'Some numbers are missing or not valid. Check each box.' };
-  if (!(oe > 0)) return { ...base, ok: false, reason: 'After upkeep spending this business has no spare cash for its owners. A price based on earnings cannot be worked out. Its worth then depends on what its assets could be sold for, which this page does not estimate.' };
+  if (bad) return { ...base, ok: false, reason: 'Some numbers are missing or wrong. Check each box.' };
+  if (!(oe > 0)) return { ...base, ok: false, reason: 'After upkeep spending, this business has no spare cash for its owners. We cannot work out a price from earnings. Its worth then depends on what its assets could sell for, which this page does not work out.' };
 
   const capital = b.capital as Capital;
-  const power: MethodRange = { id: 'power', name: 'Earnings if nothing grows', low: earningsPower(oe, req + 0.02, b.cash), mid: earningsPower(oe, req, b.cash), high: earningsPower(oe, req - 0.02, b.cash), weight: 0.3, note: 'What today’s earnings are worth if they never grow. The safest anchor.' };
-  const dcf: MethodRange = { id: 'dcf', name: 'Cash it will produce', low: dcfValue(oe, b.growth - 0.02, b.edge, req + 0.01, b.cash, capital, cap), mid: dcfValue(oe, b.growth, b.edge, req, b.cash, capital, cap), high: dcfValue(oe, b.growth + 0.02, b.edge, req - 0.01, b.cash, capital, cap), weight: 0.4, note: 'Ten years of cash left after paying for growth, plus what the business is worth after that, in today’s money.' };
-  const market: MethodRange = { id: 'market', name: 'What similar businesses sell for', low: multipleValue(oe, mult - 2, b.cash), mid: multipleValue(oe, mult, b.cash), high: multipleValue(oe, mult + 2, b.cash), weight: 0.3, note: `About ${mult.toFixed(mult % 1 ? 1 : 0)} times yearly owner earnings, set by quality, steadiness and interest rates.` };
+  const power: MethodRange = { id: 'power', name: 'Earnings if nothing grows', low: earningsPower(oe, req + 0.02, b.cash), mid: earningsPower(oe, req, b.cash), high: earningsPower(oe, req - 0.02, b.cash), weight: 0.3, note: 'What today’s earnings are worth if they never grow. The safest starting point.' };
+  const dcf: MethodRange = { id: 'dcf', name: 'Cash it will produce', low: dcfValue(oe, b.growth - 0.02, b.edge, req + 0.01, b.cash, capital, cap), mid: dcfValue(oe, b.growth, b.edge, req, b.cash, capital, cap), high: dcfValue(oe, b.growth + 0.02, b.edge, req - 0.01, b.cash, capital, cap), weight: 0.4, note: 'Ten years of cash left after paying for growth, plus what the business is worth after that, in today’s value.' };
+  const market: MethodRange = { id: 'market', name: 'What similar businesses sell for', low: multipleValue(oe, mult - 2, b.cash), mid: multipleValue(oe, mult, b.cash), high: multipleValue(oe, mult + 2, b.cash), weight: 0.3, note: `About ${mult.toFixed(mult % 1 ? 1 : 0)} times yearly owner earnings. It depends on quality, steadiness and interest rates.` };
   const sale = (k: number): number => Math.max(0, (b.assets as number) * k + b.cash - b.debt);
   const methods: MethodRange[] = [power, dcf, market];
-  if ((b.assets as number) > 0) methods.push({ id: 'assets', name: 'If everything were sold', low: sale(0.5), mid: sale(LIQUIDATION_RECOVERY), high: sale(0.9), weight: 0, note: `What the assets could fetch (we assume about ${Math.round(LIQUIDATION_RECOVERY * 100)}% of the figure you gave), plus cash, less debt. A floor, not a target.` });
+  if ((b.assets as number) > 0) methods.push({ id: 'assets', name: 'If everything were sold', low: sale(0.5), mid: sale(LIQUIDATION_RECOVERY), high: sale(0.9), weight: 0, note: `What the assets could sell for (we assume about ${Math.round(LIQUIDATION_RECOVERY * 100)}% of the figure you gave), plus cash, minus debt. The lowest value, not a target.` });
   const rounded = methods.map(m => ({ ...m, low: round(m.low), mid: round(m.mid), high: round(m.high) }));
   const blend = rounded.reduce((a, m) => a + m.mid * m.weight, 0);
   const floor = rounded.find(m => m.id === 'assets')?.mid ?? 0;

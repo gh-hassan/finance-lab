@@ -10,13 +10,13 @@ import { ratePct, asOfLabel } from '../lib/rates';
 import { longDate } from '../lib/format';
 
 const PICK = [
-  ['DGS10', '10-year', 'The yield on 10-year US Treasuries, the benchmark for long-term borrowing.'],
-  ['DGS2', '2-year', 'The 2-year yield tracks what investors expect the Fed to do over the next couple of years.'],
-  ['DFF', 'Fed funds', 'The rate the Federal Reserve targets for overnight bank lending.'],
-  ['MORTGAGE30US', '30-yr mortgage', 'The average rate on a 30-year fixed mortgage, from a weekly survey.'],
-  ['INFLATION', 'Inflation', 'How much consumer prices rose compared with the same month a year earlier.'],
-  ['UNRATE', 'Unemployment', 'The share of people in the labor force who are looking for work and cannot find it.'],
-  ['BAA10Y', 'Credit spread', 'The extra yield riskier companies (rated BAA) pay over the 10-year Treasury. It widens when investors get nervous.']
+  ['DGS10', '10-year', 'The yearly return on 10-year US government loans. Long-term borrowing is priced from it.'],
+  ['DGS2', '2-year', 'The 2-year rate shows what investors expect the Fed (the US central bank) to do in the next two years.'],
+  ['DFF', 'Fed funds', 'The rate the Fed (the US central bank) aims for on one-night loans between banks.'],
+  ['MORTGAGE30US', '30-yr mortgage', 'The average rate on a 30-year home loan with a fixed rate. It comes from a weekly survey.'],
+  ['INFLATION', 'Inflation', 'How much prices rose compared with the same month a year ago.'],
+  ['UNRATE', 'Unemployment', 'The share of people who want a job and cannot find one.'],
+  ['BAA10Y', 'Credit spread', 'The extra rate risky companies (rated BAA) pay over the 10-year Treasury rate. It grows when investors get nervous.']
 ];
 const RANGES = [['1y', '1Y'], ['5y', '5Y'], ['10y', '10Y'], ['30y', '30Y'], ['max', 'Max']];
 const NAME = Object.fromEntries(PICK.map(([id, label]) => [id, label]));
@@ -87,7 +87,7 @@ function historyCard(scopeH, owner) {
 export function renderRates(main) {
   const S = scope(), H = scope(), page = h('div', { class: 'd-page rt-page' }), live = h('p', { class: 'rt-vh', role: 'status', 'aria-live': 'polite' });
   S.add(() => H.run());
-  const lead = 'Interest rates are the price of money. They set what you earn on savings, what a mortgage costs and how companies value their future profits. Here is where they stand today, and how they got here.';
+  const lead = 'Interest rates are the price of money. They decide what you earn on savings and what a home loan costs. They also change how much a company\'s future profits are worth. Here is where they stand today and how they got here.';
 
   async function load() {
     S.reset(); H.reset();
@@ -110,7 +110,7 @@ export function renderRates(main) {
     page.replaceChildren(
       ...[tilesCard(snap), curveCard(snap, S), historyCard(H, S), calcCard(snap), tr, explainers(),
         sourceLine({ source: 'FRED (Federal Reserve Bank of St. Louis) and US Treasury', asOf: snap.asOf, url: 'https://fred.stlouisfed.org' }),
-        h('p', { class: 'd-cap' }, 'Data can be revised and is shown as published. For study, not advice.')].filter(Boolean));
+        h('p', { class: 'd-cap' }, 'Data can be corrected later. It is shown as first published. For study, not advice.')].filter(Boolean));
     enhanceTerms(page); live.textContent = 'Interest rate data loaded';
   }
 

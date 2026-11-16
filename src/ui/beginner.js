@@ -20,7 +20,7 @@ const rows = (n, f) => Array.from({ length: n }, (_, k) => f(k));
 
 export const BEGINNER = {
   tvm: {
-    ask: 'How much will my savings grow?', intro: 'Start with some money, add a little each month, and watch time and interest do the heavy lifting.',
+    ask: 'How much will my savings grow?', intro: 'Start with some money. Add a little each month. Watch your savings grow with time and interest.',
     simple: {
       fields: [
         { id: 'start', label: 'Money you start with', v: 1000, pre: '$', step: 100, tip: 'What you put in the bank on day one.' },
@@ -32,7 +32,7 @@ export const BEGINNER = {
       plain: (b, o, k) => [`In ${b.years} years you'd have ${k.value}.`, `You put in ${money(b.start + b.monthly * 12 * b.years, 0)}. The rest is interest your money earned.`]
     },
     scene: { id: 'growth', map: b => ({ start: b.start, add: b.monthly * 12, rate: b.rate, years: b.years, mpy: 12 }) },
-    easy: [['Future value', 'Money you will have', 'At the end of your plan'], ['Rate per period', 'Interest added each month', 'The yearly rate split into 12 parts'], ['Effective annual rate', 'What you really earn in a year', 'A little more than the quoted rate, because interest earns interest'], ['Interest earned', 'Free money from interest', 'What your money made while you waited']],
+    easy: [['Future value', 'Money you will have', 'At the end of your plan'], ['Rate per period', 'Interest added each month', 'The yearly rate split into 12 parts'], ['Effective annual rate (EAR)', 'What you really earn in a year', 'A little more than the quoted rate, because interest earns interest'], ['Interest earned', 'Free money from interest', 'What your money made while you waited']],
     words: [['Present value', 'What money is worth today.'], ['Future value', 'What it will be worth later.'], ['Compounding', 'Earning interest on your interest.']]
   },
   rates: {
@@ -40,25 +40,25 @@ export const BEGINNER = {
     labels: { apr: 'Quoted yearly rate', m: 'Times interest is added per year', years: 'Years', p: 'Starting amount' },
     tips: { apr: 'The headline rate the bank advertises.', m: '12 means every month, 365 means every day.', years: 'How long the money stays invested.', p: 'The money you start with.' },
     scene: { id: 'snowball', map: v => ({ start: v.p, rate: v.apr, years: v.years, m: v.m }) },
-    easy: [['Effective annual rate', 'What you really earn per year', 'The honest rate, after interest earns interest'], ['Rate per period', 'Interest added each time', 'Quoted rate divided by times per year'], ['Continuous compounding', 'If interest were added non-stop', 'The most this rate could ever give'], ['Real rate (Fisher)', 'What you keep after prices rise', 'Your return minus inflation']],
-    plain: (v, o, k) => [`A quoted ${nf(v.apr, 2)}% really pays ${k.value} a year.`, 'The more often interest is added, the more you earn. But the gains flatten quickly.'],
+    easy: [['Effective annual rate (EAR)', 'What you really earn per year', 'The honest rate, after interest earns interest'], ['Rate per period', 'Interest added each time', 'Quoted rate divided by times per year'], ['Interest added nonstop', 'If interest were added non-stop', 'The most this rate could ever give'], ['Rate after inflation (Fisher)', 'What you keep after prices rise', 'Your return minus inflation']],
+    plain: (v, o, k) => [`A quoted ${nf(v.apr, 2)}% really pays ${k.value} a year.`, 'The more often interest is added, the more you earn. But each extra step adds less.'],
     words: [['APR', 'The headline rate, before interest earns interest.'], ['Real rate', 'Your return after prices rise (inflation).'], ['Compounding', 'Interest that earns interest.']]
   },
   annuity: {
-    ask: 'What is a stream of payments worth today?', essential: ['c', 'r', 'n'],
+    ask: 'What are my future payments worth today?', essential: ['c', 'r', 'n'],
     labels: { c: 'Payment each year', r: 'Return you could earn elsewhere', n: 'How many payments' }, force: { g: 0, when: '0' },
     tips: { c: 'The amount you receive every year.', r: 'What you could earn on the money if you had it now. Higher means later money is worth less.', n: 'How many years the payments last.' },
     scene: { id: 'present', map: (v, o) => ({ flows: rows(Math.min(40, Math.max(1, Math.round(v.n))), k => ({ y: k + 1, a: v.c })), rate: v.r, years: v.n, result: keyCard(o).value }) },
-    easy: [['Present value', 'What all the payments are worth today', 'Added up after shrinking each one'], ['Future value at the end', 'Pile you would have at the end', 'If you saved every payment'], ['Perpetuity value', 'If the payments never stopped', 'What that endless stream is worth today'], ['Sum of payments', 'Payments added up on paper', 'Before shrinking to today\'s value']],
+    easy: [['Present value', 'What all the payments are worth today', 'Added up after shrinking each one'], ['Future value at the end', 'Pile you would have at the end', 'If you saved every payment'], ['Value if payments never end (perpetuity)', 'If the payments never stopped', 'What that endless stream is worth today'], ['Sum of payments', 'Payments added up on paper', 'Before shrinking to today\'s value']],
     plain: (v, o, k) => [`Getting ${money(v.c, 0)} a year for ${v.n} years is worth ${k.value} today.`, 'Later payments count for less, because you could have been earning interest on that money.'],
-    words: [['Annuity', 'A series of equal payments.'], ['Discount rate', 'How fast future money shrinks when brought to today.'], ['Perpetuity', 'Payments that go on forever.']]
+    words: [['Annuity', 'A series of equal payments.'], ['Discount rate', 'How much later money loses value when counted in today\'s money.'], ['Perpetuity', 'Payments that go on forever.']]
   },
   loan: {
     ask: 'What will my loan really cost?', essential: ['amt', 'apr', 'years', 'extra'],
     labels: { amt: 'Amount you borrow', apr: 'Yearly interest rate', years: 'Years to repay', extra: 'Extra you pay each month' }, force: { ppy: 12 },
     tips: { amt: 'How much money the bank lends you.', apr: 'The yearly interest rate, as a percent of what you owe.', years: 'How long you have to pay it all back.', extra: 'Optional. Even a small extra amount saves a lot of interest.' },
     scene: { id: 'loan', map: v => ({ amt: v.amt, apr: v.apr, years: v.years, extra: v.extra }) },
-    easy: [['Payment each period', 'Your monthly payment', 'Fixed for the life of the loan'], ['Total interest', 'Total interest paid', 'The price of borrowing'], ['Total paid', 'Total you will pay back', 'The loan plus all the interest'], ['Time to pay off', 'Time until you are debt-free', ''], ['Interest saved', 'Fees you save', 'By paying extra']],
+    easy: [['Payment each period', 'Your monthly payment', 'Fixed for the life of the loan'], ['Total interest', 'Total interest paid', 'The price of borrowing'], ['Total paid', 'Total you will pay back', 'The loan plus all the interest'], ['Time to pay off', 'Time until you are debt-free', ''], ['Interest saved', 'Interest you save', 'By paying extra']],
     plain: (v, o, k) => [`You'd pay ${k.value} a month and ${cardBy(o, 'Total interest').value} in interest overall.`, 'Early payments are mostly interest. Paying extra early saves the most.'],
     words: [['Principal', 'The money you borrowed.'], ['Interest', 'The price you pay for borrowing.'], ['Amortization', 'Paying a loan off in small pieces.']]
   },
@@ -67,16 +67,16 @@ export const BEGINNER = {
     labels: { face: 'Money paid back at the end', cr: 'Yearly payment rate', ytm: 'Return buyers want today', yrs: 'Years until it ends' }, force: { solve: 'price', m: '2' },
     tips: { face: 'What you lend, and what you get back at the end.', cr: 'The yearly payment the bond makes, as a percent of the amount.', ytm: 'What other investments pay today. If it is higher than the bond pays, the bond is worth less.', yrs: 'How long until you get your money back.' },
     scene: { id: 'bond', map: (v, o) => ({ face: v.face, cr: v.cr, years: Math.max(2, Math.min(10, Math.round(v.yrs))), result: keyCard(o).value }) },
-    easy: [['Bond price', 'What the bond is worth today', 'What a buyer would pay'], ['Yield to maturity', 'Your yearly return if you hold it', 'Counting every payment you get'], ['Current yield', 'Yearly payment as % of price', 'Ignores the money back at the end'], ['Macaulay duration', 'Average wait for your money', 'In years. Longer means more sensitive to rates.']],
-    plain: (v, o, k) => [`With buyers wanting ${nf(v.ytm, 2)}%, this bond is worth ${k.value}.`, 'When market rates rise, existing bonds lose value. Longer bonds move more.'],
-    words: [['Coupon', 'The yearly payment a bond makes.'], ['Yield', 'The return a buyer gets.'], ['Maturity', 'The day you get your money back.']]
+    easy: [['Bond price', 'What the bond is worth today', 'What a buyer would pay'], ['Yield to maturity', 'Your yearly return if you hold it', 'Counting every payment you get'], ['Current yield', 'Yearly payment as % of price', 'Ignores the money back at the end'], ['Macaulay duration', 'Average wait for your money', 'In years. Longer means the price moves more when rates change.']],
+    plain: (v, o, k) => [`With buyers wanting ${nf(v.ytm, 2)}%, this bond is worth ${k.value}.`, 'When interest rates rise, bonds you already own lose value. Longer bonds lose more.'],
+    words: [['Coupon', 'The yearly payment a bond makes.'], ['Yield', 'The yearly return a buyer gets.'], ['Maturity', 'The day you get your money back.']]
   },
   ddm: {
     ask: 'Is this share worth its price?', essential: ['d0', 'ke', 'g', 'mkt'],
     labels: { d0: 'Yearly payout per share', ke: 'Return you want', g: 'Payout growth per year', mkt: 'Price on the market' }, force: { model: 'gordon' },
     tips: { d0: 'Cash the company paid out per share last year (the dividend).', ke: 'The yearly return you need to be happy owning the stock.', g: 'How fast you expect the payout to grow. Keep it below the return you want.', mkt: 'What the stock costs right now. Used to compare.' },
     scene: { id: 'present', map: (v, o) => ({ flows: rows(10, k => ({ y: k + 1, a: v.d0 * Math.pow(1 + v.g / 100, k + 1) })), rate: v.ke, years: 10 }) },
-    easy: [['Intrinsic value per share', 'Fair price of one share', 'From its payouts'], ['Dividend yield', 'Yearly payout as % of price', 'Cash you get just for owning it'], ['Value if no growth', 'Worth if it never grew', 'What the company is worth standing still'], ['Growth opportunities (PVGO)', 'Part of the price for future growth', 'Only pays off if growth happens'], ['Versus market price', 'Fair price vs market', 'Plus means cheap, minus means expensive']],
+    easy: [['Fair value per share (intrinsic value)', 'Fair price of one share', 'From its payouts'], ['Dividend yield', 'Yearly payout as % of price', 'Cash you get just for owning it'], ['Value if no growth', 'Worth if it never grew', 'What the company is worth standing still'], ['Value of future growth (PVGO)', 'Part of the price for future growth', 'Only pays off if growth happens'], ['Versus market price', 'Fair price vs market', 'Plus means cheap, minus means expensive']],
     plain: (v, o, k) => [`Based on its payouts, a fair price is about ${k.value}.`, v.mkt > 0 ? `The market asks ${money(v.mkt)}, so the stock looks ${parseFloat(k.value.replace(/[^\d.]/g, '')) > v.mkt ? 'cheap' : 'expensive'} on this model.` : 'Type a market price to compare.'],
     words: [['Dividend', 'Cash a company pays its owners.'], ['Required return', 'What you need to earn to hold the stock.'], ['Growth rate', 'How fast the payout increases.']]
   },
@@ -85,9 +85,9 @@ export const BEGINNER = {
     labels: { rev0: 'Sales this year ($M)', g1: 'Sales growth next year', margin: 'Profit on each sale', wacc: 'Return investors want', tg: 'Long-run growth', netdebt: 'Debt minus cash ($M)', shares: 'Number of shares (millions)' }, force: { tmethod: 'gordon', fade: 'fade' },
     tips: { rev0: 'How much the company sells in a year, in millions.', g1: 'How fast sales grow next year. It slows down over time.', margin: 'Operating profit as a percent of sales.', wacc: 'The yearly return investors expect from this company.', tg: 'How fast the company can grow forever, usually 2 to 3%.', netdebt: 'What it owes minus the cash it has. Taken off the value.', shares: 'How many shares exist, in millions.' },
     scene: { id: 'present', map: (v, o) => ({ flows: ((o.charts && o.charts[0] && o.charts[0].series[0].pts) || []).map(p => ({ y: p[0], a: Math.max(0, p[1]) })), rate: v.wacc, years: v.years }) },
-    easy: [['Value per share', 'Fair price of one share', 'Value of the company ÷ shares'], ['Enterprise value', 'Value of the whole business', 'Before taking off debt'], ['Equity value', 'Value left for the owners', 'After paying off debt'], ['Implied exit multiple', 'Years of profit the end value equals', 'A quick sanity check']],
-    plain: (v, o, k) => [`This company is worth about ${k.value} per share.`, 'Its value is all the cash it will produce, shrunk back to today. Change the growth and see how touchy the answer is.'],
-    words: [['Free cash flow', 'Cash left after running the business.'], ['Terminal value', 'Everything the company earns after the forecast years.'], ['Net debt', 'What it owes minus the cash it has.']]
+    easy: [['Value per share', 'Fair price of one share', 'Value of the company ÷ shares'], ['Enterprise value (whole business)', 'Value of the whole business', 'Before taking off debt'], ['Equity value (owners\' share)', 'Value left for the owners', 'After paying off debt'], ['Sale multiple this implies', 'Years of profit the end value equals', 'A quick sanity check']],
+    plain: (v, o, k) => [`This company is worth about ${k.value} per share.`, 'Its value is all the cash it will make, counted in today\'s money. Change the growth to see how much the answer moves.'],
+    words: [['Free cash flow', 'Cash left after running the business.'], ['Terminal value', 'What the company is worth after the forecast years end.'], ['Net debt', 'What it owes minus the cash it has.']]
   },
   capbud: {
     ask: 'Should the company do this project?', essential: ['i0A', 'cfA', 'rate'],
@@ -99,11 +99,11 @@ export const BEGINNER = {
     words: [['NPV', 'Value added, measured in today\'s money.'], ['IRR', 'The project\'s own yearly return.'], ['Payback', 'How long to get your money back.']]
   },
   wacc: {
-    ask: 'What profit do investors expect from this company?', essential: ['rf', 'beta', 'erp', 'kd', 'tax', 'E', 'D'],
+    ask: 'What return do investors expect from this company?', essential: ['rf', 'beta', 'erp', 'kd', 'tax', 'E', 'D'],
     labels: { rf: 'Safe return', beta: 'How jumpy is the stock?', erp: 'Extra return for stock risk', kd: 'Interest rate on its debt', tax: 'Tax rate', E: 'Value of its shares ($M)', D: 'Value of its debt ($M)' },
     tips: { rf: 'What a government bond pays. The no-risk return.', beta: '1 moves like the market. 2 jumps twice as much. 0.5 is calmer.', erp: 'How much more stocks pay than safe bonds, on average.', kd: 'What the company pays on its loans.', tax: 'Interest is tax-deductible, so debt costs less after tax.', E: 'What all its shares are worth together.', D: 'How much it owes lenders.' },
     scene: { id: 'blend', map: v => ({ wE: Math.round(v.E / (v.E + v.D) * 100), ke: +(v.rf + v.beta * v.erp).toFixed(2), kd: +(v.kd * (1 - v.tax / 100)).toFixed(2) }) },
-    easy: [['WACC', 'Return investors expect overall', 'The average of what owners and lenders want'], ['Cost of equity (CAPM)', 'Return shareholders want', 'Safe return plus a reward for risk'], ['After-tax cost of debt', 'Real cost of borrowing', 'Cheaper, because interest cuts taxes'], ['Weights', 'Split: owners / lenders', 'Share of money from each']],
+    easy: [['WACC', 'Return investors expect overall', 'The average of what owners and lenders want'], ['Return shareholders expect (CAPM)', 'Return shareholders want', 'Safe return plus a reward for risk'], ['Cost of debt after tax', 'Real cost of borrowing', 'Cheaper, because interest cuts taxes'], ['Weights', 'Split: owners / lenders', 'Share of money from each']],
     plain: (v, o, k) => [`The company must earn about ${k.value} to keep investors happy.`, 'This blend of what owners and lenders want is the minimum return for any new project.'],
     words: [['WACC', 'The average return lenders and owners expect.'], ['Beta', 'How jumpy a stock is versus the market.'], ['Equity', 'Money from the owners.']]
   },
@@ -112,7 +112,7 @@ export const BEGINNER = {
     labels: { cap: 'Money to raise ($M)', ebit: 'Yearly operating profit ($M)', dp: 'Share raised by borrowing', rate: 'Interest rate on the loan' },
     tips: { cap: 'How much money the company needs.', ebit: 'Profit from running the business, before interest and tax.', dp: 'The rest comes from selling new shares.', rate: 'What the lender charges each year.' },
     scene: { id: 'leverage', map: v => ({ debt: v.dp, change: v.ebit / v.cap * 100, rate: v.rate }) },
-    easy: [['EPS: all equity', 'Profit per share, no borrowing', 'Money all from owners'], ['EPS:', 'Profit per share, with borrowing', 'Fewer shares, but interest to pay'], ['Indifference EBIT', 'Profit where both plans tie', 'Above this, borrowing wins'], ['Degree of financial leverage', 'How much borrowing magnifies swings', 'Higher means riskier']],
+    easy: [['EPS: shares only', 'Profit per share, no borrowing', 'Money all from owners'], ['EPS:', 'Profit per share, with borrowing', 'Fewer shares, but interest to pay'], ['Tie point EBIT (indifference)', 'Profit where both plans tie', 'Above this, borrowing wins'], ['Financial leverage (DFL)', 'How much borrowing makes profit swing more', 'Higher means riskier']],
     plain: (v, o, k) => [`With ${nf(v.dp, 0)}% borrowed, profit per share goes from ${k.value} to ${(o.cards.find(c => c.label.startsWith('EPS: ') && !c.key) || { value: '—' }).value}.`, 'Borrowing boosts profit per share in good years and hurts it in bad ones.'],
     words: [['EPS', 'Earnings (profit) per share.'], ['Leverage', 'Using borrowed money.'], ['EBIT', 'Profit before interest and tax.']]
   },
@@ -127,10 +127,10 @@ export const BEGINNER = {
   },
   wc: {
     ask: 'How long is our cash stuck in the business?', essential: ['sales', 'cogs', 'inv', 'ar', 'ap'],
-    labels: { sales: 'Yearly sales', cogs: 'Yearly cost of goods sold', inv: 'Goods sitting in storage', ar: 'Money customers owe you', ap: 'Money you owe suppliers' },
+    labels: { sales: 'Yearly sales', cogs: 'Yearly cost of what you sold', inv: 'Goods sitting in storage', ar: 'Money customers owe you', ap: 'Money you owe suppliers' },
     tips: { sales: 'Total sold in a year.', cogs: 'What the goods you sold cost you.', inv: 'Value of goods not yet sold.', ar: 'Sold, but not yet paid for.', ap: 'Bought, but not yet paid for.' },
     scene: { id: 'cycle', map: v => ({ dio: Math.max(1, Math.round(v.inv / v.cogs * 365)), dso: Math.max(1, Math.round(v.ar / v.sales * 365)), dpo: Math.max(1, Math.round(v.ap / v.cogs * 365)) }) },
-    easy: [['Cash conversion cycle', 'Days your cash is stuck', 'Shorter is better'], ['Days inventory (DIO)', 'Days goods sit unsold', ''], ['Days sales outstanding', 'Days customers take to pay', ''], ['Days payables (DPO)', 'Days you take to pay suppliers', 'Longer helps your cash']],
+    easy: [['Cash conversion cycle', 'Days your cash is stuck', 'Shorter is better'], ['Days inventory (DIO)', 'Days goods sit unsold', ''], ['Days to collect (DSO)', 'Days customers take to pay', ''], ['Days to pay (DPO)', 'Days you take to pay suppliers', 'Longer helps your cash']],
     plain: (v, o, k) => [`Cash is stuck for about ${k.value}.`, 'That is the gap between paying suppliers and getting paid. Shorter is better.'],
     words: [['Inventory', 'Goods waiting to be sold.'], ['Receivables', 'Money customers still owe you.'], ['Payables', 'Money you still owe suppliers.']]
   },
@@ -139,7 +139,7 @@ export const BEGINNER = {
     labels: { rf: 'Safe return', rm: 'Expected stock-market return', beta: 'How jumpy vs the market', er: 'Return you expect from it' },
     tips: { rf: 'What a government bond pays.', rm: 'What stocks overall are expected to return.', beta: '1 moves like the market, 2 jumps twice as much, 0.5 is calmer.', er: 'What you hope this investment earns.' },
     scene: { id: 'beta', map: v => ({ beta: v.beta }) },
-    easy: [['Required return (CAPM)', 'Return it should give you', 'For the risk you take'], ["Jensen's alpha", 'Extra return beyond the risk', 'Positive means a good deal'], ['Sharpe ratio', 'Reward for each bit of risk', 'Higher is better'], ['Treynor ratio', 'Reward per unit of market risk', '']],
+    easy: [['Return it should earn (CAPM)', 'Return it should give you', 'For the risk you take'], ["Jensen's alpha", 'Extra return beyond the risk', 'Positive means a good deal'], ['Sharpe ratio', 'Reward for each bit of risk', 'Higher is better'], ['Treynor ratio', 'Reward for each bit of market risk', '']],
     plain: (v, o, k) => [`For its risk, it should return ${k.value}.`, `You expect ${nf(v.er, 1)}%, so it looks ${v.er >= parseFloat(k.value) ? 'worth it' : 'too low for the risk'}.`],
     words: [['Beta', 'How much a stock moves compared with the market.'], ['Alpha', 'Return above what the risk justifies.'], ['Sharpe ratio', 'Return for each unit of risk.']]
   },
@@ -148,16 +148,16 @@ export const BEGINNER = {
     labels: { muA: 'Investment A: expected return', sdA: 'Investment A: how bumpy', muB: 'Investment B: expected return', sdB: 'Investment B: how bumpy', rho: 'Do they move together? (−1 to 1)', wA: 'Share of your money in A' },
     tips: { muA: 'Average yearly return you expect.', sdA: 'How much the return jumps around. Bigger is riskier.', muB: 'Average yearly return you expect.', sdB: 'How much the return jumps around.', rho: '1 = move together, 0 = unrelated, −1 = opposite. Lower mixes better.', wA: 'The rest goes into B.' },
     scene: { id: 'mix2', map: v => ({ rho: v.rho, wA: v.wA, sdA: v.sdA, sdB: v.sdB }) },
-    easy: [['Portfolio expected return', 'Your expected return', 'The mix of A and B'], ['Portfolio risk (σ)', 'Your risk (how bumpy)', 'Lower is calmer'], ['Diversification benefit', 'Risk removed by mixing', 'Compared with a simple average'], ['Sharpe ratio', 'Reward for each bit of risk', 'Higher is better']],
+    easy: [['Portfolio expected return', 'Your expected return', 'The mix of A and B'], ['Portfolio risk (σ)', 'Your risk (how bumpy)', 'Lower is calmer'], ['Benefit of mixing (diversification)', 'Risk removed by mixing', 'Compared with a simple average'], ['Sharpe ratio', 'Reward for each bit of risk', 'Higher is better']],
     plain: (v, o, k) => [`This mix earns about ${k.value} with risk of ${o.cards[1].value}.`, `Mixing cut the risk by ${o.cards[2].value} compared with a simple average. That is diversification.`],
-    words: [['Diversification', 'Spreading money to lower risk.'], ['Correlation', 'How much two things move together.'], ['Volatility', 'How bumpy the returns are.']]
+    words: [['Diversification', 'Spreading money to lower risk.'], ['Correlation', 'How much two things move together.'], ['Volatility', 'How much returns jump up and down.']]
   },
   returns: {
     ask: 'How did my investment really perform?', essential: ['rets', 'start'],
     labels: { rets: 'Return each year (%)', start: 'Money you started with' },
     tips: { rets: 'Type each year\'s return as a percent, separated by commas. Use a minus sign for losses.', start: 'What you invested at the beginning.' },
     scene: { id: 'journey', map: v => ({ rets: parseList(v.rets).slice(0, 10), start: v.start }) },
-    easy: [['Geometric mean (per period)', 'What you really earned per year', 'After the ups and downs'], ['Arithmetic mean', 'Simple average return', 'Looks better than reality'], ['Standard deviation', 'How bumpy the ride was', 'Bigger means riskier'], ['Sharpe ratio', 'Reward for each bit of risk', 'Higher is better']],
+    easy: [['Compounded average (geometric mean)', 'What you really earned per year', 'After the ups and downs'], ['Simple average (arithmetic mean)', 'Simple average return', 'Looks better than reality'], ['Standard deviation', 'How bumpy the ride was', 'Bigger means riskier'], ['Sharpe ratio', 'Reward for each bit of risk', 'Higher is better']],
     plain: (v, o, k) => [`You really grew ${k.value} per period.`, `That is lower than the simple average of ${o.cards[1].value}, because losses hurt more than gains help.`],
     words: [['Compound return', 'What you really earned after compounding.'], ['Drawdown', 'A fall from a previous high.'], ['Volatility', 'How bumpy the ride was.']]
   },
@@ -174,9 +174,9 @@ export const BEGINNER = {
     ask: 'How healthy is this company?', essential: ['rev', 'cogs', 'opex', 'int', 'cash', 'ar', 'inv', 'nfa', 'cl', 'ltd'],
     labels: { rev: 'Sales', cogs: 'Cost of goods sold', opex: 'Other running costs', int: 'Interest paid', cash: 'Cash', ar: 'Money owed by customers', inv: 'Inventory', nfa: 'Buildings and equipment', cl: 'Bills due within a year', ltd: 'Long-term debt' },
     tips: { rev: 'Total sold in a year.', cogs: 'What the goods you sold cost.', opex: 'Salaries, rent and so on.', int: 'Interest paid on debt.', cash: 'Money in the bank.', ar: 'Customers who have not paid yet.', inv: 'Goods not yet sold.', nfa: 'Property, machines, vehicles.', cl: 'Money owed that is due soon.', ltd: 'Loans due after a year or more.' },
-    easy: [['Return on equity', 'Profit on the owners\' money', 'A key score of how well it performs'], ['Net income', 'Profit after everything', 'Sales minus every cost and tax'], ['Equity (computed)', 'Owners\' share of the company', 'Assets minus what it owes'], ['Current ratio', 'Can it pay near-term bills?', 'Above 1 is comfortable']],
+    easy: [['Return on equity', 'Profit on the owners\' money', 'A key score of how well it performs'], ['Net income', 'Profit after everything', 'Sales minus every cost and tax'], ['Equity (assets minus liabilities)', 'Owners\' share of the company', 'Assets minus what it owes'], ['Current ratio', 'Can it pay bills due soon?', 'Above 1 is comfortable']],
     plain: (v, o, k) => [`The company earns ${k.value} a year on its owners' money.`, 'That comes from profit on each sale, how hard its assets work, and how much it borrows.'],
-    words: [['ROE', 'Profit for each dollar the owners put in.'], ['Liquidity', 'Ability to pay bills soon.'], ['Assets', 'Everything the company owns.']]
+    words: [['ROE', 'Profit for each dollar the owners put in.'], ['Liquidity', 'How fast you can turn things into cash to pay bills.'], ['Assets', 'Everything the company owns.']]
   },
   fx: {
     ask: 'How much is one currency worth in another?', essential: ['S', 'id', 'if', 'T'],
@@ -184,8 +184,8 @@ export const BEGINNER = {
     tips: { S: 'How much home currency 1 unit of foreign currency costs today.', id: 'What a bank pays at home.', if: 'What a bank pays abroad.', T: 'How far ahead you want the rate for.' },
     scene: { id: 'exchange', map: v => ({ S: v.S, id: v.id, if: v.if, T: Math.max(1, Math.round(v.T)) }) },
     easy: [['Parity forward rate', 'Fair rate to lock in for later', 'Set by the interest rate gap'], ['Expected spot (PPP)', 'Rate suggested by price changes', 'If prices drive the exchange rate'], ['Interest differential', 'Interest rate gap', 'Home minus foreign'], ['Inflation differential', 'Price-rise gap', 'Home minus foreign']],
-    plain: (v, o, k) => [`A fair rate to lock in for ${nf(v.T, 2)} years is ${k.value}.`, 'Currencies with higher interest rates trade at a discount in the future.'],
-    words: [['Spot rate', 'Today\'s exchange rate.'], ['Forward rate', 'A rate agreed today for a later date.'], ['Parity', 'No free-money gap between markets.']]
+    plain: (v, o, k) => [`A fair rate to lock in for ${nf(v.T, 2)} years is ${k.value}.`, 'A currency with a higher interest rate is priced lower for later dates.'],
+    words: [['Spot rate', 'Today\'s exchange rate.'], ['Forward rate', 'A rate agreed today for a later date.'], ['Parity', 'Prices match across markets, so no free profit.']]
   },
   merger: {
     ask: 'Will buying this company help our profit?', essential: ['prem', 'stock', 'syn'],

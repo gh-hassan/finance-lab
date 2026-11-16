@@ -11,7 +11,7 @@ register({
 <p>A list of numbers is hard to read. A few summary numbers describe it: where the middle is, and how spread out it is.</p>
 <div class="formula">Average = Σ x ÷ n          Median = the middle value when sorted</div>
 <div class="formula">Standard deviation = √[ Σ (x − average)² ÷ (n − 1) ]</div>
-<ul><li>The <b>average</b> is pulled by extreme values. The <b>median</b> is not.</li><li>The <b>standard deviation</b> is a typical distance from the average. In finance it is called volatility.</li><li>For bell-shaped data, about 68% of values are within one standard deviation of the average, and about 95% within two.</li></ul>`,
+<ul><li>The <b>average</b> is pulled by extreme values. The <b>median</b> is not.</li><li>The <b>standard deviation</b> is a typical distance from the average. In finance it shows how much returns jump up and down (volatility).</li><li>For bell-shaped data, about 68% of values are within one standard deviation of the average, and about 95% within two.</li></ul>`,
   calc(v) {
     const d = parseList(v.data), n = d.length;
     if (n < 2) return { note: 'Enter at least two numbers, separated by commas.', cards: [], charts: [], steps: [] };
@@ -44,7 +44,7 @@ register({
 
 register({
   id: 'corr', group: 'Statistics', title: 'Do Two Things Move Together?',
-  blurb: 'Correlation, the best-fit line and beta for two lists of paired numbers.',
+  blurb: 'Find the link between two lists of numbers: correlation, the best-fit line and beta.',
   fields: [
     { id: 'xs', label: 'First list, for example the market', type: 'text', v: '2.1, -1.4, 3.3, 0.6, -2.5, 4.0, 1.2, -0.8, 2.8, -3.1', help: 'Same number of values in both lists, in the same order.' },
     { id: 'ys', label: 'Second list, for example your stock', type: 'text', v: '3.0, -2.2, 4.6, 0.5, -3.9, 6.1, 2.0, -0.9, 3.7, -4.8' }
@@ -53,7 +53,7 @@ register({
 <p>Correlation measures whether two things rise and fall together. It runs from −1 (perfectly opposite) through 0 (unrelated) to +1 (perfectly together).</p>
 <div class="formula">r = Σ (x − x̄)(y − ȳ) ÷ √[ Σ (x − x̄)² · Σ (y − ȳ)² ]</div>
 <div class="formula">Slope (beta) = Σ (x − x̄)(y − ȳ) ÷ Σ (x − x̄)²          R² = r²</div>
-<ul><li>In finance the <b>slope</b> of a stock's returns against the market's returns is its <b>beta</b>.</li><li><b>R²</b> is the share of the moves of one explained by the other.</li><li>Correlation is not cause. Two things can move together because of something else.</li></ul>`,
+<ul><li>In finance the <b>slope</b> of a stock's returns against the market's returns is its <b>beta</b> (how much it moves when the market moves).</li><li><b>R²</b> is the share of one list's ups and downs that the other list explains.</li><li>Correlation is not cause. Two things can move together because of something else.</li></ul>`,
   calc(v) {
     const xs = parseList(v.xs), ys = parseList(v.ys), n = Math.min(xs.length, ys.length);
     if (n < 3) return { note: 'Enter at least three pairs of numbers. Both lists need the same count.', cards: [], charts: [], steps: [] };
@@ -98,7 +98,7 @@ register({
 <p>Many returns roughly follow a bell curve. If you know the average and the spread, you can work out how likely any result is.</p>
 <div class="formula">z = (value − average) ÷ spread          chance = area of the bell below z</div>
 <div class="formula">Value at Risk = amount × (z_conf × spread − average)</div>
-<ul><li>About 68% of years land within one spread of the average, 95% within two.</li><li><b>Value at Risk</b> answers: "with 95% confidence, how much could I lose in a year?" The loss will be worse in the other 5% of years.</li><li>Real markets have fatter tails than a bell curve, so treat this as a guide, not a guarantee.</li></ul>`,
+<ul><li>About 68% of years land within one spread of the average, 95% within two.</li><li><b>Value at Risk</b> answers: "with 95% confidence, how much could I lose in a year?" The loss will be worse in the other 5% of years.</li><li>Real markets have more extreme years than a bell curve shows, so treat this as a guide, not a promise.</li></ul>`,
   calc(v) {
     const mu = v.mean, sd = Math.max(1e-6, v.sd), conf = +v.conf / 100, z = (v.cut - mu) / sd, pBelow = ncdf(z), pLoss = ncdf((0 - mu) / sd), zc = ninv(conf), edge = mu - zc * sd, dollars = v.amount * edge / 100;
     const lo = mu - 4 * sd, hi = mu + 4 * sd, xs = range(lo, hi, (hi - lo) / 120), dens = x => npdf((x - mu) / sd) / sd * 100;

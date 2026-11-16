@@ -1,7 +1,7 @@
 /* The home page story: one hand-drawn scene on dotted paper */
 .hero-doodle{margin:0 0 clamp(22px,3vw,34px)}
-.dd{border-radius:26px;border:1px solid var(--line);background-color:var(--panel-solid);background-image:radial-gradient(var(--line) 1px,transparent 1.3px);background-size:22px 22px;overflow:hidden}
-.dd-stage{position:relative;padding:clamp(6px,1.4vw,16px) clamp(6px,1.4vw,16px) 0;cursor:pointer;outline:none}
+.dd{background:none;border:0;border-radius:0;overflow:visible}
+.dd-stage{position:relative;padding:0;cursor:pointer;outline:none}
 .dd-stage:focus-visible{outline:2px solid var(--c1);outline-offset:-4px;border-radius:24px}
 .dd svg{display:block;width:100%;height:auto;max-height:780px;overflow:hidden}
 .dd-toast{position:absolute;right:18px;top:14px;padding:6px 12px;border-radius:999px;background:var(--pill-on);color:var(--pill-on-text);font:600 13px var(--body);opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .25s;pointer-events:none}

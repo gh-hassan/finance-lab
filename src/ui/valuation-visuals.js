@@ -21,7 +21,7 @@ export function football(v, ask, $) {
     h('div', { class: 'bv-ffn' }, h('b', {}, m.name), h('small', {}, m.note)),
     h('div', { class: 'bv-fft', 'aria-hidden': 'true' }, h('i', { class: 'bv-band', style: `left:${p(z.bargain)}%;width:${p(z.ceiling) - p(z.bargain)}%` }), h('i', { class: 'bv-rng' + (m.id === 'assets' ? ' floor' : ''), style: `left:${p(m.low)}%;width:${Math.max(0.6, p(m.high) - p(m.low))}%` }), h('i', { class: 'bv-mid', style: `left:${p(m.mid)}%` }), ask ? h('i', { class: 'bv-askline', style: `left:${p(ask)}%` }) : null),
     h('div', { class: 'bv-ffv' }, `${$(m.low)} to ${$(m.high)}`, h('small', {}, `Best guess ${$(m.mid)}`))));
-  return [h('div', { class: 'bv-ffs' }, rows), h('p', { class: 'bv-legend' }, h('i', { class: 'k1' }), 'range from cautious to hopeful', h('i', { class: 'k2' }), 'best guess', h('i', { class: 'k3' }), 'the price range worth paying', ask ? h('i', { class: 'k4' }) : null, ask ? 'asking price' : null)];
+  return [h('div', { class: 'bv-ffs' }, rows), h('p', { class: 'bv-legend' }, h('i', { class: 'k1' }), 'range from careful to hopeful', h('i', { class: 'k2' }), 'best guess', h('i', { class: 'k3' }), 'prices worth paying', ask ? h('i', { class: 'k4' }) : null, ask ? 'asking price' : null)];
 }
 
 /** Reported profit stepping down (or up) to owner earnings. */

@@ -64,8 +64,8 @@ function calcCard(inflation, selected) {
   const [a, b] = selected, fx = fxInputs(inflation.latest[a], inflation.latest[b]);
   if (!fx) return null;
   return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Take it to a calculator'),
-    h('p', { class: 'd-plain plain', html: `Latest inflation is <b>${esc(formatValue('pct', fx.pd))}</b> in ${esc(countryName(a))} and <b>${esc(formatValue('pct', fx.pf))}</b> in ${esc(countryName(b))}. Treat the first as home and the second as foreign, and the FX calculator shows what purchasing power parity says should happen to the exchange rate.` }),
-    h('a', { class: 'd-btn main', href: sharePath('fx', { pd: fx.pd, pf: fx.pf }), 'data-link': true }, 'Open the FX calculator →'));
+    h('p', { class: 'd-plain plain', html: `Latest inflation is <b>${esc(formatValue('pct', fx.pd))}</b> in ${esc(countryName(a))} and <b>${esc(formatValue('pct', fx.pf))}</b> in ${esc(countryName(b))}. Treat the first as home and the second as foreign. The exchange-rate calculator then uses purchasing power parity. This is the idea that the same goods should cost the same everywhere. It shows what that says should happen to the exchange rate.` }),
+    h('a', { class: 'd-btn main', href: sharePath('fx', { pd: fx.pd, pf: fx.pf }), 'data-link': true }, 'Open the exchange-rate calculator →'));
 }
 
 export function buildResults({ series, ranking, inflation }, selected, ind, scope) {

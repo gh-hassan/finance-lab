@@ -42,7 +42,7 @@ export const BASICS = [
   ['ENTER saves, CPT works it out.', 'On a worksheet screen, type a number and press ENTER to save it. To get an answer, move to that line and press CPT.'],
   ['↑ and ↓ move between lines.', 'Each worksheet is a list of lines. Use ↓ to go to the next one and ↑ to go back.'],
   ['2ND then QUIT leaves a worksheet.', 'QUIT is the yellow word above CPT. It takes you back to the normal calculator.'],
-  ['Error 5 means there is no answer.', 'Check your numbers, and remember money in must be one sign and money out the other.']
+  ['Error 5 means there is no answer.', 'Check your numbers. Money in needs one sign and money out needs the other.']
 ];
 
 export const EXAMPLES = [
@@ -69,7 +69,7 @@ export const EXAMPLES = [
     after: 'The payment is negative because you pay it out: $1,580.17 a month.'
   },
   {
-    title: 'What interest rate do I need?', level: 'Easy', expect: 'I/Y = 7.18',
+    title: 'What interest rate do I need?', level: 'Basic', expect: 'I/Y = 7.18',
     intro: 'You want $1,000 to turn into $2,000 in 10 years. What yearly rate does that take?',
     steps: [...setYearly(1), clearTvm,
       step(W('Type '), T('10'), W(', press '), K('N'), W('.')),
@@ -80,7 +80,7 @@ export const EXAMPLES = [
     after: 'About 7.18% a year.'
   },
   {
-    title: 'How long until I reach my goal?', level: 'Easy', expect: 'N = 9.01',
+    title: 'How long until I reach my goal?', level: 'Basic', expect: 'N = 9.01',
     intro: 'Your $1,000 earns 8% a year. How many years until it doubles to $2,000?',
     steps: [...setYearly(1), clearTvm,
       step(W('Type '), T('8'), W(', press '), K('IY'), W('.')),
@@ -92,7 +92,7 @@ export const EXAMPLES = [
   },
   {
     title: 'Is this project worth it? (NPV)', level: 'Next step', expect: 'NPV = 388.77',
-    intro: 'A project costs $1,000 and pays back $300, $400, $500 and $600 over four years. Your required return is 10%.',
+    intro: 'A project costs $1,000 and pays back $300, $400, $500 and $600 over four years. The return you need is 10%.',
     steps: [...flowSteps,
       step(W('Now press '), K('NPV'), W('. Type '), T('10'), W(' (your required return) and press '), K('ENTER'), W('.')),
       step(W('Press '), K('DOWN'), W(' to reach the NPV line, then press '), K('CPT'), W('.'))],
@@ -129,7 +129,7 @@ export const EXAMPLES = [
       step(W('RV is the redemption value. Leave it at 100. Press '), K('DOWN'), W('.')),
       step(W('This line shows ACT or 360 (how days are counted). Press '), S('ENTER', 'SET', 'above ENTER'), W(' once to choose 360. Press '), K('DOWN'), W('.')),
       step(W('This line shows 2/Y (coupons twice a year). Leave it. Press '), K('DOWN'), W('.')),
-      step(W('YLD is your required yield. Type '), T('6.5'), W(' and press '), K('ENTER'), W('. Press '), K('DOWN'), W('.')),
+      step(W('YLD is the yearly return you want. Type '), T('6.5'), W(' and press '), K('ENTER'), W('. Press '), K('DOWN'), W('.')),
       step(W('You are on PRI, the price. Press '), K('CPT'), W('.'))],
     after: 'The bond is worth about 94.63 for every 100 of face value. To go the other way, type a price on the PRI line, move up to YLD and press CPT.'
   },

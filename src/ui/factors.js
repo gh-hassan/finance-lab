@@ -25,7 +25,7 @@ function saveState({ range, keys }) {
 export function renderFactors(main) {
   const S = scope(), out = h('div', { class: 'd-page' }), intro = h('section', { class: 'd-card' },
     h('h2', { class: 'd-h' }, 'What is a factor?'),
-    h('p', { class: 'd-plain plain', html: 'A <b>factor</b> is a pattern that helps explain why some stocks beat others. Researchers found that, over many decades, groups of stocks that share a trait (they are small, or cheap, or have been rising) have tended to earn different returns from the rest of the market. Each factor below is the <b>difference</b> between two such groups.' }),
+    h('p', { class: 'd-plain plain', html: 'A <b>factor</b> is a pattern that helps explain why some stocks beat others. Researchers found that stocks with a shared trait often earn different returns from the rest of the market. The traits are small, cheap or rising. Each factor below is the <b>difference</b> between two such groups.' }),
     defs());
   let alive = true;
 

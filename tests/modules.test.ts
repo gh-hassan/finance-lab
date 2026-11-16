@@ -115,6 +115,6 @@ describe('known answers', () => {
   });
   it('reports a clear note for impossible inputs', () => {
     expect(get('breakeven').calc({ ...defaults(get('breakeven')), p: 10, vc: 20 }).note).toMatch(/Price must be above/);
-    expect(get('ddm').calc({ ...defaults(get('ddm')), g: 12 }).note).toMatch(/greater than/);
+    expect(get('ddm').calc({ ...defaults(get('ddm')), g: 12 }).note).toMatch(/higher than/);
   });
 });

@@ -6,7 +6,7 @@ export const MAX_AMOUNT = 1e13;
 export const TOP = ['USD', 'EUR', 'GBP', 'JPY'];
 export const RANGES = ['1m', '3m', '1y', '5y', '10y'] as const;
 export type Range = (typeof RANGES)[number];
-export const RANGE_LABEL: Record<Range, string> = { '1m': '1M', '3m': '3M', '1y': '1Y', '5y': '5Y', '10y': '10Y' };
+export const RANGE_LABEL: Record<Range, string> = { '1m': '1 month', '3m': '3 months', '1y': '1 year', '5y': '5 years', '10y': '10 years' };
 export const RANGE_WORDS: Record<Range, string> = { '1m': 'the last month', '3m': 'the last 3 months', '1y': 'the last year', '5y': 'the last 5 years', '10y': 'the last 10 years' };
 export const isRange = (x: unknown): x is Range => typeof x === 'string' && (RANGES as readonly string[]).includes(x);
 

@@ -5,24 +5,24 @@ import { hbars } from '../ui/visuals.js';
 
 /* ================= VALUATION ================= */
 register({
-  id: 'bond', group: 'Valuation', title: 'Bond Pricing & Duration',
-  blurb: 'Price a bond or back out its yield, then measure interest-rate risk with duration and convexity.',
+  id: 'bond', group: 'Valuation', title: 'Bond Price & Risk (Duration)',
+  blurb: 'Find a bond\'s price, or work out its yield from its price. Then see how rate changes move the price, using duration and convexity.',
   fields: [
-    { id: 'solve', label: 'Solve for', type: 'select', v: 'price', options: [['price', 'Price (given yield)'], ['ytm', 'Yield to maturity (given price)']] },
-    { id: 'face', label: 'Face value', v: 1000, step: 100, pre: '$' },
-    { id: 'cr', label: 'Annual coupon rate', v: 5, step: 0.125, unit: '%' },
-    { id: 'ytm', label: 'Yield to maturity', v: 6, step: 0.125, unit: '%', slider: [0.5, 15, 0.125] },
+    { id: 'solve', label: 'What do you want to find?', type: 'select', v: 'price', options: [['price', 'Price (you know the yield)'], ['ytm', 'Yield to maturity, YTM (you know the price)']] },
+    { id: 'face', label: 'Face value (paid back at the end)', v: 1000, step: 100, pre: '$' },
+    { id: 'cr', label: 'Yearly interest rate (coupon)', v: 5, step: 0.125, unit: '%' },
+    { id: 'ytm', label: 'Yield to maturity (YTM: yearly return if held to the end)', v: 6, step: 0.125, unit: '%', slider: [0.5, 15, 0.125] },
     { id: 'price', label: 'Market price', v: 925, step: 1, pre: '$' },
     { id: 'yrs', label: 'Years to maturity', v: 10, step: 1, min: 0.5, slider: [1, 30, 1] },
-    { id: 'm', label: 'Coupons per year', type: 'select', v: '2', options: [['1', 'Annual'], ['2', 'Semi-annual'], ['4', 'Quarterly'], ['12', 'Monthly']] },
-    { id: 'shock', label: 'Yield shock for the risk test (basis points; 100 bps = 1%)', v: 100, step: 25, unit: 'bps', slider: [-300, 300, 25] }
+    { id: 'm', label: 'Interest payments per year', type: 'select', v: '2', options: [['1', 'Annual'], ['2', 'Semi-annual'], ['4', 'Quarterly'], ['12', 'Monthly']] },
+    { id: 'shock', label: 'Rate change to test (in bps; 100 bps = 1%)', v: 100, step: 25, unit: 'bps', slider: [-300, 300, 25] }
   ],
   concept: `<h4>The idea</h4>
-<p>A bond is a stream of coupons plus a face value at maturity. Its price is the present value of those cash flows at the market yield. When yields rise, price falls, and the relationship is curved, not straight.</p>
+<p>A bond pays regular interest (coupons) and then returns its face value at the end (maturity). Its price is what those payments are worth today at the market yield. When yields rise, the price falls. The link is curved, not straight.</p>
 <div class="formula">Price = Σ C ÷ (1+y/m)^t  +  F ÷ (1+y/m)^N</div>
 <div class="formula">Macaulay duration = Σ [t · PV(CF_t)] ÷ Price ÷ m      Modified = Macaulay ÷ (1 + y/m)</div>
 <div class="formula">ΔP/P ≈ − D_mod · Δy + ½ · Convexity · (Δy)²</div>
-<ul><li><b>Coupon above yield</b> means the bond trades at a premium. Below yield means a discount. At par, coupon = yield.</li><li><b>Duration</b> is the balance point of the cash flows in time, and the first-order price sensitivity.</li><li><b>Convexity</b> is the curvature. It is always helpful to the holder: prices rise more than duration predicts when yields fall, and fall less when yields rise.</li></ul>`,
+<ul><li><b>Coupon above yield:</b> the bond sells for more than its face value (a premium). Below yield: it sells for less (a discount). When they are equal, it sells at face value (par).</li><li><b>Duration</b> is the balance point of the payments in time. It also shows how much the price moves when rates move.</li><li><b>Convexity</b> is the bend in the price curve. It helps the holder: prices rise more than duration says when yields fall, and fall less when yields rise.</li></ul>`,
   show: { price: v => v.solve === 'ytm', ytm: v => v.solve === 'price' },
   calc(v) {
     const F = v.face, cr = v.cr / 100, m = +v.m, N = Math.max(1, Math.round(v.yrs * m)), c = F * cr / m;
@@ -36,20 +36,20 @@ register({
     const mac = sum(rows.map(r => r.t * r.pv)) / pvSum / m, mod = mac / (1 + i);
     const conv = sum(rows.map(r => r.t * (r.t + 1) * r.pv)) / (pvSum * Math.pow(1 + i, 2) * m * m);
     const dy = v.shock / 10000, Pd = P * (1 - mod * dy), Pdc = P * (1 - mod * dy + 0.5 * conv * dy * dy), Pa = bondPrice(F, cr, y + dy, m, N);
-    const status = P > F + 0.005 ? 'premium' : P < F - 0.005 ? 'discount' : 'par';
+    const status = P > F + 0.005 ? 'sells for more' : P < F - 0.005 ? 'sells for less' : 'sells at face value';
     const lo = Math.max(0.0025, y - 0.04), grid = range(lo, y + 0.04, 0.0025);
     const charts = [
       {
-        title: 'Price versus yield', sub: 'The true price curve bends. Duration alone draws a straight line; adding convexity hugs the curve.',
+        title: 'Price when yield changes', sub: 'The real price curve bends. Duration alone gives a straight line. Adding convexity follows the curve.',
         series: [
           { name: 'Actual price', type: 'line', color: 'c1', pts: grid.map(z => [z * 100, bondPrice(F, cr, z, m, N)]) },
           { name: 'Duration estimate', type: 'line', color: 'c2', dash: true, pts: grid.map(z => [z * 100, P * (1 - mod * (z - y))]) },
           { name: 'Duration + convexity', type: 'line', color: 'c3', pts: grid.map(z => [z * 100, P * (1 - mod * (z - y) + 0.5 * conv * (z - y) * (z - y))]) },
           { name: 'Today', type: 'dots', color: 'c4', noRead: true, pts: [[y * 100, P, `${money(P)}`]] }
-        ], hlines: [{ y: F, label: 'par' }], xlab: 'Yield to maturity', xFmt: x => x.toFixed(2) + '%', yFmt: x => '$' + nf(x, 0), yRead: money
+        ], hlines: [{ y: F, label: 'face value' }], xlab: 'Yield to maturity', xFmt: x => x.toFixed(2) + '%', yFmt: x => '$' + nf(x, 0), yRead: money
       },
       {
-        title: 'When the cash arrives', sub: 'Present value of each cash flow. The dashed line is Macaulay duration, the balance point.',
+        title: 'When the cash arrives', sub: 'Value today of each payment. The dashed line is Macaulay duration, the balance point in time.',
         series: [
           { name: 'Cash flow', type: 'bars', color: 'c2', pts: rows.map(r => [r.yr, r.cf]) },
           { name: 'Present value', type: 'bars', color: 'c1', pts: rows.map(r => [r.yr, r.pv]) }
@@ -59,13 +59,13 @@ register({
     return {
       solved: v.solve === 'price' ? { id: 'price', value: P, dp: 4 } : { id: 'ytm', value: y * 100, dp: 5 },
       cards: [
-        { key: true, label: 'Bond price', value: money(P), sub: `${nf(P / F * 100, 3)}% of par · ${status}` },
+        { key: true, label: 'Bond price', value: money(P), sub: `${nf(P / F * 100, 3)}% of face value · ${status}` },
         { label: 'Yield to maturity', value: pct(y, 3), sub: `coupon ${pct(cr, 2)}` },
-        { label: 'Current yield', value: pct(c * m / P, 3), sub: 'annual coupon ÷ price' },
-        { label: 'Macaulay duration', value: yrs(mac, 3), sub: `maturity ${yrs(N / m, 1)}` },
+        { label: 'Current yield', value: pct(c * m / P, 3), sub: 'yearly interest ÷ price' },
+        { label: 'Macaulay duration', value: yrs(mac, 3), sub: `bond lasts ${yrs(N / m, 1)}` },
         { label: 'Modified duration', value: nf(mod, 3), sub: `1% rate move ≈ ${nf(mod, 2)}% price move` },
         { label: 'Convexity', value: nf(conv, 2), sub: 'in years squared' },
-        { label: `Price if yield ${v.shock >= 0 ? '+' : '−'}${Math.abs(v.shock)} bps`, value: money(Pa), sub: `duration ${money(Pd)} · with convexity ${money(Pdc)}`, tone: Pa >= P ? 'good' : 'bad' }
+        { label: `Price if yield moves ${v.shock >= 0 ? '+' : '−'}${Math.abs(v.shock)} bps`, value: money(Pa), sub: `duration ${money(Pd)} · with convexity ${money(Pdc)}`, tone: Pa >= P ? 'good' : 'bad' }
       ],
       steps: [
         ['Cash flows', `Coupon per period = F × coupon ÷ m = ${money(F, 0)} × ${pct(cr, 3)} ÷ ${m} = ${money(c)}\nPeriods N = ${nf(v.yrs, 2)} × ${m} = ${N}     Yield per period = ${pct(i, 4)}`],
@@ -82,25 +82,25 @@ register({
 });
 
 register({
-  id: 'ddm', group: 'Valuation', title: 'Stock Valuation (DDM)',
-  blurb: 'Value a share from its dividends with Gordon growth or a two-stage model, and see how much of the price is growth opportunities.',
+  id: 'ddm', group: 'Valuation', title: 'Stock Value from Dividends (DDM)',
+  blurb: 'Find what a share is worth from its dividends. Use steady growth (Gordon) or two growth stages. See how much of the price comes from future growth.',
   fields: [
-    { id: 'model', label: 'Model', type: 'select', v: 'gordon', options: [['gordon', 'Constant growth (Gordon)'], ['two', 'Two-stage growth']] },
+    { id: 'model', label: 'Model', type: 'select', v: 'gordon', options: [['gordon', 'Steady growth (Gordon)'], ['two', 'Two-stage growth']] },
     { id: 'd0', label: 'Dividend just paid (D₀)', v: 2, step: 0.1, pre: '$' },
-    { id: 'ke', label: 'Required return', v: 10, step: 0.25, unit: '%', slider: [4, 20, 0.25] },
-    { id: 'g', label: 'Stable growth rate', v: 4, step: 0.25, unit: '%', slider: [0, 9, 0.25] },
-    { id: 'g1', label: 'High growth rate (stage 1)', v: 12, step: 0.5, unit: '%' },
-    { id: 'n', label: 'Years of high growth', v: 5, step: 1, min: 1 },
-    { id: 'e1', label: 'Expected EPS next year', v: 3.0, step: 0.1, pre: '$' },
+    { id: 'ke', label: 'Return you want', v: 10, step: 0.25, unit: '%', slider: [4, 20, 0.25] },
+    { id: 'g', label: 'Long-run growth rate', v: 4, step: 0.25, unit: '%', slider: [0, 9, 0.25] },
+    { id: 'g1', label: 'Fast growth rate (stage 1)', v: 12, step: 0.5, unit: '%' },
+    { id: 'n', label: 'Years of fast growth', v: 5, step: 1, min: 1 },
+    { id: 'e1', label: 'Expected profit per share next year (EPS)', v: 3.0, step: 0.1, pre: '$' },
     { id: 'mkt', label: 'Market price (optional)', v: 40, step: 1, pre: '$' }
   ],
   show: { g1: v => v.model === 'two', n: v => v.model === 'two' },
   concept: `<h4>The idea</h4>
-<p>A share is worth the present value of the dividends it will pay. If dividends grow at a constant rate forever, the infinite sum collapses to a single fraction.</p>
+<p>A share is worth what its future dividends are worth today. If dividends grow at a steady rate forever, that endless sum becomes one simple fraction.</p>
 <div class="formula">P₀ = D₁ ÷ (k − g)  with  D₁ = D₀(1 + g)</div>
 <div class="formula">Two-stage: P₀ = Σ D_t ÷ (1+k)^t  +  [D_n(1+g) ÷ (k − g)] ÷ (1+k)^n</div>
 <div class="formula">P₀ = EPS₁ ÷ k + PVGO</div>
-<ul><li>The model is very sensitive to g. As g approaches k the price explodes, which is why stable growth must stay below the required return, usually at or below long-run GDP growth.</li><li><b>PVGO</b> (present value of growth opportunities) is the part of the price above what the firm would be worth if it paid out all earnings and never grew.</li><li>Flip the model around: given the market price, you can solve for the growth or return the market is implicitly expecting.</li></ul>`,
+<ul><li>A small change in g changes the answer a lot. As g gets close to k, the price shoots up. So long-run growth must stay below the return you want, usually at or below the growth of the whole economy.</li><li><b>PVGO</b> (value of future growth) is the part of the price above what the firm would be worth if it paid out all its profit and never grew.</li><li>You can also work backwards. From the market price, find the growth or return the market is expecting.</li></ul>`,
   calc(v) {
     const ke = v.ke / 100, g = v.g / 100, g1 = v.g1 / 100, n = Math.max(1, Math.round(v.n)), two = v.model === 'two';
     const divs = t => (two ? (t <= n ? v.d0 * Math.pow(1 + g1, t) : v.d0 * Math.pow(1 + g1, n) * Math.pow(1 + g, t - n)) : v.d0 * Math.pow(1 + g, t));
@@ -112,50 +112,50 @@ register({
       return s + dn * (1 + gs) / (ke - gs) / Math.pow(1 + ke, n);
     };
     const P0 = value(g);
-    if (!isNum(P0)) return { note: 'The required return must be greater than the stable growth rate for the model to give a finite value.', cards: [], charts: [], steps: [] };
+    if (!isNum(P0)) return { note: 'The return you want must be higher than the long-run growth rate. Otherwise the value has no limit.', cards: [], charts: [], steps: [] };
     const H = Math.max(25, n + 15), ts = range(1, H, 1);
     let cum = 0; const pvs = ts.map(t => divs(t) / Math.pow(1 + ke, t)), cums = pvs.map(p => (cum += p));
     const dn = v.d0 * Math.pow(1 + g1, n);
     const pvHigh = two ? sum(pvs.slice(0, n)) : NaN, tv = two ? dn * (1 + g) / (ke - g) : NaN, pvTV = two ? tv / Math.pow(1 + ke, n) : NaN;
     const noGrowth = v.e1 / ke, pvgo = P0 - noGrowth, D1 = divs(1);
     const cards = [
-      { key: true, label: 'Intrinsic value per share', value: money(P0), sub: two ? 'two-stage model' : 'Gordon growth' },
-      { label: 'Dividend yield', value: pct(D1 / P0, 2), sub: `D₁ ${money(D1)} ÷ intrinsic value` },
+      { key: true, label: 'Fair value per share (intrinsic value)', value: money(P0), sub: two ? 'two-stage model' : 'Gordon growth' },
+      { label: 'Dividend yield', value: pct(D1 / P0, 2), sub: `D₁ ${money(D1)} ÷ fair value` },
       { label: 'Value if no growth', value: money(noGrowth), sub: `EPS ${money(v.e1)} ÷ k` },
-      { label: 'Growth opportunities (PVGO)', value: money(pvgo), sub: `${nf(pvgo / P0 * 100, 1)}% of the price`, tone: pvgo < 0 ? 'bad' : '' }
+      { label: 'Value of future growth (PVGO)', value: money(pvgo), sub: `${nf(pvgo / P0 * 100, 1)}% of the price`, tone: pvgo < 0 ? 'bad' : '' }
     ];
-    if (two) cards.push({ label: 'Stage 1 dividends', value: money(pvHigh), sub: `years 1–${n}` }, { label: 'Terminal value today', value: money(pvTV), sub: `${nf(pvTV / P0 * 100, 1)}% of intrinsic value` });
+    if (two) cards.push({ label: 'Dividends in fast-growth years', value: money(pvHigh), sub: `years 1–${n}` }, { label: 'Value after the fast years, in today\'s money', value: money(pvTV), sub: `${nf(pvTV / P0 * 100, 1)}% of fair value` });
     if (v.mkt > 0) {
       const gi = (v.mkt * ke - v.d0) / (v.mkt + v.d0), ki = v.d0 * (1 + g) / v.mkt + g, diff = P0 / v.mkt - 1;
-      cards.push({ label: 'Versus market price', value: (diff >= 0 ? '+' : '') + pct(diff, 1), sub: diff >= 0 ? 'undervalued by this model' : 'overvalued by this model', tone: diff >= 0 ? 'good' : 'bad' },
-        { label: 'Growth the market implies', value: pct(gi, 2), sub: 'Gordon model, your k' },
-        { label: 'Return the market implies', value: pct(ki, 2), sub: 'Gordon model, your g' });
+      cards.push({ label: 'Versus market price', value: (diff >= 0 ? '+' : '') + pct(diff, 1), sub: diff >= 0 ? 'looks cheap: model value is higher' : 'looks expensive: model value is lower', tone: diff >= 0 ? 'good' : 'bad' },
+        { label: 'Growth the market price implies', value: pct(gi, 2), sub: 'Gordon model, using your return' },
+        { label: 'Return the market implies', value: pct(ki, 2), sub: 'Gordon model, using your growth' });
     }
     const gmax = ke - 0.0075, gs = gmax > 0 ? range(0, gmax, Math.max(0.0005, gmax / 40)) : [];
     const charts = [{
-      title: 'Where the value comes from', sub: 'Each year\'s dividend discounted to today (amber), and the running total (teal) closing in on intrinsic value.',
-      series: [{ name: 'PV of that year\'s dividend', type: 'bars', color: 'c2', pts: ts.map((t, k) => [t, pvs[k]]) }, { name: 'Running total', type: 'area', color: 'c1', pts: ts.map((t, k) => [t, cums[k]]) }],
-      hlines: [{ y: P0, label: `intrinsic ${money(P0)}`, color: 'c4' }], xlab: 'Year', yFmt: x => '$' + nf(x, 0), yRead: money
+      title: 'Where the value comes from', sub: 'Each year\'s dividend in today\'s money (amber). The running total (teal) closes in on fair value.',
+      series: [{ name: 'That year\'s dividend in today\'s money', type: 'bars', color: 'c2', pts: ts.map((t, k) => [t, pvs[k]]) }, { name: 'Running total', type: 'area', color: 'c1', pts: ts.map((t, k) => [t, cums[k]]) }],
+      hlines: [{ y: P0, label: `fair value ${money(P0)}`, color: 'c4' }], xlab: 'Year', yFmt: x => '$' + nf(x, 0), yRead: money
     }];
     if (gs.length > 2) charts.push({
-      title: 'Why growth assumptions matter so much', sub: 'Value per share as stable growth approaches the required return. The curve is steep near the right edge.',
+      title: 'Why the growth guess matters so much', sub: 'Value per share as long-run growth gets close to the return you want. The curve shoots up on the right.',
       series: [{ name: 'Value per share', type: 'line', color: 'c1', pts: gs.map(x => [x * 100, value(x)]) }, { name: 'Your assumption', type: 'dots', color: 'c4', noRead: true, pts: [[g * 100, P0, money(P0)]] }],
-      xlab: 'Stable growth g', xFmt: x => x.toFixed(1) + '%', yFmt: x => '$' + nf(x, 0), yRead: money
+      xlab: 'Long-run growth (g)', xFmt: x => x.toFixed(1) + '%', yFmt: x => '$' + nf(x, 0), yRead: money
     });
     return {
       cards,
       steps: two ? [
         ['Stage 1 dividends', `D_t = D₀(1+g₁)^t, t = 1…${n}   (D₁ = ${money(D1)}, D_${n} = ${money(dn)})`],
-        ['Discount stage 1', `Σ D_t ÷ (1+k)^t = ${money(pvHigh)}`],
-        ['Terminal value at year ' + n, `TV = D_n(1+g) ÷ (k − g) = ${money(dn)} × ${nfx(1 + g, 4)} ÷ ${nfx(ke - g, 4)} = ${money(tv)}`],
-        ['Discount the terminal value', `${money(tv)} ÷ (1 + ${pct(ke, 2)})^${n} = ${money(pvTV)}`],
-        ['Intrinsic value', `${money(pvHigh)} + ${money(pvTV)} = ${money(P0)}`],
-        ['Growth opportunities', `PVGO = P₀ − EPS₁ ÷ k = ${money(P0)} − ${money(noGrowth)} = ${money(pvgo)}`]
+        ['Bring stage 1 to today\'s value', `Σ D_t ÷ (1+k)^t = ${money(pvHigh)}`],
+        ['Value after year ' + n + ' (terminal value)', `TV = D_n(1+g) ÷ (k − g) = ${money(dn)} × ${nfx(1 + g, 4)} ÷ ${nfx(ke - g, 4)} = ${money(tv)}`],
+        ['Bring the terminal value to today\'s value', `${money(tv)} ÷ (1 + ${pct(ke, 2)})^${n} = ${money(pvTV)}`],
+        ['Fair value', `${money(pvHigh)} + ${money(pvTV)} = ${money(P0)}`],
+        ['Value of future growth', `PVGO = P₀ − EPS₁ ÷ k = ${money(P0)} − ${money(noGrowth)} = ${money(pvgo)}`]
       ] : [
         ['Next dividend', `D₁ = D₀ × (1 + g) = ${money(v.d0)} × ${nfx(1 + g, 4)} = ${money(D1)}`],
         ['Gordon growth', `P₀ = D₁ ÷ (k − g) = ${money(D1)} ÷ (${pct(ke, 2)} − ${pct(g, 2)}) = ${money(P0)}`],
-        ['Return decomposition', `k = dividend yield + growth = ${pct(D1 / P0, 2)} + ${pct(g, 2)} = ${pct(D1 / P0 + g, 2)}`],
-        ['Growth opportunities', `PVGO = P₀ − EPS₁ ÷ k = ${money(P0)} − ${money(noGrowth)} = ${money(pvgo)}`]
+        ['Where the return comes from', `k = dividend yield + growth = ${pct(D1 / P0, 2)} + ${pct(g, 2)} = ${pct(D1 / P0 + g, 2)}`],
+        ['Value of future growth', `PVGO = P₀ − EPS₁ ÷ k = ${money(P0)} − ${money(noGrowth)} = ${money(pvgo)}`]
       ],
       charts
     };
@@ -179,42 +179,42 @@ function dcfModel(v, wacc, tg, mlt) {
 }
 
 register({
-  id: 'dcf', group: 'Valuation', title: 'DCF Valuation',
-  blurb: 'Project free cash flow, discount it at WACC, add a terminal value and bridge from enterprise value to value per share.',
+  id: 'dcf', group: 'Valuation', title: 'Company Value (DCF)',
+  blurb: 'Forecast a company\'s free cash and bring it to today\'s value at WACC (its cost of funding). Add a terminal value (the years after the forecast). Then get value per share.',
   fields: [
-    { id: 'rev0', label: 'Current revenue ($M)', v: 1000, step: 50 },
-    { id: 'g1', label: 'Revenue growth in year 1', v: 12, step: 0.5, unit: '%', slider: [0, 40, 0.5] },
-    { id: 'fade', label: 'Growth pattern', type: 'select', v: 'fade', options: [['fade', 'Fades toward terminal growth'], ['flat', 'Stays constant']] },
+    { id: 'rev0', label: 'Sales now ($M)', v: 1000, step: 50 },
+    { id: 'g1', label: 'Sales growth in year 1', v: 12, step: 0.5, unit: '%', slider: [0, 40, 0.5] },
+    { id: 'fade', label: 'Growth pattern', type: 'select', v: 'fade', options: [['fade', 'Slows toward long-run growth'], ['flat', 'Stays the same']] },
     { id: 'years', label: 'Forecast years', v: 5, step: 1, min: 1, max: 10, slider: [3, 10, 1] },
-    { id: 'margin', label: 'EBIT margin', v: 20, step: 0.5, unit: '%', slider: [2, 50, 0.5] },
+    { id: 'margin', label: 'Operating profit margin (EBIT margin)', v: 20, step: 0.5, unit: '%', slider: [2, 50, 0.5] },
     { id: 'tax', label: 'Tax rate', v: 25, step: 1, unit: '%' },
-    { id: 'da', label: 'D&A (% of revenue)', v: 4, step: 0.5, unit: '%' },
-    { id: 'capex', label: 'Capex (% of revenue)', v: 5, step: 0.5, unit: '%' },
-    { id: 'nwc', label: 'NWC investment (% of revenue change)', v: 10, step: 1, unit: '%' },
-    { id: 'wacc', label: 'WACC', v: 9, step: 0.25, unit: '%', slider: [4, 16, 0.25] },
-    { id: 'tmethod', label: 'Terminal value method', type: 'select', v: 'gordon', options: [['gordon', 'Perpetual growth'], ['multiple', 'Exit EV/EBITDA multiple']] },
-    { id: 'tg', label: 'Terminal growth rate', v: 3, step: 0.25, unit: '%', slider: [0, 5, 0.25] },
-    { id: 'mult', label: 'Exit EV/EBITDA multiple', v: 10, step: 0.5, unit: '×' },
-    { id: 'netdebt', label: 'Net debt ($M)', v: 400, step: 25 },
-    { id: 'shares', label: 'Shares outstanding (M)', v: 100, step: 5 }
+    { id: 'da', label: 'Wear-and-tear cost, D&A (% of sales)', v: 4, step: 0.5, unit: '%' },
+    { id: 'capex', label: 'Spending on equipment, capex (% of sales)', v: 5, step: 0.5, unit: '%' },
+    { id: 'nwc', label: 'Extra working cash needed, NWC (% of sales growth)', v: 10, step: 1, unit: '%' },
+    { id: 'wacc', label: 'WACC (cost of funding)', v: 9, step: 0.25, unit: '%', slider: [4, 16, 0.25] },
+    { id: 'tmethod', label: 'How to value the years after the forecast', type: 'select', v: 'gordon', options: [['gordon', 'Growth forever'], ['multiple', 'Sale multiple (EV/EBITDA)']] },
+    { id: 'tg', label: 'Long-run growth rate', v: 3, step: 0.25, unit: '%', slider: [0, 5, 0.25] },
+    { id: 'mult', label: 'Sale multiple (EV/EBITDA)', v: 10, step: 0.5, unit: '×' },
+    { id: 'netdebt', label: 'Net debt ($M): debt minus cash', v: 400, step: 25 },
+    { id: 'shares', label: 'Number of shares (M)', v: 100, step: 5 }
   ],
   show: { tg: v => v.tmethod === 'gordon' || v.fade === 'fade', mult: v => v.tmethod === 'multiple' },
   concept: `<h4>The idea</h4>
-<p>A firm is worth the cash it can pay to all capital providers, discounted at the rate those providers require. Forecast free cash flow to the firm (FCFF), discount at WACC, and add a terminal value for everything after the forecast window.</p>
+<p>A company is worth the cash it can pay to everyone who funds it, in today's money. Forecast the free cash (FCFF). Bring it back to today's value at WACC. Then add a terminal value (the value of all the years after your forecast).</p>
 <div class="formula">FCFF = EBIT(1 − t) + D&A − Capex − ΔNWC</div>
 <div class="formula">TV = FCFF_N(1+g) ÷ (WACC − g)    or    TV = EBITDA_N × multiple</div>
 <div class="formula">Enterprise value = Σ FCFF_t ÷ (1+WACC)^t + TV ÷ (1+WACC)^N</div>
 <div class="formula">Equity value = Enterprise value − Net debt</div>
-<ul><li>For most companies the terminal value is well over half of enterprise value, so check the implied multiple or implied growth as a sanity test.</li><li>The sensitivity grid shows how much the answer moves with WACC and the terminal assumption. If it moves a lot, that is the honest range of the valuation.</li></ul>`,
+<ul><li>For most companies, the terminal value is more than half of enterprise value. Check the implied multiple or growth to see if it is sensible.</li><li>The grid shows how much the answer moves when WACC and the long-run guess change. If it moves a lot, that is the honest range of the value.</li></ul>`,
   calc(v) {
     const W = v.wacc / 100, tg = v.tg / 100, base = dcfModel(v, W, tg, v.mult), { rows, N } = base;
-    if (!isNum(base.ev)) return { note: 'WACC must be above terminal growth for a perpetuity terminal value.', cards: [], charts: [], steps: [] };
+    if (!isNum(base.ev)) return { note: 'WACC must be higher than the long-run growth rate.', cards: [], charts: [], steps: [] };
     const gordon = v.tmethod === 'gordon';
     const cards = [
       { key: true, label: 'Value per share', value: money(base.ps), sub: `${nf(v.shares, 1)}M shares` },
-      { label: 'Enterprise value', value: money(base.ev, 1) + 'M', sub: `${nf(base.pvTV / base.ev * 100, 0)}% from terminal value` },
-      { label: 'Equity value', value: money(base.eq, 1) + 'M', sub: `after ${money(v.netdebt, 0)}M net debt` },
-      gordon ? { label: 'Implied exit multiple', value: mult(base.impMult, 1), sub: 'terminal value ÷ final-year EBITDA' } : { label: 'Implied perpetual growth', value: pct(base.impG, 2), sub: 'from your exit multiple' },
+      { label: 'Enterprise value (whole business)', value: money(base.ev, 1) + 'M', sub: `${nf(base.pvTV / base.ev * 100, 0)}% from the years after the forecast` },
+      { label: 'Equity value (owners\' share)', value: money(base.eq, 1) + 'M', sub: `after ${money(v.netdebt, 0)}M net debt` },
+      gordon ? { label: 'Sale multiple this implies', value: mult(base.impMult, 1), sub: 'terminal value ÷ final-year EBITDA' } : { label: 'Growth forever this implies', value: pct(base.impG, 2), sub: 'from your sale multiple' },
       { label: 'Terminal value', value: money(base.tv, 1) + 'M', sub: `${money(base.pvTV, 1)}M in today's dollars` }
     ];
     const cols = gordon ? [-0.01, -0.005, 0, 0.005, 0.01].map(d => tg + d) : [-2, -1, 0, 1, 2].map(d => v.mult + d);
@@ -229,24 +229,24 @@ register({
     });
     const m1 = x => nf(x, 1);
     const hb = hbars([
-      { label: 'PV of forecast FCFF', from: 0, to: base.pvF, color: 'c1', text: money(base.pvF, 1) + 'M' },
-      { label: 'PV of terminal value', from: base.pvF, to: base.ev, color: 'c3', text: money(base.pvTV, 1) + 'M' },
+      { label: 'Forecast cash, in today\'s money', from: 0, to: base.pvF, color: 'c1', text: money(base.pvF, 1) + 'M' },
+      { label: 'Later years, in today\'s money', from: base.pvF, to: base.ev, color: 'c3', text: money(base.pvTV, 1) + 'M' },
       { label: 'Enterprise value', from: 0, to: base.ev, color: 'ink', text: money(base.ev, 1) + 'M' },
-      { label: 'Less: net debt', from: base.eq, to: base.ev, color: 'c4', text: '−' + money(v.netdebt, 1) + 'M' },
+      { label: 'Minus: net debt', from: base.eq, to: base.ev, color: 'c4', text: '−' + money(v.netdebt, 1) + 'M' },
       { label: 'Equity value', from: 0, to: base.eq, color: 'good', text: money(base.eq, 1) + 'M' }
     ]);
     return {
       cards,
       charts: [
-        { title: 'Free cash flow and its present value', sub: 'Cash flow each year (amber) and what it is worth today after discounting at WACC (teal).', series: [{ name: 'FCFF', type: 'bars', color: 'c2', pts: rows.map(r => [r.t, r.fcff]) }, { name: 'Present value', type: 'bars', color: 'c1', pts: rows.map(r => [r.t, r.pv]) }], xlab: 'Year', yFmt: x => nf(x, 0), yRead: x => money(x, 1) + 'M' },
-        { type: 'html', title: 'From cash flows to value per share', sub: 'Enterprise value is built from two pieces, then net debt is removed.', html: hb }
+        { title: 'Free cash and its value today', sub: 'Cash each year (amber) and what it is worth today at WACC (teal).', series: [{ name: 'FCFF', type: 'bars', color: 'c2', pts: rows.map(r => [r.t, r.fcff]) }, { name: 'Present value', type: 'bars', color: 'c1', pts: rows.map(r => [r.t, r.pv]) }], xlab: 'Year', yFmt: x => nf(x, 0), yRead: x => money(x, 1) + 'M' },
+        { type: 'html', title: 'From cash flows to value per share', sub: 'Enterprise value has two parts. Then net debt is taken off.', html: hb }
       ],
       steps: [
         ['Year-by-year free cash flow', `FCFF = NOPAT + D&A − Capex − ΔNWC\nYear ${N}: ${m1(last(rows).nopat)} + ${m1(last(rows).da)} − ${m1(last(rows).capex)} − ${m1(last(rows).dnwc)} = ${m1(last(rows).fcff)}  ($M)`],
-        ['Discount each year', `PV = FCFF ÷ (1 + ${pct(W, 2)})^t.  Sum of PVs = ${money(base.pvF, 1)}M`],
+        ['Bring each year to today\'s value', `PV = FCFF ÷ (1 + ${pct(W, 2)})^t.  Sum of PVs = ${money(base.pvF, 1)}M`],
         ['Terminal value', gordon ? `TV = FCFF_${N} × (1 + g) ÷ (WACC − g) = ${m1(last(rows).fcff)} × ${nfx(1 + tg, 4)} ÷ ${nfx(W - tg, 4)} = ${money(base.tv, 1)}M` : `TV = EBITDA_${N} × multiple = ${m1(base.ebitda)} × ${nf(v.mult, 1)} = ${money(base.tv, 1)}M`],
-        ['Discount the terminal value', `${money(base.tv, 1)}M × ${nfx(last(rows).df, 5)} = ${money(base.pvTV, 1)}M`],
-        ['Enterprise to equity', `EV = ${money(base.pvF, 1)} + ${money(base.pvTV, 1)} = ${money(base.ev, 1)}M\nEquity = EV − net debt = ${money(base.ev, 1)} − ${money(v.netdebt, 1)} = ${money(base.eq, 1)}M`],
+        ['Bring the terminal value to today\'s value', `${money(base.tv, 1)}M × ${nfx(last(rows).df, 5)} = ${money(base.pvTV, 1)}M`],
+        ['From whole business to owners', `EV = ${money(base.pvF, 1)} + ${money(base.pvTV, 1)} = ${money(base.ev, 1)}M\nEquity = EV − net debt = ${money(base.ev, 1)} − ${money(v.netdebt, 1)} = ${money(base.eq, 1)}M`],
         ['Per share', `${money(base.eq, 1)}M ÷ ${nf(v.shares, 1)}M shares = ${money(base.ps)}`]
       ],
       tables: [
@@ -257,7 +257,7 @@ register({
             ['Free cash flow', ...rows.map(r => [m1(r.fcff), 'font-weight:700'])], ['Discount factor', ...rows.map(r => nfx(r.df, 4))], ['Present value', ...rows.map(r => m1(r.pv))]
           ]
         },
-        { title: `Sensitivity: value per share (${gordon ? 'WACC × terminal growth' : 'WACC × exit multiple'})`, cols: ['', ...cols.map(c => (gordon ? 'g ' + pct(c, 1) : nf(c, 1) + '×'))], rows: sens }
+        { title: `Sensitivity: value per share (${gordon ? 'WACC × long-run growth' : 'WACC × sale multiple'})`, cols: ['', ...cols.map(c => (gordon ? 'g ' + pct(c, 1) : nf(c, 1) + '×'))], rows: sens }
       ]
     };
   }
@@ -265,22 +265,22 @@ register({
 function last(a) { return a[a.length - 1]; }
 
 register({
-  id: 'capbud', group: 'Corporate Finance', title: 'Capital Budgeting',
-  blurb: 'NPV, IRR, MIRR, profitability index and payback for one or two projects, with the NPV profile and crossover rate.',
+  id: 'capbud', group: 'Corporate Finance', title: 'Project Check (Capital Budgeting)',
+  blurb: 'Test one or two projects with NPV, IRR, MIRR, profitability index and payback. See the NPV profile and where the two projects cross.',
   fields: [
-    { id: 'rate', label: 'Discount rate (hurdle)', v: 10, step: 0.25, unit: '%', slider: [0, 30, 0.25] },
-    { id: 'rr', label: 'Reinvestment rate (for MIRR)', v: 10, step: 0.25, unit: '%' },
-    { id: 'i0A', label: 'Project A · initial investment (enter as a positive number)', v: 100000, step: 5000, pre: '$' },
-    { id: 'cfA', label: 'Project A · cash flows, years 1…n', type: 'text', v: '30000, 35000, 40000, 40000, 30000', help: 'Separate with commas. Use a minus sign for outflows.' },
-    { id: 'i0B', label: 'Project B · initial investment (enter as a positive number)', v: 100000, step: 5000, pre: '$' },
-    { id: 'cfB', label: 'Project B · cash flows (leave empty to skip)', type: 'text', v: '0, 0, 0, 0, 200000' }
+    { id: 'rate', label: 'Return you need (discount rate)', v: 10, step: 0.25, unit: '%', slider: [0, 30, 0.25] },
+    { id: 'rr', label: 'Rate for reinvested cash (for MIRR)', v: 10, step: 0.25, unit: '%' },
+    { id: 'i0A', label: 'Project A · money put in at the start (enter as a positive number)', v: 100000, step: 5000, pre: '$' },
+    { id: 'cfA', label: 'Project A · cash each year, years 1…n', type: 'text', v: '30000, 35000, 40000, 40000, 30000', help: 'Separate with commas. Use a minus sign for outflows.' },
+    { id: 'i0B', label: 'Project B · money put in at the start (enter as a positive number)', v: 100000, step: 5000, pre: '$' },
+    { id: 'cfB', label: 'Project B · cash each year (leave empty to skip)', type: 'text', v: '0, 0, 0, 0, 200000' }
   ],
   concept: `<h4>The idea</h4>
-<p>Accept projects that create value. The cleanest measure is <b>NPV</b>, the value added in today's dollars. The other tools are useful, but each has a blind spot.</p>
+<p>Accept projects that create value. The clearest measure is <b>NPV</b> (what the project adds, in today's money). The other tools help, but each has a weak spot.</p>
 <div class="formula">NPV = −I₀ + Σ CF_t ÷ (1+r)^t          Accept if NPV &gt; 0</div>
 <div class="formula">IRR: the r that makes NPV = 0          Accept if IRR &gt; hurdle rate</div>
 <div class="formula">PI = PV of future cash flows ÷ I₀        Payback = time to recover I₀</div>
-<ul><li><b>IRR vs NPV:</b> for mutually exclusive projects they can disagree. When the NPV profiles cross, the project with the higher IRR is not necessarily the better one. Choose by NPV. The chart shows the crossover rate.</li><li><b>MIRR</b> fixes the assumption that interim cash flows are reinvested at the IRR, by using an explicit reinvestment rate.</li><li><b>Payback</b> ignores everything after recovery and the time value of money (discounted payback fixes the second flaw only).</li><li>Cash flows that change sign more than once can have several IRRs.</li></ul>`,
+<ul><li><b>IRR vs NPV:</b> if you can only pick one project, they can disagree. When the NPV lines cross, the higher IRR is not always the better project. Choose by NPV. The chart shows where they cross.</li><li><b>MIRR</b> fixes the IRR's wrong idea that cash is reinvested at the IRR. It uses a reinvestment rate you choose.</li><li><b>Payback</b> ignores everything after you get your money back, and ignores that money today is worth more. Discounted payback fixes only the second problem.</li><li>Cash that flips between in and out more than once can give several IRRs.</li></ul>`,
   calc(v) {
     const r = v.rate / 100, rr = v.rr / 100;
     const analyze = (i0, flows) => {
@@ -299,30 +299,30 @@ register({
     const card = (tag, P) => [
       { head: tag },
       { key: tag.endsWith('A'), label: 'NPV', value: money(P.NPV, 0), sub: P.NPV >= 0 ? 'adds value, accept' : 'destroys value, reject', tone: P.NPV >= 0 ? 'good' : 'bad' },
-      { label: 'IRR', value: isNum(P.IRR) ? pct(P.IRR, 2) : 'n/a', sub: `hurdle ${pct(r, 1)}` + (P.sc > 1 ? ' · multiple IRRs possible' : '') },
+      { label: 'IRR', value: isNum(P.IRR) ? pct(P.IRR, 2) : 'n/a', sub: `you need ${pct(r, 1)}` + (P.sc > 1 ? ' · multiple IRRs possible' : '') },
       { label: 'MIRR', value: pct(P.MIRR, 2), sub: `reinvest at ${pct(rr, 1)}` },
       { label: 'Profitability index', value: nf(P.PI, 3), sub: P.PI >= 1 ? 'above 1 is good' : 'below 1 is bad' },
-      { label: 'Payback', value: isNum(P.pb) ? yrs(P.pb, 2) : 'Never', sub: 'undiscounted' },
+      { label: 'Payback', value: isNum(P.pb) ? yrs(P.pb, 2) : 'Never', sub: 'time to get your money back' },
       { label: 'Discounted payback', value: isNum(P.dpb) ? yrs(P.dpb, 2) : 'Never', sub: `at ${pct(r, 1)}` }
     ];
     const cards = [...card('Project A', A), ...(B ? card('Project B', B) : [])];
     let cross = NaN;
     if (B) { const L = Math.max(A.c.length, B.c.length), d = Array.from({ length: L }, (_, k) => (A.c[k] || 0) - (B.c[k] || 0)); cross = irr(d); }
     const ir = [A.IRR, B && B.IRR].filter(isNum), R = Math.min(100, Math.max(20, Math.ceil((ir.length ? Math.max(...ir) * 100 : 20) / 5) * 5 + 10));
-    const rs = range(0, R, R / 60), vl = [{ x: v.rate, label: `hurdle ${nf(v.rate, 1)}%`, color: 'c4' }];
+    const rs = range(0, R, R / 60), vl = [{ x: v.rate, label: `your rate ${nf(v.rate, 1)}%`, color: 'c4' }];
     if (isNum(cross) && cross * 100 >= 0 && cross * 100 <= R) vl.push({ x: cross * 100, label: `crossover ${nf(cross * 100, 1)}%`, color: 'mute' });
     const series = [{ name: 'Project A', type: 'line', color: 'c1', pts: rs.map(x => [x, npv(x / 100, A.c)]) }];
     if (B) series.push({ name: 'Project B', type: 'line', color: 'c2', pts: rs.map(x => [x, npv(x / 100, B.c)]) });
     const dots = []; if (isNum(A.IRR) && A.IRR * 100 <= R) dots.push([A.IRR * 100, 0, 'IRR A']); if (B && isNum(B.IRR) && B.IRR * 100 <= R) dots.push([B.IRR * 100, 0, 'IRR B']);
     if (dots.length) series.push({ name: 'IRR', type: 'dots', color: 'c3', noRead: true, pts: dots });
-    const note = B ? (A.NPV === B.NPV ? '' : `For mutually exclusive projects choose by NPV: Project ${A.NPV > B.NPV ? 'A' : 'B'} adds ${money(Math.abs(A.NPV - B.NPV), 0)} more value.` + (isNum(A.IRR) && isNum(B.IRR) && (A.IRR > B.IRR) !== (A.NPV > B.NPV) ? ' IRR ranks them the other way, which is the classic conflict.' : '')) : '';
+    const note = B ? (A.NPV === B.NPV ? '' : `If you can only pick one project, choose by NPV: Project ${A.NPV > B.NPV ? 'A' : 'B'} adds ${money(Math.abs(A.NPV - B.NPV), 0)} more value.` + (isNum(A.IRR) && isNum(B.IRR) && (A.IRR > B.IRR) !== (A.NPV > B.NPV) ? ' IRR picks the other one. This is a well-known clash.' : '')) : '';
     const trow = P => P.rows.map(x => [x.t, money(x.cf, 0), nfx(x.df, 4), money(x.pv, 0), money(x.cumC, 0), money(x.cumP, 0)]);
     const th = ['Year', 'Cash flow', 'Discount factor', 'PV', 'Cumulative', 'Cumulative PV'];
     return {
       cards, info: note,
       charts: [
-        { title: 'NPV profile', sub: 'NPV as the discount rate changes. Where a line crosses zero is that project\'s IRR; where lines cross each other, the ranking flips.', series, vlines: vl, hlines: [{ y: 0 }], xlab: 'Discount rate', xFmt: x => nf(x, 0) + '%', yFmt: x => compact(x), yRead: x => money(x, 0) },
-        { title: 'Payback: Project A', sub: 'Cumulative cash flow, with and without discounting. The payback year is where each line turns positive.', series: [{ name: 'Cumulative cash flow', type: 'line', color: 'c2', pts: A.rows.map(x => [x.t, x.cumC]) }, { name: 'Cumulative PV', type: 'line', color: 'c1', pts: A.rows.map(x => [x.t, x.cumP]) }], hlines: [{ y: 0 }], xlab: 'Year', yFmt: x => compact(x), yRead: x => money(x, 0) }
+        { title: 'NPV profile', sub: 'NPV as the discount rate changes. Where a line crosses zero is that project\'s IRR. Where the lines cross each other, the better project switches.', series, vlines: vl, hlines: [{ y: 0 }], xlab: 'Discount rate', xFmt: x => nf(x, 0) + '%', yFmt: x => compact(x), yRead: x => money(x, 0) },
+        { title: 'Payback: Project A', sub: 'Running total of cash, with and without discounting. Payback is where each line turns positive.', series: [{ name: 'Running total of cash', type: 'line', color: 'c2', pts: A.rows.map(x => [x.t, x.cumC]) }, { name: 'Running total in today\'s money', type: 'line', color: 'c1', pts: A.rows.map(x => [x.t, x.cumP]) }], hlines: [{ y: 0 }], xlab: 'Year', yFmt: x => compact(x), yRead: x => money(x, 0) }
       ],
       steps: [
         ['Discounted cash flows, Project A', `NPV = ${A.rows.map(x => (x.t === 0 ? money(x.cf, 0) : `${money(x.cf, 0)}/${nfx(1 / x.df, 4)}`)).join(' + ')}\n    = ${money(A.NPV, 2)}`],

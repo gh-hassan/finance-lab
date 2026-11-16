@@ -9,8 +9,8 @@ Object.assign(BEGINNER, {
     labels: { mu: 'Expected return of each (%)', sd: 'How bumpy each one is (%)', corr: 'How much they move together', w: 'How you split your money (%)' },
     tips: { mu: 'One number per investment, separated by commas, in the same order each time.', sd: 'How much each return jumps around. Bigger means riskier.', corr: 'A table of numbers from −1 to 1. Rows are separated by a semicolon. 1 means move together, 0 unrelated.', w: 'For example 25, 25, 25, 25 puts a quarter of your money in each.' },
     easy: [['Your portfolio return', 'What you can expect to earn', 'Your mix of the investments'], ['Your portfolio risk (σ)', 'How bumpy your mix is', 'Lower is calmer'], ['Your Sharpe ratio', 'Reward for each bit of risk', 'Higher is better'], ['Minimum-variance mix', 'The calmest possible mix', 'The lowest risk you can reach'], ['Tangency (best Sharpe) mix', 'The best risk-for-reward mix', 'Where the best line touches the curve']],
-    plain: (v, o, k) => [`Your mix is expected to earn about ${k.value} a year.`, `The curve shows the best return possible for each level of risk. Your mix is the dot marked You: the closer to the curve, the better it uses the risk.`],
-    words: [['Efficient frontier', 'The best return you can get for each level of risk.'], ['Tangency portfolio', 'The mix of risky investments with the best reward for the risk.'], ['Sharpe ratio', 'Extra return earned per unit of risk.']]
+    plain: (v, o, k) => [`Your mix is expected to earn about ${k.value} a year.`, `The curve shows the best return possible for each level of risk. Your mix is the dot marked You. The closer to the curve, the better.`],
+    words: [['Efficient frontier', 'The best return you can get for each level of risk.'], ['Tangency portfolio', 'The mix of risky investments with the best reward for the risk.'], ['Sharpe ratio', 'Extra return for each bit of risk.']]
   },
   strategies: {
     ask: 'What can I do with options?', essential: ['strat', 'S', 'K', 'wd', 'T', 'vol'],
@@ -50,7 +50,7 @@ Object.assign(BEGINNER, {
   lease: {
     ask: 'Should we lease it or buy it?', essential: ['cost', 'salv', 'life', 'method', 'tax', 'pay', 'term'],
     labels: { cost: 'Price of the asset', salv: 'What it is worth at the end', life: 'Years we will use it', method: 'How the cost is spread over the years', tax: 'Tax rate', pay: 'Lease payment each year', term: 'Years of the lease' },
-    tips: { cost: 'What it costs to buy outright.', salv: 'Its resale value when we are done.', life: 'How many years it is useful.', method: 'Faster methods give bigger tax savings early.', tax: 'Share of profit paid in tax.', pay: 'What the lessor charges each year.', term: 'How long the lease lasts.' },
+    tips: { cost: 'What it costs to buy outright.', salv: 'Its resale value when we are done.', life: 'How many years it is useful.', method: 'Faster methods give bigger tax savings early.', tax: 'Share of profit paid in tax.', pay: 'What the owner charges you each year.', term: 'How long the lease lasts.' },
     easy: [['Net advantage to leasing', 'Lease or buy?', 'Positive means leasing is cheaper'], ['Net advantage to buying', 'Lease or buy?', 'Positive means buying is cheaper']],
     plain: (v, o, k) => [`${k.label === 'Net advantage to leasing' ? 'Leasing' : 'Buying'} looks cheaper by about ${k.value} in today's money.`, 'The tax saving from depreciation is part of the answer.'],
     words: [['Depreciation', 'Spreading an asset\'s cost over its useful life.'], ['Tax shield', 'Tax saved because depreciation lowers taxable profit.'], ['Lease', 'Paying to use an asset without owning it.']]
@@ -75,12 +75,12 @@ Object.assign(BEGINNER, {
     words: [['Spot rate', 'The rate for lending from today to a set date.'], ['Forward rate', 'The rate the market expects for a future year.'], ['Duration', 'How long you wait on average to get your money back.']]
   },
   futures: {
-    ask: 'What should a future price be, and how do I hedge?', essential: ['S', 'r', 'T', 'mkt', 'expo', 'cv', 'rho', 'sdS', 'sdF'],
+    ask: 'What should a futures price be, and how do I protect myself?', essential: ['S', 'r', 'T', 'mkt', 'expo', 'cv', 'rho', 'sdS', 'sdF'],
     labels: { S: 'Price today', r: 'Safe interest rate', T: 'Time until delivery', mkt: 'Price quoted in the market', expo: 'Value you want to protect', cv: 'Value of one contract', rho: 'How closely they move together', sdS: 'How bumpy your holding is (%)', sdF: 'How bumpy the future is (%)' },
     tips: { S: 'What it costs right now.', r: 'What cash earns with no risk.', T: 'In years. 0.5 is six months.', mkt: 'The price you can lock in today for later.', expo: 'The amount at risk of falling.', cv: 'What one contract is worth.', rho: '1 means they move together exactly.', sdS: 'Yearly ups and downs of your holding.', sdF: 'Yearly ups and downs of the future.' },
     easy: [['Arbitrage', 'Free money?', 'Whether the quoted price is off'], ['Contracts to sell', 'Contracts to sell', 'To cancel out the risk']],
     plain: (v, o, k) => [`A fair price for delivery later is about ${k.value}.`, `${o.cards[1].value === 'None' ? 'The quoted price matches, so there is no free profit.' : 'The quoted price is off, which would allow a riskless profit.'}`],
-    words: [['Forward', 'An agreement to buy or sell at a set price later.'], ['Hedge', 'A trade that cancels out a risk you already have.'], ['Basis', 'The gap between the future price and today\'s price.']]
+    words: [['Forward', 'An agreement to buy or sell at a set price later.'], ['Hedge', 'A trade that protects you by cancelling a risk you already have.'], ['Basis', 'The gap between the future price and today\'s price.']]
   },
   swaps: {
     ask: 'What is a fair fixed rate, and what is my swap worth now?', essential: ['par', 'term', 'notional', 'fixed'],
@@ -94,7 +94,7 @@ Object.assign(BEGINNER, {
     ask: 'How much could I lose in a bad period?', essential: ['val', 'mu', 'sd', 'days', 'conf', 'hist'],
     labels: { val: 'Money invested', mu: 'Expected yearly return', sd: 'How bumpy it is each year', days: 'How long you hold it (days)', conf: 'How sure you want to be (%)', hist: 'Past returns, if you have them (%)' },
     tips: { val: 'The total you have at risk.', mu: 'The average yearly return you expect.', sd: 'Bigger means bigger swings.', days: 'Market days, about 252 in a year.', conf: '95 means the loss should be worse only 1 time in 20.', hist: 'Optional. A list separated by commas.' },
-    easy: [['Expected shortfall', 'Average loss in the worst cases', 'Beyond the main line'], ['Historical VaR', 'Loss using your past returns', 'Based on what actually happened']],
+    easy: [['Expected shortfall', 'Average loss in the worst cases', 'Beyond the main line'], ['Historical VaR (one period of your data)', 'Loss using your past returns', 'Based on what actually happened']],
     plain: (v, o, k) => [`With ${v.conf}% confidence you should not lose more than ${k.value} over ${v.days} days.`, `The loss is worse only about ${nf(100 - v.conf, 1)}% of the time, and when it is, it averages ${o.cards[1].value}.`],
     words: [['Value at risk', 'The loss you should only exceed rarely.'], ['Confidence level', 'How sure you want the answer to be.'], ['Expected shortfall', 'The average loss when it is worse than the main line.']]
   },
@@ -104,7 +104,7 @@ Object.assign(BEGINNER, {
     tips: { model: 'Pick the closest match. Listed manufacturers use market value.', wc: 'Also called working capital.', re: 'Accumulated profits not paid out.', ebit: 'Profit before interest and tax.', eq: 'Market value for a listed company, book value otherwise.', liab: 'Total liabilities.', sales: 'Total revenue for the year.', assets: 'Total assets.' },
     easy: [['Z-score', 'Health score', 'Higher is safer']],
     plain: (v, o, k) => [`The health score is ${k.value}, which is the ${k.sub.toLowerCase()}.`, 'Below the low line means high risk of failing. Above the high line means low risk.'],
-    words: [['Z-score', 'A single number summarising financial health.'], ['Distress', 'A real risk of the company failing to pay its debts.'], ['Working capital', 'Short-term assets minus short-term debts.']]
+    words: [['Z-score', 'One number that shows how healthy a company is.'], ['Distress', 'A real risk of the company failing to pay its debts.'], ['Working capital', 'Short-term assets minus short-term debts.']]
   },
   lbo: {
     ask: 'What return can a buyer make with borrowed money?', essential: ['ebitda', 'entry', 'debtX', 'rate', 'g', 'exit', 'yrs'],

@@ -14,12 +14,12 @@ const METRICS = {
   breakeven: [['Break-even volume', 'low'], ['Margin of safety', 'high']],
   wc: [['Cash conversion cycle', 'low'], ['Cash tied up in the cycle', 'low']],
   portfolio: [['Portfolio expected return', 'high'], ['Portfolio risk', 'low'], ['Sharpe ratio', 'high']],
-  returns: [['Geometric mean', 'high'], ['Standard deviation', 'low'], ['Sharpe ratio', 'high']],
+  returns: [['Compounded average', 'high'], ['Standard deviation', 'low'], ['Sharpe ratio', 'high']],
   capm: [['Sharpe ratio', 'high'], ['Jensen', 'high']],
   merger: [['EPS accretion|EPS dilution', 'high']],
   ratios: [['Return on equity', 'high'], ['Current ratio', 'high']]
 };
-const PLAIN = { loan: 'Compare two loans', tvm: 'Compare two savings plans', capbud: 'Compare two projects', wacc: 'Compare two funding mixes', breakeven: 'Compare two businesses', wc: 'Compare two cash cycles', portfolio: 'Compare two portfolios', returns: 'Compare two return histories', capm: 'Compare two stocks', merger: 'Compare two deal terms', ratios: 'Compare two companies' };
+const PLAIN = { loan: 'Compare two loans', tvm: 'Compare two savings plans', capbud: 'Compare two projects', wacc: 'Compare two ways to fund a company', breakeven: 'Compare two businesses', wc: 'Compare two cash cycles', portfolio: 'Compare two portfolios', returns: 'Compare two sets of past returns', capm: 'Compare two stocks', merger: 'Compare two company buyouts', ratios: 'Compare two companies' };
 
 /** First number in a displayed value, as a plain number (handles $, commas, %, units and the true minus sign). */
 export function parseValue(s) {
@@ -106,8 +106,8 @@ export function renderCompare(main) {
     legA.textContent = cur.names[0]; legB.textContent = cur.names[1];
     const total = rowEls.length;
     banner.className = 'cmp-banner' + (score.a === score.b ? '' : ' has');
-    banner.textContent = score.a === score.b ? (score.a === 0 ? 'No difference yet. Change a number to see which is better.' : 'A tie: each is better on the same number of measures.') :
-      `${cur.names[score.a > score.b ? 0 : 1]} wins on ${Math.max(score.a, score.b)} of ${total} measure${total > 1 ? 's' : ''}.`;
+    banner.textContent = score.a === score.b ? (score.a === 0 ? 'No difference yet. Change a number to see which is better.' : 'A tie: each one wins the same number of rows.') :
+      `${cur.names[score.a > score.b ? 0 : 1]} wins ${Math.max(score.a, score.b)} of ${total} row${total > 1 ? 's' : ''}.`;
   }
 
   function nameInput(i) {
@@ -130,7 +130,7 @@ export function renderCompare(main) {
     const copy = h('button', { class: 'btn small', type: 'button', onclick: () => { cur.b = { ...cur.a }; save(); drawBody(); } }, 'Copy A into B');
     const reset = h('button', { class: 'btn small', type: 'button', onclick: () => { store.del('fl:cmp:' + cur.m.id); drawBody(); } }, 'Reset');
     const cols = h('div', { class: 'cmp-cols' }, h('section', { class: 'card cmp-side a' }, nameInput(0), boxes[0]), h('section', { class: 'card cmp-side b' }, nameInput(1), boxes[1]));
-    body.append(h('div', { class: 'cmp-tools' }, copy, reset), cols, h('section', { class: 'card cmp-result' }, banner, h('div', { class: 'cmp-legend' }, h('span', {}, 'Measure'), legA, legB, h('span', {})), resultBox));
+    body.append(h('div', { class: 'cmp-tools' }, copy, reset), cols, h('section', { class: 'card cmp-result' }, banner, h('div', { class: 'cmp-legend' }, h('span', {}, 'What we compare'), legA, legB, h('span', {})), resultBox));
     buildResults(); applyShow(); update();
   }
 

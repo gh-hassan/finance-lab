@@ -109,7 +109,7 @@ export function mountModule(m, main, onMode) {
     getInputs: () => fieldList.map(f => [fieldLabel(f), (f.pre || '') + state[f.id] + (f.unit ? ' ' + f.unit : '')])
   });
   const assume = ASSUMPTIONS[m.id];
-  const assumeEl = assume ? h('details', { class: 'assume card' }, h('summary', {}, h('h3', {}, 'Assumptions and method')), h('ul', {}, assume.map(x => h('li', {}, x))), h('p', { class: 'src' }, 'Standard textbook formulation (for example Brealey, Myers and Allen; Berk and DeMarzo; Bodie, Kane and Marcus). For study and practice.')) : null;
+  const assumeEl = assume ? h('details', { class: 'assume card' }, h('summary', {}, h('h3', {}, 'What we assume')), h('ul', {}, assume.map(x => h('li', {}, x))), h('p', { class: 'src' }, 'Based on standard textbooks (for example Brealey, Myers and Allen; Berk and DeMarzo; Bodie, Kane and Marcus). For study and practice.')) : null;
   const outEl = h('div', { class: 'out' + (beginner ? ' beg' : '') }, toolsEl, noteEl, infoEl, heroEl, cardsEl, sceneCard, chartsEl, stepsEl, tablesEl, assumeEl, wordsEl);
 
   function update(fresh) {
@@ -195,7 +195,7 @@ export function mountModule(m, main, onMode) {
       h('a', { class: `chip tint-${topic.tint}`, href: '/', 'data-link': true }, '← ' + topic.label),
       h('h1', { html: esc(beginner && B.ask ? B.ask : m.title).replace(/(\S+\??)$/, '<em>$1</em>') }),
       beginner ? null : h('p', { class: 'blurb' }, m.blurb)),
-    h('div', { class: 'vctl' }, hasUnits ? unitSeg() : null, h('div', { class: 'seg', title: 'Beginner shows the simple version. Pro shows everything.' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner))));
+    h('div', { class: 'vctl' }, hasUnits ? unitSeg() : null, h('div', { class: 'seg', title: 'Beginner shows less. Pro shows everything.' }, modeBtn('Beginner', beginner), modeBtn('Pro', !beginner))));
   const lab = h('div', { class: 'lab' }, inputsEl, outEl);
   const concept = h('div', { class: 'concept card', html: m.concept, hidden: true });
   main.innerHTML = '';

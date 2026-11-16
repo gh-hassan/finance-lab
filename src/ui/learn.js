@@ -8,12 +8,12 @@ import '../styles/learnfold.css';
 
 /* Ordered from the simplest ideas to the hardest. */
 const CHAPTERS = [
-  ['Money and time', 'Why a dollar today beats a dollar tomorrow', 'coral'],
-  ['Borrowing and lending', 'What happens when money changes hands', 'sky'],
-  ['Chance and numbers', 'The ideas behind risk and return', 'pink'],
-  ['Owning things', 'Shares, and what borrowing does to results', 'mint'],
-  ['Risk', 'Why returns jump around and how to calm them', 'lav'],
-  ['Making decisions', 'How to tell if something is worth doing', 'sun']
+  ['Money and time', 'Why money today is worth more than money later', 'coral'],
+  ['Borrowing and lending', 'What happens when you borrow or lend money', 'sky'],
+  ['Chance and numbers', 'The ideas behind risk and reward', 'pink'],
+  ['Owning things', 'Shares, and what borrowing does to your results', 'mint'],
+  ['Risk', 'Why returns jump up and down, and how to calm them', 'lav'],
+  ['Making decisions', 'How to decide if something is worth doing', 'sun']
 ];
 
 export function renderLearn(main) {
@@ -22,7 +22,7 @@ export function renderLearn(main) {
   const hero = h('header', { class: 'learn-hero reveal' },
     h('p', { class: 'eyebrow' }, 'SmartWealth lessons'),
     h('h1', { html: 'Money, explained <em>in motion</em>' }),
-    h('p', { class: 'lead' }, 'Short pictures of the basic ideas, in plain words. Pick any one and watch it play.'), facultyNote());
+    h('p', { class: 'lead' }, 'Short pictures of the basic ideas, in plain words. Pick one and watch it play.'), facultyNote());
   const toc = h('nav', { class: 'toc reveal', 'aria-label': 'Chapters' }, h('p', { class: 'eyebrow' }, 'Chapters'), CHAPTERS.map(([c, , tint]) => h('a', { class: `tint-${tint}`, href: '#' + slug(c) }, h('i', { class: 'dot' }), c)));
   const folds = [];
   const body = h('div', { class: 'chapters' }, CHAPTERS.map(([c, sub, tint], ci) => {
@@ -36,7 +36,7 @@ export function renderLearn(main) {
         const card = h('article', { class: `card lcard tint-${tint}`, id: 'idea-' + id },
           h('header', {}, h('h3', {}, s.title), h('p', { class: 'plain' }, s.plain)),
           host,
-          h('details', { class: 'more' }, h('summary', {}, 'Explain it step by step'),
+          h('details', { class: 'more' }, h('summary', {}, 'Show me step by step'),
             h('div', { class: 'lcols' },
               h('div', {}, h('h4', {}, 'How it works'), h('ol', { class: 'how' }, s.how.map(x => h('li', {}, x)))),
               h('div', {}, h('h4', {}, 'Words to know'), h('dl', { class: 'wl' }, s.words.flatMap(([t, d]) => [h('dt', {}, t), h('dd', {}, d)]))))),

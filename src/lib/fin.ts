@@ -102,7 +102,7 @@ export function plainWords(s: Statements, name: string): string[] {
     const cfo = r.cfo ? r.cfo[i] : null, cx = r.capex ? r.capex[i] : null, f = q.fcf[i];
     if (ok(cfo) && ok(cx) && f != null) out.push(`Its business brought in ${b(money(cfo))} of cash, and it spent ${b(money(cx))} on equipment and buildings. That leaves ${f >= 0 ? `${b(money(f))} of free cash flow to pay dividends, repay debt or invest` : `a shortfall of ${b(money(Math.abs(f)))}, so it needed other money to cover its spending`}.`);
     const debt = r.debt ? r.debt[i] : null, cash = r.cash ? r.cash[i] : null;
-    if (ok(debt) && ok(cash)) out.push(`It owes ${b(money(debt))} in borrowings and holds ${b(money(cash))} in cash${debt > cash ? `, so net debt is ${b(money(debt - cash))}` : ', so it has more cash than debt'}.`);
+    if (ok(debt) && ok(cash)) out.push(`It owes ${b(money(debt))} in loans and holds ${b(money(cash))} in cash${debt > cash ? `, so it owes ${b(money(debt - cash))} more than it holds (net debt)` : ', so it has more cash than debt'}.`);
     const cr = q.currentRatio[i]; if (cr != null) out.push(`Its short-term assets are ${b(cr.toFixed(2) + ' times')} its short-term bills${cr < 1 ? ', which is tight' : ''}.`);
   } else out.push('Banks, insurers and similar firms earn money by lending and investing, so margins and debt do not mean the same thing for them. We leave those out.');
   const roe = q.roe[i]; if (roe != null) out.push(`Owners earned ${b(pct(roe))} on the money they have tied up in the company (return on equity).`);

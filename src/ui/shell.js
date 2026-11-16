@@ -26,7 +26,7 @@ export function startApp(root) {
   const topics = Object.keys(TOPICS);
   const theme = () => document.documentElement.dataset.theme || 'light';
   const themeBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Toggle dark mode', html: theme() === 'dark' ? ICONS.sun : ICONS.moon, onclick: () => { const t = theme() === 'dark' ? 'light' : 'dark'; const root = document.documentElement; root.classList.add('theme-fade'); document.documentElement.dataset.theme = t; setTimeout(() => root.classList.remove('theme-fade'), 600); store.set('fl:theme', t); themeBtn.innerHTML = t === 'dark' ? ICONS.sun : ICONS.moon; } });
-  const searchBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Search calculators (press /)', 'data-open-search': true, html: ICONS.search });
+  const searchBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Search (press /)', 'data-open-search': true, html: ICONS.search });
 
   const pop = h('div', { class: 'menu mega', hidden: true });
   const pop2 = h('div', { class: 'menu more', hidden: true });
@@ -49,7 +49,7 @@ export function startApp(root) {
     pop2.hidden = true;
     const here = MODS.find(m => m.id === location.pathname.replace(/^\/+|\/+$/g, ''));
     calcGroup = here ? here.group : calcGroup || topics[0];
-    pop.innerHTML = '<a class="mpin" href="/calculator" data-link><span class="mpi">' + ICONS.calculator + '</span><span><b>Financial calculator</b><small>A BA II Plus calculator</small></span></a><div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
+    pop.innerHTML = '<a class="mpin" href="/calculator" data-link><span class="mpi">' + ICONS.calculator + '</span><span><b>Financial calculator</b><small>Works like a BA II Plus calculator</small></span></a><div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
     drawCalc();
     const inp = pop.querySelector('input');
     inp.addEventListener('input', () => drawCalc(inp.value));
@@ -64,8 +64,8 @@ export function startApp(root) {
   addEventListener('resize', closeMenu); addEventListener('orientationchange', closeMenu);
   /* two small dropdowns: Learn (lessons, glossary) and Decide (scenarios, compare) */
   const MENUS = {
-    learn: [['/roadmap', 'roadmap', 'Roadmap', 'A step-by-step path from beginner to analyst'], ['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Tutorials from our YouTube channel'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
-    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/business-value', 'd-business-value', 'Value a business', 'Work out what a business is worth and what to pay'], ['/options-payoff', 'd-options-payoff', 'Options payoff', 'See how an option makes or loses money'], 'Live data', ...DATA_PAGES.filter(p => p.id !== 'options-payoff' && p.id !== 'business-value').map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
+    learn: [['/roadmap', 'roadmap', 'Roadmap', 'A step-by-step path from beginner to analyst'], ['/learn', 'learn', 'Lessons', 'Short pictures of the big ideas'], ['/videos', 'video', 'Videos', 'Lessons on our YouTube channel'], ['/glossary', 'glossary', 'Glossary', 'Every term in plain words']],
+    decide: ['Decide', ['/scenarios', 'scenarios', 'Scenarios', 'Best case, worst case and risk'], ['/compare', 'compare', 'Compare', 'Two options side by side'], ['/business-value', 'd-business-value', 'Value a business', 'Find what a business is worth and what to pay'], ['/options-payoff', 'd-options-payoff', 'Options payoff', 'See how an option makes or loses money'], 'Live data', ...DATA_PAGES.filter(p => p.id !== 'options-payoff' && p.id !== 'business-value').map(p => ['/' + p.id, 'd-' + p.id, p.title, p.blurb])]
   };
   let openKey = '';
   const dropBtn = (key, icon, label) => {
@@ -101,7 +101,7 @@ export function startApp(root) {
   root.append(shell);
 
   /* ----- search palette ----- */
-  const input = h('input', { type: 'search', placeholder: 'What do you want to figure out?', 'aria-label': 'Search calculators', autocomplete: 'off' }), list = h('div', { class: 'plist', role: 'listbox' });
+  const input = h('input', { type: 'search', placeholder: 'What do you want to find out?', 'aria-label': 'Search calculators', autocomplete: 'off' }), list = h('div', { class: 'plist', role: 'listbox' });
   const palette = h('div', { class: 'palette', hidden: true }, h('div', { class: 'pbox' }, h('div', { class: 'pin', html: ICONS.search }, input, h('kbd', {}, 'esc')), list));
   document.body.append(palette);
   let sel = 0, shown = [], extra = [];

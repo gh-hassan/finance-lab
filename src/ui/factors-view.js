@@ -26,9 +26,9 @@ function statsRows(d, from) {
   const row = (label, title, fn) => ({ label, title, cells: FACTORS.map(f => fn(S[f.key])) });
   const t = (txt, tone) => ({ t: txt, tone: tone || '' });
   return [
-    row('Return per year', 'Compounded yearly growth rate (geometric)', s => t(pct(s.annual), neg(s.annual))),
-    row('Ups and downs (volatility)', 'How much monthly returns swing, scaled to a year', s => t(pct(s.vol))),
-    row('Return per risk', 'Average yearly return divided by volatility', s => t(num(s.perRisk, 2), neg(s.perRisk))),
+    row('Return per year', 'Average yearly growth, counting growth on top of growth', s => t(pct(s.annual), neg(s.annual))),
+    row('Ups and downs (volatility)', 'How much monthly returns jump up and down, shown per year', s => t(pct(s.vol))),
+    row('Return per risk', 'Average yearly return divided by how much it jumps up and down', s => t(num(s.perRisk, 2), neg(s.perRisk))),
     row('Worst calendar year', 'Full calendar years only', s => t(s.worst ? `${pct(s.worst.ret, 0)} (${s.worst.year})` : '—')),
     row('Months that were positive', '', s => t(pct(s.up, 0))),
     row('Biggest fall from a high', 'Largest drop from an earlier peak', s => t(s.fall ? pct(s.fall.depth, 0) : '—')),
@@ -40,7 +40,7 @@ function words(d, from) {
   const ranked = FACTORS.map(f => ({ f, a: factorStats(d.months.slice(from), d.factors[f.key].slice(from)).annual })).filter(x => x.a != null).sort((a, b) => b.a - a.a);
   if (ranked.length < 2) return '';
   const best = ranked[0], worst = ranked[ranked.length - 1];
-  return `In this period <b>${best.f.name.split(' (')[0]}</b> grew fastest at <b>${pct(best.a)}</b> a year, and <b>${worst.f.name.split(' (')[0]}</b> grew slowest at <b>${pct(worst.a)}</b> a year. A factor can lose money for a decade or more, which is why the table below also shows the worst years and the longest slumps.`;
+  return `In this period <b>${best.f.name.split(' (')[0]}</b> grew fastest at <b>${pct(best.a)}</b> a year, and <b>${worst.f.name.split(' (')[0]}</b> grew slowest at <b>${pct(worst.a)}</b> a year. A factor can lose money for ten years or more. So the table below also shows the worst years and the longest slumps.`;
 }
 
 function decadeCard(d) {
@@ -49,7 +49,7 @@ function decadeCard(d) {
   if (!labels.length) return null;
   const partial = new Set(per.flatMap(p => p.filter(x => x.n < 10).map(x => x.label)));
   const rows = FACTORS.map((f, i) => ({ label: f.short, title: f.name, cells: labels.map(l => { const x = per[i].find(y => y.label === l); return x ? { t: pct(x.avg), tone: neg(x.avg) } : '—'; }) }));
-  return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Decade by decade'), h('p', { class: 'd-sub' }, 'Average calendar-year return in each decade. Notice how a factor that shines in one decade can struggle in the next.'),
+  return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Decade by decade'), h('p', { class: 'd-sub' }, 'Average return per calendar year in each decade. A factor that does well in one decade can do badly in the next.'),
     dataTable({ head: ['', ...labels.map(l => l + (partial.has(l) ? '*' : ''))], rows, label: 'Average yearly return by decade' }),
     partial.size ? h('p', { class: 'd-cap' }, '* Fewer than ten full calendar years of data in this decade.') : null);
 }
@@ -58,7 +58,7 @@ function yearsCard(d) {
   const recent = recentYears(d.months, d.factors, 10);
   if (!recent.length) return null;
   const rows = recent.map(r => ({ label: String(r.year), cells: [...FACTORS.map(f => { const v = r.rets[f.key]; return { t: pct(v), tone: neg(v) }; }), r.best ? info(r.best).short : '—'] }));
-  return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Which factors worked each year?'), h('p', { class: 'd-sub' }, 'The last ten full calendar years. The last column names the best performer. There is rarely a clear winner two years in a row.'),
+  return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Which factors worked each year?'), h('p', { class: 'd-sub' }, 'The last ten full calendar years. The last column names the best performer. The same winner rarely comes first two years in a row.'),
     dataTable({ head: ['Year', ...FACTORS.map(f => f.short), 'Best'], rows, label: 'Factor returns by calendar year' }));
 }
 
@@ -83,7 +83,7 @@ export function buildView(d, init, save, scope) {
     summary.innerHTML = words(d, from);
     statsHost.replaceChildren(h('p', { class: 'd-sub' }, `Based on ${num(ms.length)} months, ${monthLabel(ms[0])} to ${monthLabel(last)}.`), dataTable({ head: ['', ...FACTORS.map(f => f.short)], rows: statsRows(d, from), label: 'Factor statistics for the chosen period' }));
     const c = capmInputs(d.factors.MKT.slice(from), d.factors.RF.slice(from));
-    calcHost.replaceChildren(...(c ? [h('p', { class: 'd-plain plain', html: `Over this period the stock market returned about <b>${num(c.rm, 1)}%</b> a year and Treasury bills about <b>${num(c.rf, 1)}%</b>. The CAPM calculator turns those into the return you should demand from a stock with a given beta.` }), h('a', { class: 'd-btn main', href: sharePath('capm', { rm: c.rm, rf: c.rf }), 'data-link': true }, 'Open the CAPM calculator →')] : []));
+    calcHost.replaceChildren(...(c ? [h('p', { class: 'd-plain plain', html: `Over this period the stock market returned about <b>${num(c.rm, 1)}%</b> a year and Treasury bills (short US government loans) about <b>${num(c.rf, 1)}%</b>. The CAPM calculator turns those into the return you should expect from a stock. It uses the stock's beta (how much it moves with the market).` }), h('a', { class: 'd-btn main', href: sharePath('capm', { rm: c.rm, rf: c.rf }), 'data-link': true }, 'Open the CAPM calculator →')] : []));
     save({ range, keys });
   }
   const csv = () => saveCsv('factor-returns-monthly.csv', [['Monthly returns in percent. Source: Kenneth R. French Data Library'], ['Month', 'Market minus risk-free', 'Size (SMB)', 'Value (HML)', 'Profitability (RMW)', 'Investment (CMA)', 'Momentum', 'Risk-free rate'], ...d.months.map((m, i) => [m, ...['MKT', 'SMB', 'HML', 'RMW', 'CMA', 'MOM', 'RF'].map(k => d.factors[k][i])])]);
@@ -97,7 +97,7 @@ export function buildView(d, init, save, scope) {
     decadeCard(d), yearsCard(d),
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Take it to a calculator'), calcHost),
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Before you rely on this'), h('ul', { class: 'plain d-cap', style: 'margin:0;padding-left:20px;display:grid;gap:6px' },
-      h('li', {}, 'Factors are long-short portfolios on paper: buy one group of stocks and short another. You cannot buy "the value factor" directly, and real funds pay trading costs these numbers ignore.'),
+      h('li', {}, 'Factors are made on paper: you buy one group of stocks and bet against another group (short selling). You cannot buy "the value factor" directly. Real funds pay trading costs that these numbers ignore.'),
       h('li', {}, 'Past performance does not predict the future. Several factors have had long stretches of losses, and some of the patterns may fade once many investors chase them.'),
       h('li', {}, 'Market here is the stock market\'s return above the Treasury bill rate. The line starts at $1 on the first day of the period you pick.'))));
   drawChips(); refresh();

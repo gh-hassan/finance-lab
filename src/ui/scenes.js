@@ -33,213 +33,213 @@ const legend = (items, x, y, maxW = 1e9) => { let g = '', cx = x, cy = y; items.
 
 export const SCENES = {
   rent: {
-    chapter: 'Money and time', title: 'Interest is rent for money', plain: 'When you borrow money, you pay a little extra for using it. That extra is called interest.',
-    how: ['Sam has money and lends it to Alex.', 'Alex uses it for a year.', 'Alex pays back what he borrowed plus a fee. The fee is the interest.'],
-    words: [['Interest', 'The fee for borrowing money.'], ['Interest rate', 'The fee as a percent of the loan, per year.'], ['Principal', 'The money you borrowed.']],
+    chapter: 'Money and time', title: 'Interest is rent for money', plain: 'When you borrow money, you pay a little extra. That extra is called interest.',
+    how: ['Sam has money and lends it to Alex.', 'Alex uses it for a year.', 'Alex pays back the loan plus a fee. The fee is the interest.'],
+    words: [['Interest', 'The fee for borrowing money.'], ['Interest rate', 'The fee as a percent of the loan, each year.'], ['Principal', 'The money you borrowed.']],
     params: [{ id: 'amount', label: 'Amount lent', min: 100, max: 5000, step: 100, v: 1000, fmt: M }, { id: 'rate', label: 'Interest rate per year', min: 1, max: 20, step: 1, v: 8, fmt: x => x + '%' }], link: '/rates',
     doodle: true, draw: MONEY_AND_TIME.rent
   },
   growth: {
-    chapter: 'Money and time', title: 'Money grows while it waits', plain: 'Money in the bank earns interest. Money in a jar does not. Over time the difference gets big.',
-    how: ['You start with some money and add a little each year.', 'The jar keeps it safe, but it never grows.', 'The bank pays interest, so the green part on top gets taller every year.'],
-    words: [['Savings', 'Money you set aside.'], ['Return', 'The extra money your money earns.'], ['Time', 'The most powerful ingredient. Start early.']],
+    chapter: 'Money and time', title: 'Money grows while it waits', plain: 'Money in the bank earns interest. Money in a jar does not. Over time the gap gets big.',
+    how: ['You start with some money and add a little each year.', 'The jar keeps it safe, but it never grows.', 'The bank pays interest, so the green part gets taller every year.'],
+    words: [['Savings', 'Money you set aside.'], ['Return', 'The extra money your money earns.'], ['Time', 'The more time, the more growth. Start early.']],
     params: [{ id: 'start', label: 'Start with', min: 0, max: 10000, step: 500, v: 1000, fmt: M }, { id: 'add', label: 'Add each year', min: 0, max: 5000, step: 100, v: 600, fmt: M }, { id: 'rate', label: 'Bank pays per year', min: 1, max: 12, step: 0.5, v: 6, fmt: x => x + '%' }, { id: 'years', label: 'For how many years', min: 5, max: 40, step: 1, v: 25, fmt: x => x + ' yrs' }], link: '/tvm',
     doodle: true, draw: MONEY_AND_TIME.growth
   },
   snowball: {
-    chapter: 'Money and time', title: 'The money snowball (compounding)', plain: 'Interest earns interest. Each year the pile grows by more than the year before.',
-    how: ['Year 1: interest is paid on your starting money (green).', 'Year 2: interest is paid on your money and on last year\'s interest (coral).', 'Each year the coral slice gets bigger, so the bars climb faster and faster.'],
-    words: [['Compounding', 'Earning interest on your interest.'], ['Simple interest', 'Interest on the starting money only.'], ['Rule of 72', '72 ÷ rate = years to double your money.']],
+    chapter: 'Money and time', title: 'The money snowball (compounding)', plain: 'Compounding means interest earns more interest. Each year the pile grows by more than the year before.',
+    how: ['Year 1: interest is paid on your starting money (green).', 'Year 2: interest is paid on your money and on last year\'s interest (coral).', 'Each year the coral slice gets bigger, so the bars climb faster.'],
+    words: [['Compounding', 'Earning interest on your interest.'], ['Simple interest', 'Interest on the starting money only.'], ['Rule of 72', 'Divide 72 by the rate. You get the years to double your money.']],
     params: [{ id: 'start', label: 'Start with', min: 500, max: 20000, step: 500, v: 5000, fmt: M }, { id: 'rate', label: 'Interest per year', min: 1, max: 15, step: 0.5, v: 8, fmt: x => x + '%' }, { id: 'years', label: 'Years', min: 5, max: 40, step: 1, v: 30, fmt: x => x + ' yrs' }], link: '/rates',
     doodle: true, draw: MONEY_AND_TIME.snowball
   },
   inflation: {
     chapter: 'Money and time', title: 'Prices go up, so money shrinks', plain: 'Inflation means things cost more each year. The same money buys less and less.',
-    how: ['Today a basket of groceries costs $100.', 'Each year the price creeps up by the inflation rate.', 'Your $100 now buys only a part of that basket. Your money lost buying power.'],
-    words: [['Inflation', 'Prices rising over time.'], ['Buying power', 'How much your money can actually buy.'], ['Real return', 'Your return after inflation is taken out.']],
+    how: ['Today a basket of groceries costs $100.', 'Each year the price creeps up by the inflation rate.', 'Your $100 now buys only part of that basket. Your money lost buying power.'],
+    words: [['Inflation', 'Prices rising over time.'], ['Buying power', 'How much your money can actually buy.'], ['Real return', 'What you earned after prices went up.']],
     params: [{ id: 'infl', label: 'Inflation per year', min: 1, max: 12, step: 0.5, v: 4, fmt: x => x + '%' }, { id: 'years', label: 'Years', min: 5, max: 40, step: 1, v: 20, fmt: x => x + ' yrs' }], link: '/rates',
     doodle: true, draw: MONEY_AND_TIME.inflation
   },
   present: {
-    chapter: 'Money and time', title: 'Money later is worth less today', plain: 'A promise of $1,000 in ten years is worth less than $1,000 in your hand now, because money in hand can earn interest.',
-    how: ['The dashed bar is the amount you are promised later.', 'The solid bar is what that promise is worth today.', 'The longer you wait, the more it shrinks. The coral bar at the left adds up everything it is worth today.'],
-    words: [['Present value', 'What future money is worth today.'], ['Discount rate', 'How fast future money shrinks when brought back to today.'], ['Future value', 'What money today will be worth later.']],
+    chapter: 'Money and time', title: 'Money later is worth less today', plain: '$1,000 promised in ten years is worth less than $1,000 today. Money you hold now can earn interest.',
+    how: ['The dashed bar is the amount you are promised later.', 'The solid bar is what that promise is worth today.', 'The longer you wait, the more it shrinks. The coral bar at the left adds up what it is all worth today.'],
+    words: [['Present value', 'What future money is worth today.'], ['Discount rate', 'How fast future money shrinks when you bring it back to today.'], ['Future value', 'What today\'s money will be worth later.']],
     params: [{ id: 'amount', label: 'Money you will get', min: 100, max: 5000, step: 100, v: 1000, fmt: M }, { id: 'years', label: 'In how many years', min: 1, max: 30, step: 1, v: 10, fmt: x => x + ' yrs' }, { id: 'rate', label: 'Discount rate', min: 1, max: 20, step: 0.5, v: 6, fmt: x => x + '%' }], link: '/annuity',
     doodle: true, draw: MONEY_AND_TIME.present
   },
   exchange: {
-    chapter: 'Money and time', title: 'Swapping money between countries', plain: 'To use another country\'s money you swap yours at an exchange rate. A fair rate for later is set by the gap in interest rates, so nobody gets free money.',
-    how: ['You swap your money for foreign money at today\'s rate.', 'Each pile grows at its own country\'s interest rate.', 'Swapping back at the fair future rate gives the same result as staying home. No free lunch.'],
-    words: [['Exchange rate', 'The price of one currency in another.'], ['Forward rate', 'A rate agreed today for swapping later.'], ['Parity', 'The fair price that leaves no free money.']],
+    chapter: 'Money and time', title: 'Swapping money between countries', plain: 'To use another country\'s money, you swap yours at an exchange rate. The fair rate for later depends on the gap in interest rates, so nobody gets free money.',
+    how: ['You swap your money for foreign money at today\'s rate.', 'Each pile grows at its own country\'s interest rate.', 'Swapping back at the fair future rate gives the same result as staying home. No free money.'],
+    words: [['Exchange rate', 'The price of one currency in another.'], ['Forward rate', 'A rate you agree today for swapping later.'], ['Parity', 'The fair price that leaves no free money.']],
     params: [{ id: 'S', label: 'Rate today (home per 1 foreign)', min: 0.5, max: 2, step: 0.01, v: 1.08, fmt: x => nf(x, 2) }, { id: 'id', label: 'Home interest rate', min: 0, max: 10, step: 0.5, v: 5, fmt: x => x + '%' }, { id: 'if', label: 'Foreign interest rate', min: 0, max: 10, step: 0.5, v: 3, fmt: x => x + '%' }, { id: 'T', label: 'Years ahead', min: 1, max: 5, step: 1, v: 1, fmt: x => x + ' yr' }], link: '/fx',
     doodle: true, draw: MONEY_AND_TIME.exchange
   },
   loan: {
-    chapter: 'Borrowing and lending', title: 'How a loan gets paid off', plain: 'Each payment has two parts: interest to the bank and a real payment on what you owe. At first, most is interest.',
+    chapter: 'Borrowing and lending', title: 'How a loan gets paid off', plain: 'Each payment has two parts: interest for the bank, and money that reduces what you owe. At first, most is interest.',
     how: ['The tank on the left is what you still owe.', 'Each month you pay. The bank takes its interest first (rose).', 'The rest (green) empties the tank. As the tank drops, the interest shrinks.'],
-    words: [['Loan balance', 'What you still owe.'], ['Principal', 'The part of a payment that reduces what you owe.'], ['Mortgage', 'A loan to buy a home.']],
+    words: [['Loan balance', 'What you still owe.'], ['Principal', 'The part of a payment that cuts what you owe.'], ['Mortgage', 'A loan to buy a home.']],
     params: [{ id: 'amt', label: 'Loan amount', min: 5000, max: 500000, step: 5000, v: 200000, fmt: M }, { id: 'apr', label: 'Interest rate', min: 1, max: 15, step: 0.25, v: 6.5, fmt: x => x + '%' }, { id: 'years', label: 'Years to repay', min: 1, max: 40, step: 1, v: 30, fmt: x => x + ' yrs' }], link: '/loan',
     doodle: true, draw: BORROWING_AND_LENDING.loan
   },
   bond: {
-    chapter: 'Borrowing and lending', title: 'A bond is an IOU that pays you', plain: 'When you buy a bond, you lend money to a company or government. They pay you a small amount every year and give your money back at the end.',
-    how: ['You lend $1,000 by buying the bond.', 'Every year you get a small payment, called a coupon.', 'At the end you get your $1,000 back. Your pocket ends up with more than you lent.'],
-    words: [['Bond', 'A loan you make to a company or government.'], ['Coupon', 'The yearly payment the bond pays you.'], ['Maturity', 'The day you get your money back.']],
+    chapter: 'Borrowing and lending', title: 'A bond is an IOU that pays you', plain: 'A bond is a loan you give to a company or government. They pay you a little every year and return your money at the end.',
+    how: ['You lend $1,000 by buying the bond.', 'Every year you get a small payment, called a coupon.', 'At the end you get your $1,000 back. You end up with more than you lent.'],
+    words: [['Bond', 'A loan you make to a company or government.'], ['Coupon', 'The yearly payment the bond pays you.'], ['Maturity', 'The day you get your loan back.']],
     params: [{ id: 'face', label: 'You lend', min: 500, max: 5000, step: 500, v: 1000, fmt: M }, { id: 'cr', label: 'Yearly payment rate', min: 1, max: 12, step: 0.5, v: 5, fmt: x => x + '%' }, { id: 'years', label: 'Years', min: 2, max: 10, step: 1, v: 5, fmt: x => x + ' yrs' }], link: '/bond',
     doodle: true, draw: BORROWING_AND_LENDING.bond
   },
   stock: {
-    chapter: 'Owning things', title: 'A stock is a slice of a company', plain: 'Buying a stock means you own a small slice of a real business. When the business earns money, your slice earns too.',
-    how: ['The pie is the whole company, cut into 10 equal slices.', 'You own some slices (shown in green).', 'When the company shares its profit, each slice gets the same. That payout is a dividend.'],
-    words: [['Stock (share)', 'One slice of ownership in a company.'], ['Dividend', 'Profit the company pays out to its owners.'], ['Shareholder', 'A person who owns shares.']],
+    chapter: 'Owning things', title: 'A stock is a slice of a company', plain: 'A stock means you own a small slice of a real business. When the business earns money, your slice earns too.',
+    how: ['The pie is the whole company, cut into 10 equal slices.', 'You own some slices (green).', 'When the company shares its profit, each slice gets the same. That payout is a dividend.'],
+    words: [['Stock (share)', 'One slice of a company that you own.'], ['Dividend', 'Profit a company pays to its owners.'], ['Shareholder', 'A person who owns shares.']],
     params: [{ id: 'own', label: 'Slices you own (of 10)', min: 1, max: 5, step: 1, v: 2, fmt: x => x }, { id: 'profit', label: 'Company profit', min: 10000, max: 1000000, step: 10000, v: 200000, fmt: M }], link: '/ddm',
     doodle: true, draw: OWNING_AND_RISK.stock
   },
   leverage: {
-    chapter: 'Owning things', title: 'Borrowing magnifies wins and losses', plain: 'Using borrowed money makes your gains bigger when things go well, and your losses bigger when they do not.',
-    how: ['Two people buy the same $100 house. One pays cash (blue). One borrows part of it (rose).', 'The house price changes. A gain shows in green, a loss as a dashed red gap.', 'Compare each person\'s gain or loss with the money they actually put in. The borrower swings more.'],
+    chapter: 'Owning things', title: 'Borrowing makes wins and losses bigger', plain: 'Using borrowed money (leverage) makes your gains bigger when things go well. It makes your losses bigger when they do not.',
+    how: ['Two people buy the same $100 house. One pays cash (blue). One borrows part of it (rose).', 'The house price changes. A gain shows in green, a loss as a dashed red gap.', 'Compare each gain or loss with the money each person put in. The borrower swings more.'],
     words: [['Leverage', 'Using borrowed money to invest.'], ['Equity', 'The part you own with your own money.'], ['Debt', 'Money you owe.']],
     params: [{ id: 'debt', label: 'Share borrowed', min: 10, max: 90, step: 10, v: 60, fmt: x => x + '%' }, { id: 'change', label: 'House price change', min: -30, max: 30, step: 5, v: 20, fmt: x => (x > 0 ? '+' : '') + x + '%' }, { id: 'rate', label: 'Loan interest', min: 0, max: 10, step: 1, v: 5, fmt: x => x + '%' }], link: '/capstruct',
     doodle: true, draw: OWNING_AND_RISK.leverage
   },
   risk: {
-    chapter: 'Risk', title: 'More risk, bumpier ride', plain: 'Investments that can earn more also jump around more. Safe ones are steady but grow slowly.',
-    how: ['Three roads, each starting with $100.', 'Savings are smooth and slow. Stocks swing a lot but usually climb higher over 20 years.', 'Every time you play it you get a different future. The bumps change, the pattern stays.'],
-    words: [['Risk', 'How much the value can jump around.'], ['Return', 'How much it grows on average.'], ['Volatility', 'A fancy word for how bumpy the ride is.']],
+    chapter: 'Risk', title: 'More risk, bumpier ride', plain: 'Investments that can earn more also jump up and down more. Safe ones are steady but grow slowly.',
+    how: ['Three roads, each starting with $100.', 'Savings are smooth and slow. Stocks swing a lot but often climb higher over 20 years.', 'Each time you play it, you get a different future. The bumps change, the pattern stays.'],
+    words: [['Risk', 'How much the value can jump up and down.'], ['Return', 'How much it grows on average.'], ['Volatility', 'How much a price jumps up and down.']],
     params: [], seeded: true, link: '/returns',
     doodle: true, draw: OWNING_AND_RISK.risk
   },
   diversify: {
-    chapter: 'Risk', title: 'Do not put all your eggs in one basket', plain: 'If you spread your money across many things, one bad thing cannot ruin you.',
+    chapter: 'Risk', title: 'Do not put all your eggs in one basket', plain: 'Spread your money across many things. Then one bad thing cannot ruin you.',
     how: ['Both rows start with the same $1,000, split equally into blocks.', 'The top row puts everything in one company. The bottom row spreads it over six.', 'Then one company goes bust. The top row loses everything. The bottom row loses one small block.'],
-    words: [['Diversification', 'Spreading money across many investments.'], ['Portfolio', 'All your investments together.'], ['Bankruptcy', 'When a company fails and its stock becomes worthless.']],
+    words: [['Diversification', 'Spreading your money across many investments.'], ['Portfolio', 'All your investments together.'], ['Bankruptcy', 'When a company fails and its stock is worth nothing.']],
     params: [{ id: 'n', label: 'Companies in the bottom row', min: 1, max: 5, step: 1, v: 4, fmt: x => [1, 2, 3, 4, 6, 12][x] }], link: '/portfolio',
     doodle: true, draw: OWNING_AND_RISK.diversify
   },
   beta: {
-    chapter: 'Risk', title: 'Beta: how jumpy is a stock?', plain: 'Beta tells you how much a stock moves when the whole market moves. Beta 2 means it jumps twice as much.',
-    how: ['The grey line is the whole stock market.', 'The coloured line is one stock with a beta of 1.5, so it moves 1.5 times as much.', 'Beta 1 copies the market. Above 1 exaggerates it. Below 1 calms it.'],
-    words: [['Beta', 'How much a stock moves compared with the market.'], ['Market', 'All stocks together.'], ['Defensive stock', 'A stock with beta below 1.']],
+    chapter: 'Risk', title: 'Beta: how jumpy is a stock?', plain: 'Beta shows how much a stock moves when the whole market moves. Beta 2 means it moves twice as much.',
+    how: ['The grey line is the whole stock market.', 'The coloured line is one stock with a beta of 1.5, so it moves 1.5 times as much.', 'Beta 1 copies the market. Above 1 moves more. Below 1 moves less.'],
+    words: [['Beta', 'How much a stock moves compared with the market.'], ['Market', 'All stocks together.'], ['Defensive stock', 'A stock that moves less than the market (beta below 1).']],
     params: [{ id: 'beta', label: 'Beta of the stock', min: 0, max: 2.5, step: 0.1, v: 1.5, fmt: x => nf(x, 1) }], seeded: true, link: '/capm',
     doodle: true, draw: OWNING_AND_RISK.beta
   },
   mix2: {
-    chapter: 'Risk', title: 'Mixing investments calms the ride', plain: 'When one investment drops while the other rises, blending them smooths the bumps. That is why mixing works.',
-    how: ['Two investments, A (jumpy) and B (calmer).', 'Here they are unrelated (0): sometimes one rises while the other falls.', 'The dark line is your mix. The less they move together, the calmer it gets.'],
-    words: [['Correlation', 'Do two things move together? +1 yes, −1 opposite.'], ['Blend', 'Putting money in both.'], ['Standard deviation', 'A number for how bumpy something is.']],
+    chapter: 'Risk', title: 'Mixing investments calms the ride', plain: 'When one investment falls while the other rises, mixing them smooths the bumps.',
+    how: ['Two investments, A (jumpy) and B (calmer).', 'Here they are unrelated (0): sometimes one rises while the other falls.', 'The dark line is your mix. The less they move together, the calmer it is.'],
+    words: [['Correlation', 'Do two things move together? +1 yes, −1 opposite.'], ['Blend', 'Putting money in both.'], ['Standard deviation', 'A number for how bumpy something is (how far results land from the average).']],
     params: [{ id: 'rho', label: 'How much A and B move together', min: -1, max: 1, step: 0.1, v: 0, fmt: x => nf(x, 1) }, { id: 'wA', label: 'Share in A', min: 0, max: 100, step: 10, v: 50, fmt: x => x + '%' }], seeded: true, link: '/portfolio',
     doodle: true, draw: OWNING_AND_RISK.mix2
   },
   journey: {
-    chapter: 'Risk', title: 'Ups and downs cost more than they give', plain: 'If you gain 50% and then lose 50%, you do not break even. Losses hit a bigger base, so they hurt more.',
+    chapter: 'Risk', title: 'Ups and downs cost more than they give', plain: 'Gain 50%, then lose 50%, and you are not back to even. The loss is taken from a bigger amount, so it hurts more.',
     how: ['Start with $100.', 'Gain 50%: you have $150.', 'Lose 50%: you have $75. The average is 0%, but you are down 25%.'],
-    words: [['Average return', 'The simple average of yearly returns.'], ['Compound return', 'What you really earned after compounding.'], ['Drawdown', 'A fall from a high point.']],
+    words: [['Average return', 'The simple average of yearly returns.'], ['Compound return', 'What you really earned, with each year building on the last.'], ['Drawdown', 'A fall from the highest point.']],
     params: [{ id: 'swing', label: 'Size of the gain and loss', min: 10, max: 90, step: 10, v: 50, fmt: x => x + '%' }], link: '/returns',
     doodle: true, draw: OWNING_AND_RISK.journey
   },
   npv: {
-    chapter: 'Making decisions', title: 'Is this project worth doing?', plain: 'Add up what you will get in the future (shrunk to today\'s value) and compare it with what you pay now. If you get more, do it.',
-    how: ['The rose bar is what you pay today.', 'Each future payment is shrunk to today\'s value and stacked in the green bar.', 'If the green bar ends above the dashed line, the project is worth it. The gap is called NPV.'],
-    words: [['NPV', 'Net present value: what you gain, in today\'s money.'], ['Hurdle rate', 'The return you need to make the project worth it.'], ['Investment', 'Money spent now to earn more later.']],
+    chapter: 'Making decisions', title: 'Is this project worth doing?', plain: 'Add up what you will get later, shrunk to today\'s value. Compare it with what you pay now. If you get more, do it.',
+    how: ['The rose bar is what you pay today.', 'Each future payment is shrunk to today\'s value and stacked in the green bar.', 'If the green bar goes above the dashed line, the project is worth it. The gap is called NPV.'],
+    words: [['NPV', 'Net present value: what you gain, in today\'s money.'], ['Hurdle rate', 'The least return that makes the project worth it.'], ['Investment', 'Money spent now to earn more later.']],
     params: [{ id: 'cost', label: 'Cost today', min: 50, max: 500, step: 10, v: 100, fmt: M }, { id: 'pay', label: 'You get each year', min: 10, max: 200, step: 5, v: 40, fmt: M }, { id: 'rate', label: 'Return you need', min: 1, max: 25, step: 1, v: 10, fmt: x => x + '%' }], link: '/capbud',
     doodle: true, draw: MAKING_DECISIONS.npv
   },
   blend: {
-    chapter: 'Making decisions', title: 'What return does a company need?', plain: 'A company is funded by owners and lenders. Each wants a return. The company must earn the average of both, weighted by how much each put in.',
-    how: ['The bar widths show who funds the company: owners (blue) and lenders (yellow).', 'Owners want a higher return because they take more risk.', 'The dashed line shows the blended average. Any new project must beat it.'],
-    words: [['Cost of capital', 'The return a company must earn to keep funders happy.'], ['Equity', 'Money put in by owners.'], ['Debt', 'Money borrowed from lenders.']],
+    chapter: 'Making decisions', title: 'What return does a company need?', plain: 'Owners and lenders fund a company. Each wants a return. The company must earn the average of both, based on how much each put in.',
+    how: ['The bar widths show who funds the company: owners (blue) and lenders (yellow).', 'Owners want a higher return because they take more risk.', 'The dashed line is the blended average. A new project must beat it.'],
+    words: [['Cost of capital', 'The return a company must earn to keep its funders happy.'], ['Equity', 'Money put in by owners.'], ['Debt', 'Money borrowed from lenders.']],
     params: [{ id: 'wE', label: 'Share funded by owners', min: 10, max: 100, step: 5, v: 70, fmt: x => x + '%' }, { id: 'ke', label: 'Return owners want', min: 4, max: 20, step: 0.5, v: 10.5, fmt: x => x + '%' }, { id: 'kd', label: 'Return lenders want (after tax)', min: 1, max: 12, step: 0.5, v: 4.5, fmt: x => x + '%' }], link: '/wacc',
     doodle: true, draw: MAKING_DECISIONS.blend
   },
   breakeven: {
-    chapter: 'Making decisions', title: 'When does a business start to profit?', plain: 'First you earn back your fixed costs, like rent. Only after that does each sale become real profit.',
-    how: ['Each cup of lemonade earns a little after its own ingredients.', 'That little amount slowly fills the rent bar.', 'When the rent bar is full you break even. Every cup after that is profit.'],
+    chapter: 'Making decisions', title: 'When does a business start to profit?', plain: 'First you earn back fixed costs, like rent. After that, each sale is real profit.',
+    how: ['Each cup of lemonade earns a little after the cost of its ingredients.', 'That small amount slowly fills the rent bar.', 'When the rent bar is full, you break even. Every cup after that is profit.'],
     words: [['Fixed costs', 'Bills you pay no matter how much you sell.'], ['Break-even', 'The point where you stop losing money.'], ['Margin', 'What is left of a sale after its own cost.']],
     params: [{ id: 'price', label: 'Price per cup', min: 2, max: 10, step: 0.5, v: 5, fmt: x => '$' + x }, { id: 'cost', label: 'Cost per cup', min: 0.5, max: 8, step: 0.5, v: 2, fmt: x => '$' + x }, { id: 'fixed', label: 'Fixed costs (rent)', min: 100, max: 2000, step: 50, v: 300, fmt: M }], link: '/breakeven',
     doodle: true, draw: MAKING_DECISIONS.breakeven
   },
   cycle: {
-    chapter: 'Making decisions', title: 'Where does the cash get stuck?', plain: 'A shop pays for goods, waits to sell them, then waits again to be paid. During that wait its cash is stuck.',
-    how: ['Goods sit on the shelf until they sell (blue).', 'Customers take time to pay (green).', 'Suppliers give you time to pay (yellow). The part not covered is the time your cash is stuck (rose).'],
-    words: [['Inventory', 'Goods waiting to be sold.'], ['Receivables', 'Money customers still owe you.'], ['Cash cycle', 'Days your cash is tied up in the business.']],
+    chapter: 'Making decisions', title: 'Where does the cash get stuck?', plain: 'A shop pays for goods, waits to sell them, then waits to be paid. During that wait, its cash is stuck.',
+    how: ['Goods sit on the shelf until they sell (blue).', 'Customers take time to pay (green).', 'Suppliers give you time to pay (yellow). The time not covered is when your cash is stuck (rose).'],
+    words: [['Inventory', 'Goods waiting to be sold.'], ['Receivables', 'Money customers still owe you.'], ['Cash cycle', 'Days your cash is stuck in the business.']],
     params: [{ id: 'dio', label: 'Days goods sit on the shelf', min: 5, max: 120, step: 5, v: 45, fmt: x => x }, { id: 'dso', label: 'Days customers take to pay', min: 5, max: 90, step: 5, v: 40, fmt: x => x }, { id: 'dpo', label: 'Days you take to pay suppliers', min: 5, max: 120, step: 5, v: 30, fmt: x => x }], link: '/wc',
     doodle: true, draw: MAKING_DECISIONS.cycle
   },
   merge: {
-    chapter: 'Making decisions', title: 'Will a takeover help profit per share?', plain: 'When one company buys another, its profit grows, but so can the number of shares. It is a good deal if profit grows faster than shares.',
-    how: ['Profit: the two companies\' profits add up.', 'Shares: new shares may be created to pay for the deal.', 'Profit per share = profit ÷ shares. Compare before and after.'],
+    chapter: 'Making decisions', title: 'Will a takeover help profit per share?', plain: 'When one company buys another, its profit grows, and so can its number of shares. It is a good deal if profit grows faster than shares.',
+    how: ['Profit: the two companies\' profits add up.', 'Shares: new shares may be made to pay for the deal.', 'Profit per share = profit ÷ shares. Compare before and after.'],
     words: [['Profit per share', 'Company profit divided by the number of shares.'], ['Accretive', 'A deal that raises profit per share.'], ['Dilutive', 'A deal that lowers profit per share.']],
     params: [{ id: 'stock', label: 'Share paid with new stock', min: 0, max: 100, step: 10, v: 50, fmt: x => x + '%' }, { id: 'syn', label: 'Yearly savings from joining', min: 0, max: 100, step: 5, v: 20, fmt: x => '$' + x + 'M' }], link: '/merger',
     doodle: true, draw: MAKING_DECISIONS.merge
   },
   option: {
-    chapter: 'Making decisions', title: 'An option is a ticket to buy later at a fixed price', plain: 'For a small fee you get the right (not the duty) to buy a stock at a set price. If the stock soars, you win big. If not, you lose only the fee.',
-    how: ['You pay a small fee for the ticket.', 'The ticket says: buy at the strike price, whatever the stock does.', 'If the stock ends above the strike, the ticket is worth the difference. If below, it is worth nothing.'],
+    chapter: 'Making decisions', title: 'An option: a ticket to buy at a fixed price', plain: 'You pay a small fee for the right to buy a stock at a set price. You do not have to buy. If the stock soars, you win. If not, you lose only the fee.',
+    how: ['You pay a small fee for the ticket.', 'The ticket lets you buy at the strike price, whatever the stock does.', 'If the stock ends above the strike, the ticket is worth the difference. If below, it is worth nothing.'],
     words: [['Option', 'A ticket giving you the right to buy or sell.'], ['Strike price', 'The fixed price written on the ticket.'], ['Premium', 'The fee you pay for the ticket.']],
     params: [{ id: 'K', label: 'Strike price', min: 50, max: 150, step: 5, v: 100, fmt: M }, { id: 'prem', label: 'Fee for the ticket', min: 1, max: 30, step: 1, v: 8, fmt: M }], link: '/options',
     doodle: true, draw: MAKING_DECISIONS.option
   }
   ,
   average: {
-    chapter: 'Chance and numbers', title: 'Average vs typical', plain: 'One very large number can drag the average far from what is typical. The middle value hardly moves.',
-    how: ['Ten values, each shown as a dot on a line.', 'The average (coral) is the total shared out equally.', 'The middle value (green) is the one in the exact centre. One dot is far bigger than the rest, so only the average gets dragged.'],
-    words: [['Average (mean)', 'Add everything up, divide by how many.'], ['Median', 'The middle value when sorted.'], ['Outlier', 'A value far away from the rest.']],
+    chapter: 'Chance and numbers', title: 'Average or typical?', plain: 'One very big number can pull the average far from what is typical. The middle value barely moves.',
+    how: ['Ten values, each shown as a dot on a line.', 'The average (coral) is the total shared out equally.', 'The middle value (green) is the one in the exact centre. One dot is far bigger than the rest, so only the average gets pulled.'],
+    words: [['Average (mean)', 'Add everything up. Divide by how many there are.'], ['Median', 'The middle value when you put them in order.'], ['Outlier', 'A value far away from the rest.']],
     params: [{ id: 'big', label: 'The biggest value', min: 55, max: 500, step: 5, v: 400, fmt: x => '$' + x + 'k' }], link: '/stats',
     doodle: true, draw: CHANCE_AND_NUMBERS.average
   },
   spread: {
-    chapter: 'Chance and numbers', title: 'Spread: how bumpy is it?', plain: 'Two things can have the same average and feel completely different. The spread (standard deviation) tells you how bumpy.',
-    how: ['Two investments both average 7% a year.', 'Each dot is one year. The shaded band is one spread either side of the average.', 'The bumpy lane has a wide band: results land far from the average.'],
-    words: [['Standard deviation', 'A typical distance from the average. Bigger means bumpier.'], ['Volatility', 'Finance word for spread in returns.'], ['Variance', 'The spread, squared.']],
+    chapter: 'Chance and numbers', title: 'Spread: how bumpy is it?', plain: 'Two things can have the same average and still feel very different. The spread (standard deviation) shows how bumpy.',
+    how: ['Two investments both average 7% a year.', 'Each dot is one year. The shaded band is one spread either side of the average.', 'The bumpy lane has a wide band. Results land far from the average.'],
+    words: [['Standard deviation', 'A typical distance from the average. Bigger means bumpier.'], ['Volatility', 'How much returns jump up and down.'], ['Variance', 'The spread multiplied by itself.']],
     params: [{ id: 'wild', label: 'How wild the bumpy lane is', min: 6, max: 30, step: 1, v: 18, fmt: x => '±' + x + '%' }], seeded: true, link: '/stats',
     doodle: true, draw: CHANCE_AND_NUMBERS.spread
   },
   bell: {
-    chapter: 'Chance and numbers', title: 'The bell curve: 68, 95, 99.7', plain: 'Many things follow a bell shape. Knowing the average and the spread tells you how likely any result is.',
-    how: ['Most results land near the average, in the middle of the bell.', 'About 68 in 100 land within one spread of the average.', 'About 95 within two spreads, and almost all (99.7) within three.'],
-    words: [['Normal distribution', 'The bell-shaped pattern of chance.'], ['Average (mean)', 'The centre of the bell.'], ['Standard deviation', 'How wide the bell is.']],
+    chapter: 'Chance and numbers', title: 'The bell curve: 68, 95, 99.7', plain: 'Many things follow a bell shape. With the average and the spread, you can tell how likely a result is.',
+    how: ['Most results land near the average, in the middle of the bell.', 'About 68 in 100 land within one spread of the average.', 'About 95 land within two spreads, and almost all (99.7) within three.'],
+    words: [['Normal distribution', 'The bell-shaped pattern of results.'], ['Average (mean)', 'The centre of the bell.'], ['Standard deviation', 'How wide the bell is.']],
     params: [{ id: 'mean', label: 'Average yearly return', min: 0, max: 15, step: 1, v: 8, fmt: x => x + '%' }, { id: 'sd', label: 'Spread', min: 5, max: 30, step: 1, v: 15, fmt: x => '±' + x + '%' }], link: '/normal',
     doodle: true, draw: CHANCE_AND_NUMBERS.bell
   },
   tail: {
-    chapter: 'Chance and numbers', title: 'The chance of a big loss', plain: 'With the average and the spread you can estimate how likely a bad year is. This is how banks measure risk.',
-    how: ['The bell shows how likely each yearly return is.', 'The red line slides toward a bad loss.', 'The shaded area to its left is the chance of a year that bad, or worse.'],
-    words: [['Probability', 'How likely something is, from 0% to 100%.'], ['Tail risk', 'The chance of a very bad result.'], ['Value at Risk', 'The loss you should only exceed a few times in 100.']],
+    chapter: 'Chance and numbers', title: 'The chance of a big loss', plain: 'With the average and the spread, you can estimate how likely a bad year is. Banks use this to measure risk.',
+    how: ['The bell shows how likely each yearly return is.', 'The red line slides toward a bad loss.', 'The shaded area to its left is the chance of a year that bad or worse.'],
+    words: [['Probability', 'How likely something is, from 0% to 100%.'], ['Tail risk', 'The chance of a very bad result.'], ['Value at Risk', 'A loss that happens only a few times in 100.']],
     params: [{ id: 'mean', label: 'Average yearly return', min: 0, max: 15, step: 1, v: 7, fmt: x => x + '%' }, { id: 'sd', label: 'Spread', min: 5, max: 30, step: 1, v: 16, fmt: x => '±' + x + '%' }, { id: 'cut', label: 'A loss that worries you', min: -50, max: -5, step: 5, v: -20, fmt: x => x + '%' }], link: '/normal',
     doodle: true, draw: CHANCE_AND_NUMBERS.tail
   },
   expected: {
-    chapter: 'Chance and numbers', title: 'Expected value: the fair price of a bet', plain: 'Weigh each possible result by its chance and add them up. That is what a bet, a stock or a project is worth on average.',
+    chapter: 'Chance and numbers', title: 'Expected value: the fair price of a bet', plain: 'Multiply each possible result by its chance, then add them up. That is what a bet, a stock or a project is worth on average.',
     how: ['Each bar is one outcome. Wider means more likely, taller means bigger.', 'Green is a gain, rose is a loss.', 'The dashed line is the expected value: the average per try if you could repeat it many times.'],
-    words: [['Probability', 'The chance of one outcome.'], ['Expected value', 'Each result × its chance, added up.'], ['Risk', 'Real results can differ a lot from the expected value.']],
+    words: [['Probability', 'The chance of one result.'], ['Expected value', 'Each result × its chance, added up.'], ['Risk', 'Real results can be very different from the expected value.']],
     params: [{ id: 'pwin', label: 'Chance of winning', min: 10, max: 90, step: 5, v: 40, fmt: x => x + '%' }, { id: 'win', label: 'Win amount', min: 20, max: 200, step: 10, v: 100, fmt: M }, { id: 'lose', label: 'Loss amount', min: 10, max: 100, step: 10, v: 50, fmt: M }], link: '/prob',
     doodle: true, draw: CHANCE_AND_NUMBERS.expected
   },
   lawlarge: {
-    chapter: 'Chance and numbers', title: 'More tries, more predictable', plain: 'A few flips can be lucky or unlucky. Over many tries, the result settles on the true chance.',
+    chapter: 'Chance and numbers', title: 'More tries, more predictable', plain: 'A few flips can be lucky or unlucky. After many tries, the result gets close to the true chance.',
     how: ['Each flip is heads or tails. The line shows the share of heads so far.', 'At first it swings wildly.', 'After many flips it settles near the true chance (dashed line).'],
-    words: [['Law of large numbers', 'More tries bring the result close to the true chance.'], ['Sample size', 'How many tries you have.'], ['Luck', 'Short-run noise that evens out over time.']],
+    words: [['Law of large numbers', 'With more tries, the result gets close to the true chance.'], ['Sample size', 'How many tries you have.'], ['Luck', 'Random ups and downs that even out over time.']],
     params: [{ id: 'p', label: 'True chance of heads', min: 10, max: 90, step: 5, v: 50, fmt: x => x + '%' }], seeded: true, link: '/prob',
     doodle: true, draw: CHANCE_AND_NUMBERS.lawlarge
   },
   correlation: {
-    chapter: 'Chance and numbers', title: 'Correlation: do two things move together?', plain: 'Correlation is a score from −1 to +1. It tells you whether two things rise and fall together, or not at all.',
+    chapter: 'Chance and numbers', title: 'Correlation: do two things move together?', plain: 'Correlation is a score from −1 to +1. It shows if two things rise and fall together, or not at all.',
     how: ['Each dot is one moment: the value of A (across) and B (up).', 'Dots in a tight rising line mean +1: they move together.', 'A shapeless cloud means 0, and a falling line means −1: opposite.'],
-    words: [['Correlation', 'A score from −1 to +1 for moving together.'], ['Positive', 'Both rise and fall together.'], ['Diversify', 'Mix things with low correlation to calm the ride.']],
+    words: [['Correlation', 'A score from −1 to +1 for moving together.'], ['Positive', 'Both rise and fall together.'], ['Diversify', 'Spread your money across things with low correlation to calm the ride.']],
     params: [{ id: 'r', label: 'How much they move together', min: -1, max: 1, step: 0.1, v: 0.7, fmt: x => nf(x, 1) }], seeded: true, link: '/corr',
     doodle: true, draw: CHANCE_AND_NUMBERS.correlation
   },
   regression: {
-    chapter: 'Chance and numbers', title: 'Beta is a slope', plain: 'Plot a stock\'s moves against the market\'s. The slope of the line through the dots is the stock\'s beta.',
+    chapter: 'Chance and numbers', title: 'Beta is a slope', plain: 'Plot a stock\'s moves against the market\'s moves. The slope (steepness) of the line through the dots is the stock\'s beta.',
     how: ['Each dot is one month: how far the market moved (across) and the stock (up).', 'The best-fit line runs through the middle of the dots.', 'Its slope is beta: how much the stock moves for each 1% the market moves.'],
-    words: [['Beta', 'The slope of stock moves against market moves.'], ['Regression', 'Fitting the best straight line through dots.'], ['R-squared', 'How tightly the dots hug the line.']],
+    words: [['Beta', 'How steeply a stock moves when the market moves.'], ['Regression', 'Drawing the best straight line through dots.'], ['R-squared', 'How close the dots sit to the line.']],
     params: [{ id: 'beta', label: 'The stock\'s beta', min: -0.5, max: 2.5, step: 0.1, v: 1.5, fmt: x => nf(x, 1) }], seeded: true, link: '/corr',
     doodle: true, draw: CHANCE_AND_NUMBERS.regression
   },
   montecarlo: {
-    chapter: 'Chance and numbers', title: 'Risk simulation: try many futures', plain: 'Nobody knows the future, so we try many random ones and look at where they end up. That is a Monte Carlo simulation.',
+    chapter: 'Chance and numbers', title: 'Risk simulation: try many futures', plain: 'Nobody knows the future. So we try many random futures and see where they end. This is a Monte Carlo simulation.',
     how: ['Each line is one possible future for $100 invested.', 'Every year gets a random result, using the average and spread.', 'The pile of end points on the right shows the range of what could happen.'],
-    words: [['Simulation', 'Running many made-up futures on a computer.'], ['Monte Carlo', 'Simulation using random numbers.'], ['Range of outcomes', 'From a bad future to a good one.']],
+    words: [['Simulation', 'Trying many made-up futures on a computer.'], ['Monte Carlo', 'A simulation that uses random numbers.'], ['Range of outcomes', 'From a bad future to a good one.']],
     params: [{ id: 'vol', label: 'How bumpy (spread)', min: 5, max: 35, step: 1, v: 18, fmt: x => '±' + x + '%' }], seeded: true, link: '/scenarios',
     doodle: true, draw: CHANCE_AND_NUMBERS.montecarlo
   }

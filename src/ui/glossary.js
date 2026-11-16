@@ -123,7 +123,7 @@ export function renderGlossary(main) {
   letters.forEach(l => jump.append(h('a', { href: '#', onclick: ev => { ev.preventDefault(); const t = all.find(e => e.term[0].toUpperCase() === l); const el = t && document.getElementById(slug(t.term)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, l)));
   input.addEventListener('input', draw);
   main.innerHTML = '';
-  main.append(h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, 'Plain words'), h('h1', { html: 'Finance, <em>translated</em>' }), h('p', { class: 'lead' }, 'Every term from the lessons and calculators, explained the way you would to a friend.')),
+  main.append(h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, 'Plain words'), h('h1', { html: 'Finance, <em>translated</em>' }), h('p', { class: 'lead' }, 'Every term from the lessons and calculators, explained the way you would tell a friend.')),
     h('div', { class: 'gl-bar reveal' }, input, count), jump, list);
   draw();
   if (location.hash) setTimeout(() => { const el = document.getElementById(location.hash.slice(1)); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash'); } }, 400);

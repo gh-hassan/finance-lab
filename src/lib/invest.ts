@@ -81,13 +81,13 @@ export const STRATEGIES: StrategyDef[] = [
   { id: 'longcall', name: 'Long call', plain: 'Bet that the price rises. You can only lose what you paid.', legs: K => [{ kind: 'call', qty: 1, K }] },
   { id: 'longput', name: 'Long put', plain: 'Bet that the price falls, or insure a stock you own.', legs: K => [{ kind: 'put', qty: 1, K }] },
   { id: 'covered', name: 'Covered call', plain: 'Own the stock and sell a call on it to earn income, giving up big gains.', legs: (K, w) => [{ kind: 'stock', qty: 1 }, { kind: 'call', qty: -1, K: K + w }] },
-  { id: 'protective', name: 'Protective put', plain: 'Own the stock and buy a put, so a crash cannot hurt you below the strike.', legs: (K, w) => [{ kind: 'stock', qty: 1 }, { kind: 'put', qty: 1, K: K - w }] },
+  { id: 'protective', name: 'Protective put', plain: 'Own the stock and buy a put (the right to sell at a set price). A crash then cannot hurt you below that price.', legs: (K, w) => [{ kind: 'stock', qty: 1 }, { kind: 'put', qty: 1, K: K - w }] },
   { id: 'bullcall', name: 'Bull call spread', plain: 'Mild bet on a rise: buy a call, sell a higher call to cut the cost.', legs: (K, w) => [{ kind: 'call', qty: 1, K }, { kind: 'call', qty: -1, K: K + w }] },
   { id: 'bearput', name: 'Bear put spread', plain: 'Mild bet on a fall: buy a put, sell a lower put to cut the cost.', legs: (K, w) => [{ kind: 'put', qty: 1, K }, { kind: 'put', qty: -1, K: K - w }] },
-  { id: 'straddle', name: 'Long straddle', plain: 'Bet on a big move either way: buy a call and a put at the same strike.', legs: K => [{ kind: 'call', qty: 1, K }, { kind: 'put', qty: 1, K }] },
-  { id: 'strangle', name: 'Long strangle', plain: 'Like a straddle but cheaper: out-of-the-money call and put.', legs: (K, w) => [{ kind: 'call', qty: 1, K: K + w }, { kind: 'put', qty: 1, K: K - w }] },
+  { id: 'straddle', name: 'Long straddle', plain: 'Bet on a big move either way: buy a call and a put at the same strike (set price).', legs: K => [{ kind: 'call', qty: 1, K }, { kind: 'put', qty: 1, K }] },
+  { id: 'strangle', name: 'Long strangle', plain: 'Like a straddle but cheaper: a call and a put set further from today\'s price.', legs: (K, w) => [{ kind: 'call', qty: 1, K: K + w }, { kind: 'put', qty: 1, K: K - w }] },
   { id: 'collar', name: 'Collar', plain: 'Own the stock, buy a put below and sell a call above: a fenced-in outcome.', legs: (K, w) => [{ kind: 'stock', qty: 1 }, { kind: 'put', qty: 1, K: K - w }, { kind: 'call', qty: -1, K: K + w }] },
-  { id: 'butterfly', name: 'Long butterfly', plain: 'Bet that the price stays put: profit peaks at the middle strike.', legs: (K, w) => [{ kind: 'call', qty: 1, K: K - w }, { kind: 'call', qty: -2, K }, { kind: 'call', qty: 1, K: K + w }] }
+  { id: 'butterfly', name: 'Long butterfly', plain: 'Bet that the price stays put: profit peaks at the middle strike (set price).', legs: (K, w) => [{ kind: 'call', qty: 1, K: K - w }, { kind: 'call', qty: -2, K }, { kind: 'call', qty: 1, K: K + w }] }
 ];
 
 export interface Priced { leg: Leg; premium: number }

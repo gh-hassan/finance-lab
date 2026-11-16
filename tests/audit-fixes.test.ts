@@ -31,7 +31,7 @@ describe('audit fixes: typed lists', () => {
 describe('audit fixes: HIGH numeric bugs', () => {
   it('capstruct: levered cost of equity uses market equity (V_L − D)', () => {
     const o = calc('capstruct');
-    expect(num(card(o, 'Levered cost of equity').value)).toBeCloseTo(11.09, 2);
+    expect(num(card(o, 'Return shareholders want with debt').value)).toBeCloseTo(11.09, 2);
   });
   it('capm: M² = rf + asset Sharpe × market σ', () => {
     const m = MODS.find(x => x.id === 'capm')!, d = Object.fromEntries(m.fields.map(f => [f.id, f.v])) as any;
@@ -60,7 +60,7 @@ describe('audit fixes: HIGH numeric bugs', () => {
 
 describe('audit fixes: MED items', () => {
   it('ddm: default example shows growth adding value (PVGO > 0)', () => {
-    const o = calc('ddm'); expect(num(card(o, 'Growth opportunities').value)).toBeGreaterThan(0);
+    const o = calc('ddm'); expect(num(card(o, 'Value of future growth').value)).toBeGreaterThan(0);
   });
   it('futures: default market price is clearly off fair value', () => {
     const o = calc('futures'); expect(card(o, 'Arbitrage').value).toBe('Cash and carry');

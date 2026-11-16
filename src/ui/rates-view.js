@@ -7,8 +7,8 @@ import { curveShape, asOfLabel, ratePct, changeWords, TENORS } from '../lib/rate
 import { longDate } from '../lib/format';
 
 const TILES = [
-  ['DGS10', '10-year Treasury'], ['DGS2', '2-year Treasury'], ['DGS3MO', '3-month Treasury'], ['DFF', 'Fed funds rate'],
-  ['MORTGAGE30US', '30-year mortgage rate'], ['INFLATION', 'Inflation (CPI, year over year)'], ['UNRATE', 'Unemployment'], ['BAA10Y', 'Credit spread (BAA over 10-yr)']
+  ['DGS10', '10-year Treasury'], ['DGS2', '2-year Treasury'], ['DGS3MO', '3-month Treasury'], ['DFF', 'Fed funds rate (bank to bank)'],
+  ['MORTGAGE30US', '30-year mortgage rate'], ['INFLATION', 'Inflation (CPI, vs a year ago)'], ['UNRATE', 'Unemployment'], ['BAA10Y', 'Extra rate for risky firms']
 ];
 
 /** Stat tiles for the key rates. A series with no reading shows an em dash, never a blank or "null". */
@@ -35,7 +35,7 @@ export function curveSpec(curve, mode) {
     .filter(s => s.pts.some(p => Number.isFinite(p[1])));
   const fmt = v => (Number.isFinite(v) ? ratePct(v) : '—');
   return {
-    series, xLabels: TENORS.slice(), h: 300, title: 'US Treasury yield curve: yield by length of loan', hint: 'Slide across the chart to read each maturity.',
+    series, xLabels: TENORS.slice(), h: 300, title: 'US Treasury yield curve: rate by length of loan', hint: 'Slide across the chart to read each maturity.',
     yFmt: v => `${+v.toFixed(2)}%`, yRead: fmt,
     readout: i => `<span class="rx">${esc(TENOR_LONG[i])}</span>` + series.map(s => `<span class="ri"><i style="background:${col(s.color)}"></i>${esc(s.name)} <b>${esc(fmt(s.pts[i][1]))}</b></span>`).join('')
   };
@@ -74,15 +74,15 @@ export function calcCard(snap) {
   const ten = val('DGS10'), mort = val('MORTGAGE30US');
   const link = (id, label, state, what) => h('a', { class: 'd-btn main', href: sharePath(id, state), 'data-link': true, title: what }, label + ' →');
   const links = [
-    ten != null ? link('wacc', 'Cost of capital (WACC)', { rf: ten }, `Sets the risk-free rate to ${ratePct(ten)}`) : null,
-    ten != null ? link('capm', 'CAPM expected return', { rf: ten }, `Sets the risk-free rate to ${ratePct(ten)}`) : null,
+    ten != null ? link('wacc', 'Company funding cost (WACC)', { rf: ten }, `Sets the risk-free rate to ${ratePct(ten)}`) : null,
+    ten != null ? link('capm', 'Expected return (CAPM)', { rf: ten }, `Sets the risk-free rate to ${ratePct(ten)}`) : null,
     ten != null ? link('bond', 'Bond pricing', { ytm: ten }, `Sets the yield to ${ratePct(ten)}`) : null,
     mort != null ? link('loan', 'Loan calculator', { apr: mort, years: 30 }, `Sets the rate to ${ratePct(mort)} over 30 years`) : null
   ].filter(Boolean);
   if (!links.length) return null;
   return h('section', { class: 'd-card rt-calc' },
     h('h2', { class: 'd-h' }, 'Use today’s rates in a calculator'),
-    h('p', { class: 'd-sub plain' }, `Finance models need a risk-free rate. The 10-year Treasury yield${ten != null ? ` (${ratePct(ten)})` : ''} is the usual choice. Mortgages are priced off the 30-year rate${mort != null ? ` (${ratePct(mort)})` : ''}.`),
+    h('p', { class: 'd-sub plain' }, `Finance models need a risk-free rate: what you earn with almost no risk. The usual choice is the 10-year Treasury yield${ten != null ? ` (${ratePct(ten)})` : ''}. The loan calculator uses the 30-year mortgage rate${mort != null ? ` (${ratePct(mort)})` : ''}.`),
     h('div', { class: 'd-row' }, links));
 }
 
@@ -95,13 +95,13 @@ export function treasuryCard(result, retry) {
   }
   const d = result.value;
   return h('section', { class: 'd-card' }, head,
-    h('p', { class: 'd-sub' }, `Average interest rate on all US government debt outstanding, as of ${longDate(d.recordDate)}. Older, cheaper borrowing pulls these below today’s yields.`),
-    dataTable({ label: 'Average interest rates on US Treasury securities', head: ['Security', 'Average rate'], rows: d.rows.map(r => ({ label: r.name, cells: [ratePct(r.rate, 3)] })) }),
-    h('p', { class: 'd-cap' }, 'Bills mature in a year or less, notes in 2 to 10 years and bonds in 20 to 30 years. TIPS rise with inflation. Floating rate notes reset as short-term rates move.'));
+    h('p', { class: 'd-sub' }, `Average interest rate on all the money the US government owes, as of ${longDate(d.recordDate)}. Older loans cost less, so these sit below today’s yields.`),
+    dataTable({ label: 'Average interest rates on US Treasury securities', head: ['Type of loan', 'Average rate'], rows: d.rows.map(r => ({ label: r.name, cells: [ratePct(r.rate, 3)] })) }),
+    h('p', { class: 'd-cap' }, 'Bills are paid back in a year or less, notes in 2 to 10 years and bonds in 20 to 30 years. TIPS grow as prices rise. Floating rate notes change as short-term rates change.'));
 }
 
 export const explainers = () => h('div', { class: 'd-page' },
   explainer('What is a Treasury yield?', '<p class="plain">When the US government needs money it sells <b>Treasury securities</b>, which are IOUs. The <b>yield</b> is the yearly return an investor earns by lending to the government for that length of time. A 10-year yield of 4.5% means lending for ten years earns about 4.5% a year.</p><p class="plain">Because the US government is seen as very safe, its yield is treated as the <b>risk-free rate</b>. Everything riskier, from company bonds to mortgages, is priced as that rate plus extra for the risk.</p>'),
-  explainer('What is the Fed funds rate?', '<p class="plain">It is the rate banks charge each other for overnight loans. The <b>Federal Reserve</b> sets a target range for it to speed up or cool down the economy. Lower rates make borrowing cheaper and encourage spending. Higher rates do the opposite.</p><p class="plain">It moves short-term rates directly, such as savings accounts and credit cards, and long-term rates only indirectly.</p>'),
+  explainer('What is the Fed funds rate?', '<p class="plain">It is the rate banks charge each other for overnight loans. The <b>Federal Reserve</b> sets a target range for it to speed up or cool down the economy. Lower rates make borrowing cheaper and encourage spending. Higher rates do the opposite.</p><p class="plain">It moves short-term rates most, such as savings accounts and credit cards. Long-term rates feel it less directly.</p>'),
   explainer('What does inflation mean for my money?', '<p class="plain"><b>Inflation</b> is how fast prices rise. If inflation is 3%, something that cost $100 last year costs $103 now, so $100 in cash buys less.</p><p class="plain">What matters is the <b>real return</b>: the interest rate minus inflation. A 4% savings rate with 3% inflation grows your buying power by only about 1%.</p>'),
-  explainer('Why does the yield curve matter?', '<p class="plain">The yield curve plots yields for short to long loans. Usually longer loans pay more. When short-term rates rise above long-term ones the curve is <b>inverted</b>.</p><p class="plain">An inverted curve has come before many past US recessions, which is why people watch it. It is a warning sign, not a forecast: the delay has varied from months to years, and sometimes there was no recession.</p>'));
+  explainer('Why does the yield curve matter?', '<p class="plain">The yield curve plots yields for short to long loans. Usually longer loans pay more. When short-term rates rise above long-term ones the curve is <b>inverted</b>.</p><p class="plain">An inverted curve has come before many past US recessions (times when the economy shrinks), which is why people watch it. It is a warning sign, not a forecast: the delay has varied from months to years, and sometimes there was no recession.</p>'));

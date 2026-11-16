@@ -48,7 +48,7 @@ export function renderRoadmap(root) {
   const seen = seenTools(), progress = mapProgress(STAGES, seen), cur = currentIndex(progress), finished = progress.filter(p => p.complete).length, allDone = finished === STAGES.length, rank = rankFor(finished), next = nextTool(progress), fresh = !seen.length;
   const here = STAGES[cur];
   const head = h('header', { class: 'learn-hero rm-head reveal' }, h('p', { class: 'eyebrow' }, 'Roadmap'), h('h1', { html: 'Your path from <em>beginner</em> to analyst' }),
-    h('p', { class: 'lead' }, 'Follow the trail from Base Camp. Each stop teaches a few ideas, lists the tools to try in order, and sets one small quest. Everything you open is ticked off in this browser, and nothing is sent anywhere.'),
+    h('p', { class: 'lead' }, 'Follow the trail from Base Camp. Each stop teaches a few ideas, lists tools to try in order, and gives you one small quest. Tools you open are ticked off in this browser. Nothing is sent anywhere.'),
     h('div', { class: 'rm-status' },
       h('div', { class: 'rm-box' }, h('span', { class: 'rk-label' }, 'Your rank'), h('b', {}, rank.name), h('small', {}, rank.blurb)),
       h('div', { class: 'rm-box' }, h('span', { class: 'rk-label' }, allDone ? 'Journey complete' : fresh ? 'Ready to begin' : 'You are at'), h('b', {}, allDone ? 'The Treasure' : here.place), h('small', {}, allDone ? 'You have tried every tool' : `Stop ${here.n} of ${STAGES.length}: ${here.title}`)),

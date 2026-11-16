@@ -29,8 +29,8 @@ function chartSpec(tab, d, q) {
 const TAB_NOTE = {
   profit: 'Sales are what customers paid. Net income is what is left after every cost, interest and tax.',
   margins: 'A margin is profit as a share of sales. Higher and steadier is usually better.',
-  cash: 'Free cash flow is the cash from the business minus what it spends keeping and growing its equipment.',
-  balance: 'The two stacked parts add up to everything the company owns: it is paid for by what it owes plus what owners put in.',
+  cash: 'Free cash flow is the cash the business makes, minus what it spends on equipment to keep running and growing.',
+  balance: 'The two stacked parts add up to everything the company owns. It is paid for by what it owes plus what owners put in.',
   returns: 'Return on equity is profit per dollar of owners\' money. Return on assets is profit per dollar of everything the company owns.'
 };
 
@@ -60,26 +60,26 @@ function dupontCard(d, q) {
   };
   const seg = segmented({ options: years.map(i => [String(i), yy(d.periods[i].end)]), value: String(years[years.length - 1]), label: 'Choose a year', onChange: v => draw(+v) });
   draw(years[years.length - 1]);
-  return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Why is the return on equity what it is?'), h('p', { class: 'd-sub plain' }, 'DuPont analysis splits it into three simple parts. Multiply them and you get the return. Change any one and the return changes.'), h('div', { class: 'fin-yr' }, h('span', {}, 'Year'), seg.el), body);
+  return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Why is the return on equity what it is?'), h('p', { class: 'd-sub plain' }, 'DuPont analysis splits it into three parts. Multiply them and you get the return. Change any one and the return changes.'), h('div', { class: 'fin-yr' }, h('span', {}, 'Year'), seg.el), body);
 }
 
 function tableRows(d, q) {
   const r = d.rows, std = d.kind === 'standard', cell = (v, f, tone) => ({ t: f(v), tone: v != null && tone && v < 0 ? 'neg' : '' });
   const M = (label, row, title) => ({ label, title, cells: row.map(v => cell(v, money, true)), raw: row, fmt: 'money' });
   const P = (label, row, f = v => pct(v), title) => ({ label, title, cells: row.map(v => cell(v, f, false)), raw: row });
-  const rows = [{ group: 'Income' }, M('Sales', r.revenue), ...(std ? [M('Gross profit', r.grossProfit, 'Sales minus the direct cost of what was sold'), M('Operating income', r.operatingIncome, 'Profit from running the business, before interest and tax')] : []), M('Net income', r.netIncome), { label: 'Earnings per share', title: 'Net income divided by diluted shares', cells: q.eps.map(v => ({ t: v == null ? '—' : money(v, { d: 2 }), tone: '' })), raw: q.eps }];
-  if (std) rows.push({ group: 'Cash' }, M('Cash from operations', r.cfo), M('Spent on equipment (capex)', r.capex), M('Free cash flow', q.fcf, 'Cash from operations minus capex'));
-  rows.push({ group: 'What it owns and owes' }, M('Cash', r.cash), M('Total assets', r.assets), M('Total liabilities', r.liabilities), M('Owners\' equity', r.equity), ...(std ? [M('Borrowings', r.debt, 'Long-term debt as the company reports it')] : []));
+  const rows = [{ group: 'Income' }, M('Sales', r.revenue), ...(std ? [M('Gross profit', r.grossProfit, 'Sales minus the direct cost of what was sold'), M('Operating income', r.operatingIncome, 'Profit from running the business, before interest and tax')] : []), M('Net income', r.netIncome), { label: 'Earnings per share', title: 'Net income divided by all shares, including ones that could be added later', cells: q.eps.map(v => ({ t: v == null ? '—' : money(v, { d: 2 }), tone: '' })), raw: q.eps }];
+  if (std) rows.push({ group: 'Cash' }, M('Cash from operations', r.cfo), M('Spent on equipment (capex)', r.capex), M('Free cash flow', q.fcf, 'Cash from operations minus money spent on equipment'));
+  rows.push({ group: 'What it owns and owes' }, M('Cash', r.cash), M('Total assets', r.assets), M('Total liabilities', r.liabilities), M('Owners\' equity', r.equity), ...(std ? [M('Borrowings', r.debt, 'Long-term loans as the company reports them')] : []));
   rows.push({ group: 'Ratios' }, P('Sales growth', q.revenueGrowth, v => signedPct(v)));
   if (std) rows.push(P('Gross margin', q.grossMargin), P('Operating margin', q.operatingMargin), P('Net margin', q.netMargin));
   rows.push(P('Return on equity', q.roe), P('Return on assets', q.roa));
-  if (std) rows.push(P('Borrowings to equity', q.debtToEquity, v => mult(v, 2)), P('Current ratio', q.currentRatio, v => mult(v, 2), 'Short-term assets divided by short-term bills'), P('Interest cover', q.interestCover, v => mult(v, 1), 'Operating income divided by interest paid'));
+  if (std) rows.push(P('Borrowings to equity', q.debtToEquity, v => mult(v, 2)), P('Current ratio', q.currentRatio, v => mult(v, 2), 'Short-term assets divided by short-term bills'), P('Interest cover', q.interestCover, v => mult(v, 1), 'Operating income divided by interest paid. Shows how easily it pays its interest.'));
   const kept = rows.filter(x => x.group || any(x.raw));
   /* a heading with nothing under it is dropped */
   return kept.filter((x, i) => !x.group || (kept[i + 1] && !kept[i + 1].group));
 }
 
-const LABELS = { rev0: 'revenue', g1: 'growth', margin: 'operating margin', tax: 'tax rate', da: 'depreciation', capex: 'capex', netdebt: 'net debt', shares: 'share count', rev: 'revenue', ni: 'net income', ebitda: 'EBITDA', book: 'book value', debt: 'net debt', sh: 'share count' };
+const LABELS = { rev0: 'sales', g1: 'growth', margin: 'operating margin', tax: 'tax rate', da: 'depreciation (yearly wear on equipment)', capex: 'equipment spending', netdebt: 'debt minus cash', shares: 'number of shares', rev: 'sales', ni: 'net income', ebitda: 'EBITDA (profit before interest, tax and wear)', book: 'book value', debt: 'debt minus cash', sh: 'number of shares' };
 const NEEDED = { dcf: ['rev0', 'margin', 'netdebt', 'shares'], comps: ['rev', 'ni', 'ebitda', 'debt', 'sh'] };
 
 function handoff(d) {
@@ -91,9 +91,9 @@ function handoff(d) {
   const gaps = [['DCF', missing('dcf', dcf)], ['comps', missing('comps', comps)]].filter(([, m]) => m.length);
   const lowMargin = d.rows.operatingIncome && d.rows.operatingIncome[d.periods.length - 1] != null && d.rows.operatingIncome[d.periods.length - 1] <= 0;
   return h('section', { class: 'd-card fin-hand' }, h('h2', { class: 'd-h' }, 'Take these numbers to a calculator'), h('p', { class: 'd-sub plain' }, 'We fill in what the filing shows. The forecast is yours to change: growth, margin and the discount rate decide the answer.'),
-    h('div', { class: 'd-row' }, link('dcf', 'Value it with a DCF', dcf), Object.keys(comps).length >= 4 ? link('comps', 'Compare with peers', comps) : null),
+    h('div', { class: 'd-row' }, link('dcf', 'Value it with a DCF (future cash)', dcf), Object.keys(comps).length >= 4 ? link('comps', 'Compare with peers', comps) : null),
     gaps.length ? h('p', { class: 'd-note warn' }, gaps.map(([n, m]) => `The ${n} calculator will keep its sample values for ${m.join(', ')}, because the filing does not report ${m.length > 1 ? 'them' : 'it'} in a standard way. Type your own before you trust the answer.`).join(' ')) : null,
-    lowMargin ? h('p', { class: 'd-note warn' }, 'This company lost money from operations in the latest year, so the margin and growth we pass on start at the calculators\' lowest settings. Set your own.') : null,
+    lowMargin ? h('p', { class: 'd-note warn' }, 'This company lost money from its main business last year. So the margin and growth we pass on start at the calculators\' lowest settings. Set your own.') : null,
     h('p', { class: 'd-cap' }, 'Amounts are in $ millions. Past results do not predict the future.'));
 }
 
@@ -120,7 +120,7 @@ export function renderResult(d, scope) {
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'All the numbers'), h('p', { class: 'd-sub' }, 'One column per fiscal year, oldest on the left. Scroll sideways for more years.'), dataTable({ head: ['', ...d.periods.map(p => monthYear(p.end))], rows: tableRows(d, q), label: `${d.name} annual figures` })),
     handoff(d),
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Before you rely on these'), h('ul', { class: 'plain d-cap', style: 'margin:0;padding-left:20px;display:grid;gap:6px' },
-      [...(d.notes || []), 'Companies label some items differently, so a line can be missing even when the company has it. When it matters, check the filing itself.', 'These are annual figures from 10-K filings. The latest quarters are not included. Each year is taken from the most recent filing that reports it, so a restated year can use a slightly different definition from its neighbours.', d.kind === 'financial' ? 'Banks, insurers and similar firms are shown with fewer measures because margins and debt mean something different for them.' : 'Debt is the long-term borrowing the company reports. Leases and short-term borrowing may or may not be included.'].map(t => h('li', {}, t))),
-      explainer('What is a 10-K?', '<p>Every US-listed company files a 10-K once a year with the Securities and Exchange Commission. It has audited financial statements: the <b>income statement</b> (profit), the <b>balance sheet</b> (what it owns and owes) and the <b>cash flow statement</b> (where cash came from and went).</p><p>This page reads those filings directly, so the numbers are the company\'s own.</p>'))].filter(Boolean));
+      [...(d.notes || []), 'Companies label some items differently, so a line can be missing even when the company has it. When it matters, check the filing itself.', 'These are annual figures from 10-K filings. The latest quarters are not included. Each year comes from the latest report that includes it. If the company corrected a year later, its definition may differ slightly from nearby years.', d.kind === 'financial' ? 'Banks, insurers and similar firms are shown with fewer measures because margins and debt mean something different for them.' : 'Debt is the long-term borrowing the company reports. Leases and short-term borrowing may or may not be included.'].map(t => h('li', {}, t))),
+      explainer('What is a 10-K?', '<p>Every US-listed company sends a 10-K once a year to the Securities and Exchange Commission (SEC). Outside accountants check its financial statements. They are the <b>income statement</b> (profit), the <b>balance sheet</b> (what it owns and owes) and the <b>cash flow statement</b> (where cash came from and went).</p><p>This page reads those filings directly, so the numbers are the company\'s own.</p>'))].filter(Boolean));
   return frag;
 }

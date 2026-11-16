@@ -37,25 +37,25 @@ export function renderScenarios(main) {
     body.innerHTML = '';
     /* 1. three futures */
     const t = h('table', { class: 'sct' });
-    t.append(h('thead', {}, h('tr', {}, h('th', {}), h('th', { class: 'w' }, 'Worst'), h('th', {}, 'Base'), h('th', { class: 'b' }, 'Best'), h('th', {}, 'Weighted average'))));
+    t.append(h('thead', {}, h('tr', {}, h('th', {}), h('th', { class: 'w' }, 'Worst'), h('th', {}, 'Normal'), h('th', { class: 'b' }, 'Best'), h('th', {}, 'Average (by chance)'))));
     const tb = h('tbody');
     m.drivers.forEach(d => {
       const tr = h('tr', {}, h('th', {}, d.label));
       ['worst', 'base', 'best'].forEach(k => {
         const inp = h('input', { type: 'number', step: d.step, value: r[d.id][k], 'aria-label': `${d.label}, ${k}` });
         inp.addEventListener('input', () => { const v = inp.valueAsNumber; if (Number.isFinite(v)) { r[d.id][k] = d.int ? Math.round(v) : v; refresh(); } });
-        tr.append(h('td', { 'data-label': { worst: 'Worst', base: 'Base', best: 'Best' }[k] }, h('div', { class: 'inp sm' }, d.pre && h('span', { class: 'u' }, d.pre), inp, d.unit && h('span', { class: 'u' }, d.unit === 'yrs' ? 'yrs' : d.unit))));
+        tr.append(h('td', { 'data-label': { worst: 'Worst', base: 'Normal', best: 'Best' }[k] }, h('div', { class: 'inp sm' }, d.pre && h('span', { class: 'u' }, d.pre), inp, d.unit && h('span', { class: 'u' }, d.unit === 'yrs' ? 'yrs' : d.unit))));
       });
       tr.append(h('td', { class: 'dim' }, ''));
       tb.append(tr);
     });
-    const probTr = h('tr', { class: 'probs' }, h('th', {}, 'How likely is each?')), probTot = h('td', { class: 'dim' }), totalText = () => `Total: ${nf(st.probs.reduce((a, x) => a + x, 0), 0)}%` + (st.probs.reduce((a, x) => a + x, 0) === 100 ? '' : ' (scaled to 100%)');
-    st.probs.forEach((p, i) => { const inp = h('input', { type: 'number', min: 0, max: 100, step: 5, value: p, 'aria-label': 'Chance ' + ['worst', 'base', 'best'][i] }); inp.addEventListener('input', () => { st.probs[i] = Math.max(0, inp.valueAsNumber || 0); probTot.textContent = totalText(); refresh(); }); probTr.append(h('td', { 'data-label': ['Worst', 'Base', 'Best'][i] }, h('div', { class: 'inp sm' }, inp, h('span', { class: 'u' }, '%')))); });
+    const probTr = h('tr', { class: 'probs' }, h('th', {}, 'How likely is each?')), probTot = h('td', { class: 'dim' }), totalText = () => `Total: ${nf(st.probs.reduce((a, x) => a + x, 0), 0)}%` + (st.probs.reduce((a, x) => a + x, 0) === 100 ? '' : ' (we scale it to 100%)');
+    st.probs.forEach((p, i) => { const inp = h('input', { type: 'number', min: 0, max: 100, step: 5, value: p, 'aria-label': 'Chance ' + ['worst', 'normal', 'best'][i] }); inp.addEventListener('input', () => { st.probs[i] = Math.max(0, inp.valueAsNumber || 0); probTot.textContent = totalText(); refresh(); }); probTr.append(h('td', { 'data-label': ['Worst', 'Normal', 'Best'][i] }, h('div', { class: 'inp sm' }, inp, h('span', { class: 'u' }, '%')))); });
     probTot.textContent = totalText(); probTr.append(probTot);
     tb.append(probTr);
     tableRes = h('tbody', { class: 'res' });
     t.append(tb, tableRes);
-    const sec1 = h('section', { class: 'card scsec reveal' }, h('div', { class: 'sec-h2' }, h('h2', {}, 'Three possible futures'), h('p', {}, 'Edit any number.'), h('a', { class: 'learnlink', href: '/learn#idea-expected', 'data-link': true }, 'What does "Weighted average" mean?')), h('div', { class: 'tw2' }, t));
+    const sec1 = h('section', { class: 'card scsec reveal' }, h('div', { class: 'sec-h2' }, h('h2', {}, 'Three ways it could go'), h('p', {}, 'You can change any number.'), h('a', { class: 'learnlink', href: '/learn#idea-expected', 'data-link': true }, 'What does "Average (by chance)" mean?')), h('div', { class: 'tw2' }, t));
 
     /* measure picker */
     measureEl = h('div', { class: 'measure reveal' });
@@ -79,8 +79,8 @@ export function renderScenarios(main) {
     tableRes.innerHTML = '';
     m.outputs.forEach(o => {
       const oc = outcome(m, o.id, r, st.probs);
-      const cell = (x, cls) => `<td class="${cls || ''}" data-label="${{ wc: 'Worst', base: 'Base', bc: 'Best' }[cls] || ''}"><span class="vw"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</span></td>`;
-      const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk" data-label="Weighted average"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
+      const cell = (x, cls) => `<td class="${cls || ''}" data-label="${{ wc: 'Worst', base: 'Normal', bc: 'Best' }[cls] || ''}"><span class="vw"><b>${isNum(x) ? esc(o.fmt(x)) : '—'}</b>${cls === 'base' ? '' : deltaChip(o, x, oc.base)}</span></td>`;
+      const tr = h('tr', { html: `<th>${esc(o.label)}</th>${cell(oc.worst, 'wc')}${cell(oc.base, 'base')}${cell(oc.best, 'bc')}<td class="lk" data-label="Average (by chance)"><b>${isNum(oc.expected) ? esc(o.fmt(oc.expected)) : '—'}</b></td>` });
       tableRes.append(tr);
       tr.querySelectorAll('td b').forEach((el, i) => tick(el, el.textContent, `sc:${st.id}:${o.id}:${i}`));
     });
@@ -90,11 +90,11 @@ export function renderScenarios(main) {
     const m = model(), o = findOutput(m, outId()), rows = tornado(m, o.id, ranges()), base = o.calc(valuesAt(m, ranges(), 'base'));
     const lo = Math.min(...rows.map(x => x.low)), hi = Math.max(...rows.map(x => x.high)), pos = v => ((v - lo) / ((hi - lo) || 1)) * 100, bp = pos(base);
     const leftC = o.better === 'high' ? 'bad' : 'good', rightC = o.better === 'high' ? 'good' : 'bad';
-    tornEl.innerHTML = `<div class="sec-h2"><h2>What matters most</h2><p>${rows[0] && rows[0].swing > 0 ? `<b>${esc(rows[0].label)}</b> moves the result the most.` : 'Nothing moves the result.'}</p></div>
+    tornEl.innerHTML = `<div class="sec-h2"><h2>What matters most</h2><p>${rows[0] && rows[0].swing > 0 ? `<b>${esc(rows[0].label)}</b> changes the result the most.` : 'Nothing changes the result.'}</p></div>
       <div class="torn">${rows.map((r, i) => `<div class="trow" style="--i:${i}"><div class="tlab">${esc(r.label)}</div><div class="tval l ${leftC}">${esc(o.short(r.low))}</div>
         <div class="ttrack"><i class="seg l ${leftC}" style="left:${pos(r.low)}%;width:${Math.max(0, bp - pos(r.low))}%"></i><i class="seg r ${rightC}" style="left:${bp}%;width:${Math.max(0, pos(r.high) - bp)}%"></i><i class="bline" style="left:${bp}%"></i></div>
         <div class="tval r ${rightC}">${esc(o.short(r.high))}</div></div>`).join('')}</div>
-      <p class="legend2"><i class="bad"></i>worse than base <i class="good"></i>better than base <span>Line = base case</span></p>`;
+      <p class="legend2"><i class="bad"></i>worse than normal <i class="good"></i>better than normal <span>Line = normal case</span></p>`;
     requestAnimationFrame(() => tornEl.querySelector('.torn') && tornEl.querySelector('.torn').classList.add('play'));
   }
 
@@ -106,7 +106,7 @@ export function renderScenarios(main) {
     const maxAbs = Math.max(1e-9, ...g.z.flat().filter(isNum).map(z => Math.abs(delta(z, g.base) ?? 0)));
     const near = (arr, v) => arr.reduce((b, x, i) => (Math.abs(x - v) < Math.abs(arr[b] - v) ? i : b), 0), bx = near(g.xs, r[st.x].base), by = near(g.ys, r[st.y].base);
     const sel = (cur, other, key) => `<select data-k="${key}" aria-label="${key === 'x' ? 'Across' : 'Down'}">${m.drivers.filter(d => d.id !== other).map(d => `<option value="${d.id}" ${d.id === cur ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select>`;
-    gridEl.innerHTML = `<div class="sec-h2"><h2>What if two things change?</h2><p>Each square is one combination.</p></div>
+    gridEl.innerHTML = `<div class="sec-h2"><h2>What if two things change?</h2><p>Each square is one mix of the two.</p></div>
       <div class="pair"><label><span>Across</span>${sel(st.x, st.y, 'x')}</label><label><span>Down</span>${sel(st.y, st.x, 'y')}</label></div>
       <div class="tw2"><table class="hm"><thead><tr><th></th>${g.xs.map(x => `<th>${esc(fmtDriver(dx, x))}</th>`).join('')}</tr></thead><tbody>${g.z.map((row, yi) => `<tr><th>${esc(fmtDriver(dy, g.ys[yi]))}</th>${row.map((z, xi) => { const d = delta(z, g.base) ?? 0, good = (o.better === 'high') === (d > 0), a = Math.round(Math.min(1, Math.abs(d) / maxAbs) * 58); return `<td class="${xi === bx && yi === by ? 'basecell' : ''}" style="background:${isNum(z) ? `color-mix(in srgb, var(--${good ? 'good' : 'bad'}) ${a}%, transparent)` : 'transparent'}" title="${esc(isNum(z) ? o.fmt(z) : '—')}">${isNum(z) ? esc(o.short(z)) : '—'}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
     gridEl.querySelectorAll('select').forEach(s => s.addEventListener('change', () => { st[s.dataset.k] = s.value; renderGrid(); }));
@@ -116,9 +116,9 @@ export function renderScenarios(main) {
     const m = model(), o = findOutput(m, outId());
     sim = monteCarlo(m, o.id, ranges(), 3000, st.seed);
     const bad = o.better === 'high' ? ['Bad case (1 in 10)', sim.p10] : ['Bad case (1 in 10)', sim.p90], good = o.better === 'high' ? ['Good case (1 in 10)', sim.p90] : ['Good case (1 in 10)', sim.p10];
-    riskEl.innerHTML = `<div class="sec-h2"><h2>How risky is it?</h2><p>3,000 what-ifs, each with random numbers inside your ranges. The simulation uses your ranges, not the likelihood percentages.</p><a class="learnlink" href="/learn#idea-montecarlo" data-link>How does this work?</a><button type="button" class="btn play" data-run>Run again</button></div>
+    riskEl.innerHTML = `<div class="sec-h2"><h2>How risky is it?</h2><p>We try 3,000 what-ifs. Each uses random numbers inside your ranges. It ignores the chance percentages.</p><a class="learnlink" href="/learn#idea-montecarlo" data-link>How does this work?</a><button type="button" class="btn play" data-run>Run again</button></div>
       <div class="hist"></div><div class="rcount"></div>
-      <div class="rstats"><div><span>Typical</span><b>${esc(o.fmt(sim.p50))}</b></div><div><span>${bad[0]}</span><b class="bad">${esc(o.fmt(bad[1]))}</b></div><div><span>${good[0]}</span><b class="good">${esc(o.fmt(good[1]))}</b></div>${sim.probBad != null ? `<div class="chance"><span>Chance of ${esc(sim.riskText)}</span><b class="${sim.probBad > 0.25 ? 'bad' : sim.probBad > 0.1 ? 'warn' : 'good'}">${pct(sim.probBad, 0)}</b></div>` : ''}</div>`;
+      <div class="rstats"><div><span>Usual result</span><b>${esc(o.fmt(sim.p50))}</b></div><div><span>${bad[0]}</span><b class="bad">${esc(o.fmt(bad[1]))}</b></div><div><span>${good[0]}</span><b class="good">${esc(o.fmt(good[1]))}</b></div>${sim.probBad != null ? `<div class="chance"><span>Chance of ${esc(sim.riskText)}</span><b class="${sim.probBad > 0.25 ? 'bad' : sim.probBad > 0.1 ? 'warn' : 'good'}">${pct(sim.probBad, 0)}</b></div>` : ''}</div>`;
     riskEl.querySelector('[data-run]').addEventListener('click', () => { st.seed++; renderRisk(true); });
     const host = riskEl.querySelector('.hist'), cnt = riskEl.querySelector('.rcount');
     const lo = Math.min(...sim.samples), hi = Math.max(...sim.samples), full = histogram(sim.samples, sim.samples.length, lo, hi, 32), ymax = Math.max(...full, 1);
@@ -128,10 +128,10 @@ export function renderScenarios(main) {
       let g = `<line x1="${padL}" x2="${W - padR}" y1="${base}" y2="${base}" stroke="var(--line)" stroke-width="2"/>`;
       hs.forEach((c, i) => { const mid = lo + (i + 0.5) * (hi - lo) / 32, isBad = sim.threshold == null ? null : (o.risk.kind === 'below' ? mid < sim.threshold : mid > sim.threshold), col = isBad == null ? 'var(--c2)' : isBad ? 'var(--bad)' : 'var(--good)', hh = (base - top) * c / ymax; g += `<rect x="${(padL + i * bw + 1).toFixed(1)}" y="${(base - hh).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${Math.max(0, hh).toFixed(1)}" rx="3" fill="${col}" opacity=".9"/>`; });
       const mark = (v, label, c, dy) => (v >= lo && v <= hi ? `<line x1="${X(v)}" x2="${X(v)}" y1="${top - 6}" y2="${base}" stroke="${c}" stroke-width="1.6" stroke-dasharray="5 4"/><text x="${Math.min(W - padR - 2, Math.max(padL + 2, X(v)))}" y="${top - 10 + dy}" text-anchor="${X(v) > W - 90 ? 'end' : X(v) < 90 ? 'start' : 'middle'}" font-size="12.5" font-weight="600" fill="${c}">${label}</text>` : '');
-      g += mark(sim.base, 'Base case', 'var(--ink)', 0) + (sim.threshold != null && Math.abs(X(sim.threshold) - X(sim.base)) > 70 ? mark(sim.threshold, 'Risk line', 'var(--bad)', 0) : '');
+      g += mark(sim.base, 'Normal case', 'var(--ink)', 0) + (sim.threshold != null && Math.abs(X(sim.threshold) - X(sim.base)) > 70 ? mark(sim.threshold, 'Danger line', 'var(--bad)', 0) : '');
       g += `<text x="${padL}" y="${H - 12}" font-size="12.5" fill="var(--mute)" font-weight="600">${esc(o.short(lo))}</text><text x="${W - padR}" y="${H - 12}" text-anchor="end" font-size="12.5" fill="var(--mute)" font-weight="600">${esc(o.short(hi))}</text>`;
-      host.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Spread of possible results">${g}</svg>`;
-      cnt.textContent = `${k.toLocaleString('en-US')} what-ifs run`;
+      host.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="How the possible results spread out">${g}</svg>`;
+      cnt.textContent = `${k.toLocaleString('en-US')} what-ifs tried`;
     };
     cancelAnimationFrame(raf);
     if (ro) ro.disconnect();

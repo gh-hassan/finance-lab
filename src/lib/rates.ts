@@ -27,9 +27,9 @@ const diff = (a: number | null, b: number | null): number | null => (a != null &
 const pts = (x: number): string => Math.abs(x).toFixed(2);
 
 const TEXT: Record<Exclude<CurveShape, 'unknown'>, string> = {
-  normal: 'The curve slopes upward: lenders ask for more to lock money away for longer. This is the usual, healthy shape.',
+  normal: 'The curve slopes upward: lenders ask for more when you lock your money away for longer. This is the usual, healthy shape.',
   flat: 'The curve is nearly flat: short and long loans pay about the same. Markets are unsure which way growth and rates will go next.',
-  inverted: 'The curve is inverted: short-term loans pay more than long-term ones. Investors are betting rates will fall later, often because they expect slower growth. It has come before past recessions, but it is not a forecast and the timing varies a lot.',
+  inverted: 'The curve is inverted: short-term loans pay more than long-term ones. Investors are betting rates will fall later, often because they expect slower growth. It has come before past recessions (times when the economy shrinks). It is not a forecast, and the timing varies a lot.',
   humped: 'The curve rises in the middle and falls again at the long end. That means the market expects rates to peak within a few years.'
 };
 

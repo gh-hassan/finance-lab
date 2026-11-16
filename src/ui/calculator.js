@@ -92,7 +92,7 @@ export function renderCalculator(main) {
       h('p', { class: 'gs-intro' }, ex.intro), h('ol', { class: 'gs' }, items), h('p', { class: 'gs-after' }, h('b', {}, 'You get: '), ex.after));
   };
   const guide = h('div', { class: 'ba-guide' }, h('h2', {}, 'How to use it'),
-    h('p', { class: 'ba-lead' }, 'Follow a lesson key by key. Each step shows the screen you should see, so you always know you are on track. The same key presses work on a real BA II Plus.'),
+    h('p', { class: 'ba-lead' }, 'Follow a lesson key by key. Each step shows the screen you should see. The same keys work on a real BA II Plus.'),
     h('div', { class: 'card ba-basics' }, h('h3', {}, 'Read this first'), h('ul', {}, BASICS.map(([t, d]) => h('li', {}, h('b', {}, t), ' ', d))),
       h('p', { class: 'gs-key' }, 'A key you press looks like ', h('kbd', { class: 'kb' }, 'N'), '. A yellow label looks like ', h('span', { class: 'kk' }, h('kbd', { class: 'kb kb2' }, '2ND'), h('kbd', { class: 'kb kb3' }, 'P/Y')), ': press 2ND, then the key under that yellow word. A number you type looks like ', h('span', { class: 'kt' }, '6.5'), '.')),
     EXAMPLES.map(lesson),
@@ -100,7 +100,7 @@ export function renderCalculator(main) {
     h('p', { class: 'ba-fine' }, 'An independent practice tool built for students. It is not made, endorsed or approved by Texas Instruments, and "BA II Plus" is a trademark of Texas Instruments. Check what your exam allows: you may need the physical calculator on test day.'));
 
   main.innerHTML = '';
-  main.append(h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, 'Free for every student'), h('h1', { html: 'Financial <em>calculator</em>' }), h('p', { class: 'lead' }, 'A working BA II Plus calculator for time value of money, cash flows, bonds, amortization, depreciation and statistics.')),
+  main.append(h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, 'Free for every student'), h('h1', { html: 'Financial <em>calculator</em>' }), h('p', { class: 'lead' }, 'A working BA II Plus calculator. Use it for savings, loans, cash flows, bonds, depreciation and statistics.')),
     h('div', { class: 'ba-layout' }, body, guide));
   draw();
   return () => document.removeEventListener('keydown', onKey);

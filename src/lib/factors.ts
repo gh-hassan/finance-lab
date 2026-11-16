@@ -6,9 +6,9 @@ export type FactorKey = 'MKT' | 'SMB' | 'HML' | 'RMW' | 'CMA' | 'MOM';
 export interface FactorInfo { key: FactorKey; name: string; short: string; color: string; dash?: boolean; what: string }
 
 export const FACTORS: FactorInfo[] = [
-  { key: 'MKT', name: 'Market', short: 'Market', color: 'c1', what: 'The whole stock market, minus the safe interest rate. The reward for taking stock market risk at all.' },
+  { key: 'MKT', name: 'Market', short: 'Market', color: 'c1', what: 'The whole stock market, minus the safe interest rate. The reward for taking any stock market risk.' },
   { key: 'SMB', name: 'Size (small minus big)', short: 'Size', color: 'c4', what: 'Small companies minus big companies. Do smaller firms beat larger ones?' },
-  { key: 'HML', name: 'Value (high minus low)', short: 'Value', color: 'c3', what: 'Cheap stocks (high book value for the price) minus expensive ones. Do bargains beat glamour?' },
+  { key: 'HML', name: 'Value (high minus low)', short: 'Value', color: 'c3', what: 'Cheap stocks (a low price compared with what the company\'s books say it is worth) minus expensive ones. Do bargains beat popular stocks?' },
   { key: 'RMW', name: 'Profitability (robust minus weak)', short: 'Profit', color: 'var(--lav)', dash: true, what: 'Highly profitable companies minus weakly profitable ones. Do better businesses win?' },
   { key: 'CMA', name: 'Investment (conservative minus aggressive)', short: 'Invest', color: 'mute', dash: true, what: 'Firms that invest cautiously minus firms that expand fast. Does restraint pay?' },
   { key: 'MOM', name: 'Momentum (winners minus losers)', short: 'Momentum', color: 'ink', what: 'Last year\'s winners minus last year\'s losers. Do recent winners keep winning?' }

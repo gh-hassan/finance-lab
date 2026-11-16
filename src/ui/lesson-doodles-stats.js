@@ -112,7 +112,7 @@ export function correlation(t, p, W, H) {
   const tx0 = x0 + size + Math.max(16, W * 0.04), room = W - tx0 - 8, bigZ = room < 125 ? 28 : 38, lab = Math.abs(r) > 0.7 ? 'strong' : Math.abs(r) > 0.3 ? 'moderate' : 'weak', dir = r > 0.1 ? (room < 125 ? 'together' : 'move together') : r < -0.1 ? (room < 125 ? 'opposite' : 'move opposite') : 'unrelated';
   const yc = y0 + size / 2 - 62;
   g += ink(tx0, yc, 'Score', { a: 'start', z: 14, ...MUTE }) + ink(tx0, yc + 40, (r >= 0 ? '+' : '−') + nf(Math.abs(r), 2), { a: 'start', z: bigZ, c: r >= 0 ? 'var(--pill-on)' : 'var(--warn)' }) + ink(tx0, yc + 82, Math.abs(r) < 0.1 ? 'none' : lab, { a: 'start', z: 17 }) + ink(tx0, yc + 104, dir, { a: 'start', z: 14.5, ...MUTE });
-  return { svg: g, cap: `A correlation of ${r >= 0 ? '+' : '−'}${nf(Math.abs(r), 2)}: the two ${dir}. ${Math.abs(r) > 0.6 ? (r > 0 ? 'Mixing them gives little diversification.' : 'Mixing them calms the ride a lot.') : 'Mixing them helps calm the ride.'}` };
+  return { svg: g, cap: `A correlation of ${r >= 0 ? '+' : '−'}${nf(Math.abs(r), 2)}: the two ${dir}. ${Math.abs(r) > 0.6 ? (r > 0 ? 'Mixing them does little to spread your risk.' : 'Mixing them calms the ride a lot.') : 'Mixing them helps calm the ride.'}` };
 }
 
 /** A stock's moves against the market's: the slope of the best-fit line is beta. */
