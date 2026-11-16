@@ -36,7 +36,7 @@ describe('doodle clock', () => {
   });
   it('the student walks only between stops, and ends up under the paper', () => {
     expect(isWalking(5)).toBe(false); expect(isWalking(6)).toBe(true); expect(isWalking(10)).toBe(false); expect(isWalking(22)).toBe(true);
-    expect(interp(PERSON_X, 10)).toBe(360); expect(interp(PERSON_X, 30)).toBe(1060); expect(interp(PERSON_X, LOOP)).toBe(1100); expect(isWalking(32)).toBe(true); expect(isWalking(33.5)).toBe(false);
+    expect(interp(PERSON_X, 10)).toBe(360); expect(interp(PERSON_X, 30)).toBe(1060); expect(interp(PERSON_X, LOOP)).toBe(70); expect(isWalking(33)).toBe(true); expect(isWalking(35.3)).toBe(false);
   });
   it('the slider and the answer move together', () => {
     expect(slideProgress(SLIDE.from - 1)).toBe(0); expect(slideProgress(SLIDE.to + 1)).toBe(1);
@@ -73,10 +73,16 @@ describe('doodle story', () => {
     expect(svg).toContain('id="dd-again"'); expect(svg).toContain('Should I do'); expect(svg).toContain('it all again?'); expect(svg).toContain('id="dd-hit"');
     expect(svg).toContain('Finance Fundamentals'); expect(svg).toContain('Calculators'); expect(svg).toContain('Play with these'); expect(svg).toContain('Start with a question');
   });
-  it('opens with him studying on the floor and ends with him seated on the floor again', () => {
+  it('opens with him studying on the floor and ends with him back in the same spot, with no second set of things', () => {
     const svg = buildStory();
-    expect(svg).toContain('EXAM'); expect(svg).toContain('READY'); expect(svg).toContain('id="dd-face-look"'); expect(svg).toContain('id="dd-arm"'); expect(svg).toContain('id="dd-pinch"'); expect(svg).toContain('dd-write'); expect(svg).toContain('dd-steam');
+    expect(svg).toContain('EXAM'); expect(svg).toContain('READY'); expect((svg.match(/id="dd-face-look"/g) || []).length).toBe(1); expect((svg.match(/>EXAM</g) || []).length).toBe(1); expect(svg).toContain('id="dd-face-look"'); expect(svg).toContain('id="dd-arm"'); expect(svg).toContain('id="dd-pinch"'); expect(svg).toContain('dd-write'); expect(svg).toContain('dd-steam');
     expect(svg).not.toContain('vercel.app'); expect(svg).toContain('How should I calculate');
+  });
+  it('the seated student at the end is fully drawn, not drawn in, and stops writing when he waves', () => {
+    const svg = buildStory();
+    const i = svg.indexOf('data-v="35-999"'); expect(i).toBeGreaterThan(0);
+    const part = svg.slice(i, svg.indexOf('</g></g>', svg.indexOf('id="dd-face-look"')) + 8);
+    expect(part).not.toContain('data-k='); expect(part).toMatch(/id="dd-face-study"[\s\S]*dd-write[\s\S]*id="dd-face-look"/);
   });
   it('draws one world with every piece timed', () => {
     const svg = buildStory();

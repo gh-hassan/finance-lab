@@ -5,7 +5,7 @@
 import { wobblyLine, wobblyRect, wobblyEllipse, wobblyPath } from './doodle-shapes.js';
 import { SLIDE } from './doodle-timeline.js';
 
-export const W = 1400, H = 520, GROUND = 486;
+export const W = 1400, H = 590, GROUND = 556;
 
 /** What a loan of `principal` at a yearly rate `apr` costs in total over `years`, paid monthly (whole dollars). */
 export function loanTotal(principal, apr, years) {
@@ -30,29 +30,30 @@ const spark = (x, y, s, t) => ln(`M${x} ${y - s} L${x} ${y + s} M${x - s} ${y} L
 const vis = (spec, inner, extra = '') => `<g data-v="${spec}"${extra}>${inner}</g>`;
 
 /** The standing student's size and where his shoulder is, so the player can move his signing arm. */
-export const STAND = { K: 1.4, shoulder: 70, reach: [34, 88] };
+/** The standing student's size and where his shoulder is, so the player can move his signing arm. */
+export const STAND = { K: 1.3, shoulder: 70, reach: [34, 88] };
 const still = svg => svg.replace(/ data-k="[a-z]+"/g, '');
 
 /** The stick-figure student standing: he walks across the floor between the three places. Feet at x = 0 inside the group. */
 function student() {
-  const K = 1.4, P = (a, b) => [r1(a * K), r1(GROUND + b * K)], S = (a, b, c, e) => still(ln(wobblyLine(...P(a, b), ...P(c, e), sd(), 1.6), { s: 0, d: 0 }));
+  const K = STAND.K, P = (a, b) => [r1(a * K), r1(GROUND + b * K)], S = (a, b, c, e) => still(ln(wobblyLine(...P(a, b), ...P(c, e), sd(), 1.6), { s: 0, d: 0 }));
   const head = P(0, -98), e1 = P(-6, -101), e2 = P(6, -101);
   const mouth = (q, a, b, c) => `<path class="dd-s" d="M${P(a, q)} Q${P(b, q + (q === -92 ? 10 : 4))} ${P(c, q)}"/>`;
-  return `<g id="dd-person" data-v="5.4-33">`
+  return `<g id="dd-person" data-v="5.4-35">`
     + still(ln(wobblyEllipse(head[0], head[1], 18 * K, 18 * K, sd(), 1.2), { s: 0, d: 0 })) + S(0, -80, 0, -36)
     + vis('5.4-6.5;29.4-999', `<circle cx="${e1[0]}" cy="${e1[1]}" r="${r1(2.3 * K)}" style="fill:var(--ink)"/><circle cx="${e2[0]}" cy="${e2[1]}" r="${r1(2.3 * K)}" style="fill:var(--ink)"/>`)
     + vis('6.5-29.4', `<circle cx="${e1[0] + 4}" cy="${e1[1] - 3}" r="${r1(2.3 * K)}" style="fill:var(--ink)"/><circle cx="${e2[0] + 4}" cy="${e2[1] - 3}" r="${r1(2.3 * K)}" style="fill:var(--ink)"/>`)
-    + vis('0-5.4;6.5-21;23-31.8', S(0, -36, -16, 0) + S(0, -36, 16, 0))
+    + vis('0-5.4;6.5-21;23-31;35-999', S(0, -36, -16, 0) + S(0, -36, 16, 0))
     + `<g data-walk="A">${S(0, -36, -20, -6)}${S(0, -36, 18, -2)}</g><g data-walk="B">${S(0, -36, -6, 0)}${S(0, -36, 24, -10)}</g>`
-    + vis('0-6.5;21-23;31.8-999', S(0, -70, -24, -46) + S(0, -70, 24, -46))
+    + vis('0-6.5;21-23;31-999', S(0, -70, -24, -46) + S(0, -70, 24, -46))
     + vis('6.5-21;23-29.4', S(0, -70, -24, -46) + `<path id="dd-arm" class="dd-s" d="M0 ${GROUND - 70 * K} L${34 * K} ${GROUND - 88 * K}"/><circle id="dd-pinch" r="4.5" cx="${34 * K}" cy="${GROUND - 88 * K}" style="fill:var(--panel-solid);stroke:var(--ink);stroke-width:2.2;opacity:0"/>`)
-    + vis('29.4-31.8', S(0, -70, -26, -104) + S(0, -70, 26, -104))
+    + vis('29.4-31', S(0, -70, -26, -104) + S(0, -70, 26, -104))
     + vis('5.4-29.4', mouth(-90, -6, 0, 6)) + vis('29.4-999', mouth(-92, -8, 0, 8))
     + `</g>`;
 }
 
 /** Everything he studies with, laid out on the floor in front of him: paper, laptop, coffee and calculator. `x` is where he sits; `t0` is when it starts to draw itself. */
-function floorSet(x, t0, sticky) {
+function floorSet(x, t0, sticky, later) {
   const K = 1.25, P = (a, b) => [r1(x + a * K), r1(GROUND + b * K)], L = (a, b, c, e, at, w = 2.6) => ln(wobblyLine(...P(a, b), ...P(c, e), sd(), 1.3), { s: t0 + at, d: 0.4, w });
   const B = (a, b, c, e, at, fill, o = {}) => { const [bx, by] = P(a, b); return box(bx, by, (c - a) * K, (e - b) * K, { s: t0 + at, d: 0.4, rx: o.rx ?? 4, fill, amt: 1, w: o.w ?? 2.2 }); };
   const T = (a, b, s2, size, at) => tx(...P(a, b), s2, { size, a: 'middle', s: t0 + at, d: 0.3, hand: true });
@@ -63,6 +64,7 @@ function floorSet(x, t0, sticky) {
     + B(162, -22, 174, -8, 0.6, 'var(--panel-solid)', { rx: 3 }) + ln(wobblyEllipse(...P(177, -15), 4 * K, 5 * K, sd(), 0.6), { s: t0 + 0.7, d: 0.3, w: 1.8 })
     + B(182, -36, 202, -8, 0.8, 'var(--soft)') + B(185, -33, 199, -27, 0.9, 'var(--panel-solid)', { rx: 2, w: 1.2 }) + dots
     + B(122, -80, 154, -60, 1.0, GOLD_FILL, { rx: 2, w: 1.6 }) + T(138, -70, sticky, 11, 1.2)
+    + (later ? B(122, -80, 154, -60, later.at, 'var(--panel-solid)', { rx: 2, w: 0.1 }) + B(122, -80, 154, -60, later.at + 0.05, GOLD_FILL, { rx: 2, w: 1.6 }) + T(138, -70, later.text, 11, later.at + 0.2) : '')
     + `<g>${steam(168)}${steam(172)}</g>`;
 }
 const GOLD_FILL = 'rgba(242,193,78,.7)';
@@ -73,18 +75,18 @@ function sitter(x, window, mood, t0 = 0, o = {}) {
   const head = P(2, -76), eyes = look => { const e1 = P(look ? -3 : 5, look ? -78 : -76), e2 = P(look ? 8 : 13, look ? -78 : -76); return `<circle cx="${e1[0]}" cy="${e1[1]}" r="${r1(2.3 * K)}" style="fill:var(--ink)"/><circle cx="${e2[0]}" cy="${e2[1]}" r="${r1(2.3 * K)}" style="fill:var(--ink)"/>`; };
   const smile = (a, b, c, q) => `<path class="dd-s" d="M${P(a, q)} Q${P(b, q + 9)} ${P(c, q)}"/>`;
   const worried = L(-1, -63, 9, -65, 0.9, 2.4) + L(-4, -86, 4, -89, 0.9, 2) + L(10, -89, 17, -86, 0.9, 2);
-  const body = ln(wobblyEllipse(head[0], head[1], 18 * K, 18 * K, sd(), 1.2), { s: t0 + 0.2, d: 0.6 }) + L(0, -56, 0, -8, 0.2) + L(0, -8, 24, -36, 0.3) + L(24, -36, 38, -2, 0.35) + L(-2, -8, -22, -2, 0.35) + L(0, -48, 15, -40, 0.4);
-  const write = `<g class="dd-write">${still(L(15, -40, 50, -14, 0, 2.8))}${still(L(50, -14, 60, -32, 0, 2.4))}</g>`;
-  return `<g data-v="${window}">` + body + write + (mood === 'worried' ? eyes(false) + worried : `<g id="dd-face-study">${eyes(false)}${smile(-1, 8, 17, -64)}</g>` + (o.look ? `<g id="dd-face-look" style="visibility:hidden">${eyes(true)}${smile(-6, 3, 12, -64)}${still(L(15, -40, 38, -86, 0, 2.8))}</g>` : '')) + `</g>`;
+  const body = ln(wobblyEllipse(head[0], head[1], 18 * K, 18 * K, sd(), 1.2), { s: t0 + 0.2, d: 0.6 }) + L(0, -56, 2, -8, 0.2) + L(2, -8, 24, -34, 0.3) + L(24, -34, 36, -2, 0.35) + L(2, -8, 48, -4, 0.35) + L(0, -48, 14, -32, 0.4);
+  const write = `<g class="dd-write">${still(L(14, -32, 46, -14, 0, 2.8))}${still(L(46, -14, 42, -4, 0, 2.4))}</g>`;
+  return `<g data-v="${window}">` + body + (o.look ? '' : write) + (mood === 'worried' ? eyes(false) + worried : `<g id="dd-face-study">${eyes(false)}${smile(-1, 8, 17, -64)}${o.look ? write : ''}</g>` + (o.look ? `<g id="dd-face-look" style="visibility:hidden">${eyes(true)}${smile(-6, 3, 12, -64)}${still(L(0, -48, 30, -84, 0, 2.8))}</g>` : '')) + `</g>`;
 }
 
 /* ---- left: he studies on the floor, gets stuck, and the worry floats above his head until he gets up ---- */
 const GONE = 5.4;
-const thought = () => ln(wobblyLine(20, GROUND, 1380, GROUND, sd(), 2), { s: 0, d: 1, c: 'var(--mute)' }) + floorSet(70, 0, 'EXAM') + sitter(70, '0-5.4', 'worried', 0)
-  + tx(26, 404, '?', { size: 34, hand: true, s: 2.0, d: 0.4, e: GONE, fill: 'var(--c4)' }) + tx(140, 396, '?', { size: 30, hand: true, s: 2.2, d: 0.4, e: GONE, fill: 'var(--c4)' })
-  + ln(wobblyEllipse(82, 352, 6, 6, sd()), { s: 2.4, d: 0.3, e: GONE }) + ln(wobblyEllipse(94, 328, 9, 9, sd()), { s: 2.55, d: 0.3, e: GONE }) + ln(wobblyEllipse(112, 298, 13, 13, sd()), { s: 2.7, d: 0.3, e: GONE })
-  + fillBox(24, 62, 400, 138, { s: 2.8, d: 0.5, e: GONE, rx: 68, fill: 'var(--panel-solid)' }) + ln(wobblyEllipse(224, 131, 200, 68, sd(), 2), { s: 2.8, d: 0.9, e: GONE })
-  + tx(224, 120, 'How should I calculate', { size: 25, hand: true, a: 'middle', s: 3.2, d: 0.6, e: GONE }) + tx(224, 152, 'what this loan will', { size: 25, hand: true, a: 'middle', s: 3.8, d: 0.6, e: GONE }) + tx(224, 184, 'actually cost?', { size: 25, hand: true, a: 'middle', s: 4.4, d: 0.5, e: GONE });
+const thought = () => ln(wobblyLine(20, GROUND, 1380, GROUND, sd(), 2), { s: 0, d: 1, c: 'var(--mute)' }) + floorSet(70, 0, 'EXAM', { at: 35.0, text: 'READY' }) + sitter(70, '0-5.4', 'worried', 0) + still(sitter(70, '35-999', 'happy', 35, { look: true }))
+  + tx(26, 474, '?', { size: 34, hand: true, s: 2.0, d: 0.4, e: GONE, fill: 'var(--c4)' }) + tx(140, 466, '?', { size: 30, hand: true, s: 2.2, d: 0.4, e: GONE, fill: 'var(--c4)' })
+  + ln(wobblyEllipse(82, 422, 6, 6, sd()), { s: 2.4, d: 0.3, e: GONE }) + ln(wobblyEllipse(94, 398, 9, 9, sd()), { s: 2.55, d: 0.3, e: GONE }) + ln(wobblyEllipse(112, 368, 13, 13, sd()), { s: 2.7, d: 0.3, e: GONE })
+  + fillBox(24, 112, 400, 138, { s: 2.8, d: 0.5, e: GONE, rx: 68, fill: 'var(--panel-solid)' }) + ln(wobblyEllipse(224, 181, 200, 68, sd(), 2), { s: 2.8, d: 0.9, e: GONE })
+  + tx(224, 170, 'How should I calculate', { size: 25, hand: true, a: 'middle', s: 3.2, d: 0.6, e: GONE }) + tx(224, 202, 'what this loan will', { size: 25, hand: true, a: 'middle', s: 3.8, d: 0.6, e: GONE }) + tx(224, 234, 'actually cost?', { size: 25, hand: true, a: 'middle', s: 4.4, d: 0.5, e: GONE });
 
 /* ---- middle: the site, drawn like the real one: browser bar, site header, then the pages he visits ---- */
 const WX = 516, SW = 'var(--pill-on)';
@@ -130,22 +132,22 @@ function site() {
     + box(bx, 176, full, 30, { s: 19.6, d: 0.5, rx: 8, fill: 'var(--soft)', amt: 0.8, w: 1.8 }) + tx(bx + 12, 195, 'A longer loan means more months of interest.', { size: 12, s: 20.0, d: 0.5 });
   const ripple = (t, x, y) => `<circle class="dd-ripple" data-ripple="${t}" cx="${x}" cy="${y}" r="14"/>`;
   const cursor = `<g id="dd-cursor" class="dd-cursor"><path d="M0 0 L0 24 L6.5 18.5 L11 29 L15.5 27 L11 16.5 L19 16.5 Z" transform="scale(.8)"/></g>`;
-  return `<g transform="translate(400 36) scale(1.4) translate(-500 -22)">` + frame + siteHeader() + home + calc + bars + ripple(9.4, WX + 158, 190) + ripple(12.1, SLIDE.x0, SLIDE.y) + cursor + `</g>`;
+  return `<g transform="translate(400 22) scale(1.4) translate(-500 -22)">` + frame + siteHeader() + home + calc + bars + ripple(9.4, WX + 158, 190) + ripple(12.1, SLIDE.x0, SLIDE.y) + cursor + `</g>`;
 }
 
 /* ---- right: the paper, and the desk where he sits down to study again, happily ---- */
 function paper() {
   const lines = [['Loan = $20,000', 64, 23.6], ['5 years, 8% a year', 104, 24.6], ['Pay back = ' + usd(TOTALS.long), 144, 25.6], ['Interest = ' + usd(TOTALS.interest), 184, 26.6]];
-  const again = `<g id="dd-again" style="opacity:0;transition:opacity .25s;pointer-events:none">` + still(fillBox(826, 366, 224, 100, { s: 0, rx: 50, fill: 'var(--panel-solid)' }) + ln(wobblyEllipse(938, 416, 108, 46, sd(), 2), { s: 0 }) + tx(938, 407, 'Should I do', { size: 24, hand: true, a: 'middle', s: 0 }) + tx(938, 436, 'it all again?', { size: 24, hand: true, a: 'middle', s: 0 })) + `</g>`;
+  const again = `<g id="dd-again" style="opacity:0;transition:opacity .25s;pointer-events:none">` + still(fillBox(166, 340, 224, 100, { s: 0, rx: 50, fill: 'var(--panel-solid)' }) + ln(wobblyEllipse(278, 390, 108, 46, sd(), 2), { s: 0 }) + tx(278, 381, 'Should I do', { size: 24, hand: true, a: 'middle', s: 0 }) + tx(278, 410, 'it all again?', { size: 24, hand: true, a: 'middle', s: 0 })) + `</g>`;
   return `<g transform="translate(1094 18) scale(0.9) translate(-1020 -18)"><g transform="rotate(-2 1190 120)">` + fillBox(1020, 18, 340, 214, { s: 22.4, d: 0.6, rx: 6 }) + ln(wobblyRect(1020, 18, 340, 214, sd(), 1.6), { s: 22.4, d: 1 })
     + [0, 1, 2, 3].map(i => ln(wobblyLine(1038, 74 + i * 40, 1342, 74 + i * 40, sd(), 1), { s: 22.9 + i * 0.1, d: 0.6, c: 'var(--line)', w: 2 })).join('')
     + lines.map(([t, y, s]) => tx(1042, y, t, { size: 25, hand: true, s, d: 0.8 })).join('')
     + ln(wobblyEllipse(1222, 134, 72, 24, sd()), { s: 27.7, d: 0.7, c: 'var(--c4)', w: 3.5 })
     + ln(wobblyPath([[1262, 180], [1286, 208], [1342, 150]], sd(), 1), { s: 28.7, d: 0.5, c: 'var(--good)', w: 7 }) + `</g></g>`
-    + fillBox(796, 392, 220, 70, { s: 29.5, d: 0.4, e: 32.2, rx: 35, fill: 'var(--panel-solid)' }) + ln(wobblyEllipse(906, 427, 106, 34, sd(), 2), { s: 29.5, d: 0.8, e: 32.2 }) + tx(906, 437, 'I get it!', { size: 30, hand: true, a: 'middle', s: 30.1, d: 0.4, e: 32.2 })
-    + spark(700, 400, 9, 30.0) + spark(1030, 380, 13, 30.2) + spark(1180, 400, 9, 30.4) + spark(1250, 360, 11, 30.6) + spark(1350, 400, 9, 30.8)
-    + vis('31-999', floorSet(1100, 31, 'READY')) + sitter(1100, '33-999', 'happy', 33, { look: true }) + again
-    + `<rect id="dd-hit" x="1040" y="${GROUND - 215}" width="350" height="225" style="fill:transparent;pointer-events:none"/>`;
+    + fillBox(796, 462, 220, 70, { s: 29.5, d: 0.4, e: 31.2, rx: 35, fill: 'var(--panel-solid)' }) + ln(wobblyEllipse(906, 497, 106, 34, sd(), 2), { s: 29.5, d: 0.8, e: 31.2 }) + tx(906, 507, 'I get it!', { size: 30, hand: true, a: 'middle', s: 30.1, d: 0.4, e: 31.2 })
+    + spark(700, 470, 9, 30.0) + spark(1030, 450, 13, 30.2) + spark(1180, 470, 9, 30.4) + spark(1250, 430, 11, 30.6) + spark(1350, 470, 9, 30.8)
+    + again
+    + `<rect id="dd-hit" x="20" y="${GROUND - 215}" width="360" height="225" style="fill:transparent;pointer-events:none"/>`;
 }
 
 /** The whole picture as SVG markup. */

@@ -4,9 +4,9 @@
    These are plain numbers and functions, so tests can check them. */
 
 /** The whole story lasts this long before it starts again. */
-export const LOOP = 34.2;
+export const LOOP = 35.6;
 /** A time at which the picture is complete, used for a still image when motion is reduced. */
-export const POSTER_T = 33.6;
+export const POSTER_T = 35.4;
 
 export const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 export const smooth = p => p * p * (3 - 2 * p);
@@ -24,9 +24,9 @@ export function interp(track, t) {
 export const inWindows = (spec, t) => spec.split(';').some(w => { const [a, b] = w.split('-').map(Number); return t >= a && t < b; });
 
 /** Where the student stands (feet). He walks from the thought, to the site, to the paper. */
-export const PERSON_X = [[0, 70], [5.4, 70], [6.5, 360], [21, 360], [23, 1060], [31.8, 1060], [33, 1100], [99, 1100]];
+export const PERSON_X = [[0, 70], [5.4, 70], [6.5, 360], [21, 360], [23, 1060], [31, 1060], [35, 70], [99, 70]];
 /** The student walks during these windows. */
-export const WALKS = '5.4-6.5;21-23;31.8-33';
+export const WALKS = '5.4-6.5;21-23;31-35';
 export const isWalking = t => inWindows(WALKS, t);
 
 /** The slider time: it moves from 12.4 s to 14.6 s, and the answer follows it. */
