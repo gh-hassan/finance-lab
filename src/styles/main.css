@@ -1086,25 +1086,20 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 
 .tk-d{contain:paint}
 
-/* phone header: the brand and the search and day/night buttons share one row, so the header is one row shorter */
+/* phone header: the brand gets a full row at its normal size; the menu icons and the search and day/night buttons share the row below, with even gaps */
 @media (max-width:640px){
-  .topbar{gap:8px;padding:8px 10px}
-  .topbar .brand{order:1;flex:1 1 0;min-width:0;gap:8px}
-  .topbar .tools{order:2;margin-left:0;flex:none;gap:6px}
-  .topbar .tools .iconbtn{width:38px;height:38px;min-width:38px;min-height:38px;border-radius:12px}
-  .topbar .pillnav{order:3;flex:1 0 100%}
-  .topbar .brand .logo img{height:26px}
-  .topbar .subject{padding-left:8px;min-width:0}
-  .topbar .subject b{font-size:13px;white-space:nowrap;line-height:1.15;letter-spacing:-.03em}
-  .topbar .subject small{font-size:10px;white-space:normal;line-height:1.15}
-  .topbar .tools .iconbtn:not([data-open-search]){display:none}
-  .topbar .tools .iconbtn{width:42px;height:42px;min-width:42px;min-height:42px}
-  .dual{display:grid}
+  .topbar{gap:10px 8px;padding:10px 12px;align-items:center}
+  .topbar .brand{order:1;flex:1 0 100%;min-width:0}
+  .topbar .pillnav{order:2;flex:1 1 0;min-width:0;margin:0;justify-content:space-between;padding:4px}
+  .topbar .pill{padding:10px 8px;gap:3px}
+  .topbar .pillnav{gap:0}
+  .topbar .pill.on em{display:none}
+  .topbar .tools{order:3;margin-left:0;flex:none;gap:8px}
+  .topbar .tools .iconbtn{width:42px;height:42px;min-width:42px;min-height:42px;border-radius:14px}
+}
+@media (max-width:359px){
+  .topbar .pill{padding:10px 8px}
+  .topbar .tools{gap:6px}
+  .topbar .tools .iconbtn{width:40px;height:40px;min-width:40px;min-height:40px}
 }
 
-/* the search button doubles as the day and night switch on phones */
-.iconbtn[data-open-search]{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-.dual{display:none;position:absolute;right:3px;bottom:3px;width:15px;height:15px;place-items:center;border-radius:50%;background:var(--panel-solid);border:1px solid var(--line);color:var(--ink);pointer-events:none}
-.dual svg{width:9px;height:9px}
-.mini-toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translate(-50%,14px);opacity:0;padding:10px 18px;border-radius:999px;background:var(--pill-on);color:var(--pill-on-text);font:600 14px var(--body);pointer-events:none;transition:opacity .2s,transform .25s;z-index:80}
-.mini-toast.on{opacity:1;transform:translate(-50%,0)}
