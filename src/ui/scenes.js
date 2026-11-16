@@ -635,7 +635,12 @@ export class SceneView {
     };
     this.raf = requestAnimationFrame(step);
   }
-  setParams(p, replay = true) { Object.assign(this.p, p); this.draw(); this.fitCaption(); if (replay && !this.hover && this.mode === 'watch') { clearTimeout(this.timer); this.timer = setTimeout(() => this.startWatch(), 300); } }
+  /** A lever moved: show the finished picture at once. The story is not replayed from the start, so nobody waits for it to catch up. */
+  setParams(p, replay = true) {
+    Object.assign(this.p, p);
+    if (replay && !this.hover && this.mode === 'watch') { this.halt(); clearTimeout(this.timer); this.t = 1; }
+    this.draw(); this.fitCaption();
+  }
   size() { const W = Math.max(280, Math.floor(this.stage.clientWidth) || 520); return { W, H: Math.round(clamp(W * 0.6, 270, 340)) }; }
   draw() {
     const { W, H } = this.size();

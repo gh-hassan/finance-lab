@@ -26,7 +26,18 @@ export function startApp(root) {
   const topics = Object.keys(TOPICS);
   const theme = () => document.documentElement.dataset.theme || 'light';
   const themeBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Toggle dark mode', html: theme() === 'dark' ? ICONS.sun : ICONS.moon, onclick: () => { const t = theme() === 'dark' ? 'light' : 'dark'; const root = document.documentElement; root.classList.add('theme-fade'); document.documentElement.dataset.theme = t; setTimeout(() => root.classList.remove('theme-fade'), 600); store.set('fl:theme', t); themeBtn.innerHTML = t === 'dark' ? ICONS.sun : ICONS.moon; } });
-  const searchBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Search calculators (press /)', 'data-open-search': true, html: ICONS.search });
+  const searchBtn = h('button', { class: 'iconbtn', type: 'button', 'aria-label': 'Search calculators (press /). Press and hold to switch day or night.', 'data-open-search': true, html: ICONS.search });
+  /* one button on phones: a tap opens search, a press and hold switches day and night, with a small badge showing what a hold does */
+  const nightBadge = h('span', { class: 'dual', 'aria-hidden': 'true', html: theme() === 'dark' ? ICONS.sun : ICONS.moon });
+  searchBtn.append(nightBadge);
+  new MutationObserver(() => { nightBadge.innerHTML = theme() === 'dark' ? ICONS.sun : ICONS.moon; }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  const holdToast = h('div', { class: 'mini-toast', role: 'status', 'aria-live': 'polite' });
+  let holdTimer = 0, held = false, toastTimer = 0;
+  searchBtn.addEventListener('pointerdown', () => { held = false; clearTimeout(holdTimer); holdTimer = setTimeout(() => { held = true; themeBtn.click(); holdToast.textContent = theme() === 'dark' ? 'Night mode on' : 'Day mode on'; holdToast.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => holdToast.classList.remove('on'), 1400); if (navigator.vibrate) navigator.vibrate(12); }, 450); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => searchBtn.addEventListener(ev, () => clearTimeout(holdTimer)));
+  searchBtn.addEventListener('click', e => { if (held) { e.stopPropagation(); e.preventDefault(); held = false; } }, true);
+  searchBtn.addEventListener('contextmenu', e => e.preventDefault());
+  document.body.append(holdToast);
 
   const pop = h('div', { class: 'menu mega', hidden: true });
   const pop2 = h('div', { class: 'menu more', hidden: true });
