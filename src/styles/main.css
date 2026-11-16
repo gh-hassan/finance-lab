@@ -682,12 +682,18 @@ body,svg text,.big,.try-num,.rs-bubble{font-variant-numeric:tabular-nums;font-fe
 .qcard b{overflow-wrap:break-word}
 .qcard .qdot{display:none}
 
-/* a number that really changes flashes softly for a moment, then stays still */
-@keyframes tkpop{from{opacity:.45}to{opacity:1}}
-.tk-pop{animation:tkpop .18s ease-out}
+/* odometer digits: the box is sized by an invisible ordinary digit, the wheel turns on top of it */
+.tk-n{white-space:nowrap}
+.tk-t{white-space:inherit}
+.tk-d{--pd:.16em;display:inline-block;position:relative;text-align:center;padding:var(--pd) 0;margin:calc(var(--pd) * -1) 0;clip-path:inset(0);-webkit-mask-image:linear-gradient(transparent,#000 24%,#000 76%,transparent);mask-image:linear-gradient(transparent,#000 24%,#000 76%,transparent)}
+.tk-s{visibility:hidden}
+.tk-c{position:absolute;left:0;right:0;top:var(--pd);display:block;will-change:transform;transition:transform .7s cubic-bezier(.3,.9,.3,1)}
+.tk-c i{display:block;font-style:normal;text-align:center}
 .sv,.big,.rs-bubble{white-space:nowrap}
 /* the big number paints its gradient per character, because clipped text cannot span clipped wheels */
 .answer .big{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff}
+.big .tk-d{--pd:.07em}
+.big .tk-c i,.big .tk-t{background:linear-gradient(180deg,#FFE7B8,#FFFFFF 75%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 
 /* rolling digits need normal inline flow so the spaces around numbers survive */
 .sv-cap,.headline{display:block}
@@ -801,6 +807,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
   body{background:#fff!important;color:#000}.shell{box-shadow:none!important;background:#fff!important;backdrop-filter:none!important;margin:0!important;padding:0!important}
   .card,.answer,.stat{box-shadow:none!important;break-inside:avoid;background:#fff!important;color:#000!important;border:1px solid #bbb!important}
   .answer .big{color:#000!important;-webkit-text-fill-color:#000!important;background:none!important}
+  .big .tk-c i,.big .tk-t{-webkit-text-fill-color:#000!important;color:#000!important;background:none!important}
   details>*{display:block!important}details>summary::before{display:none}
   .lab{display:block!important}.inputs{margin-bottom:12px}
 }
@@ -1076,6 +1083,8 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;background-ima
 .vid-sub .btn{background:var(--pill-on);color:var(--pill-on-text);border-color:transparent;box-shadow:0 10px 24px -12px rgba(0,37,129,.55)}
 .vid-sub .btn:hover{background:var(--c1);color:#fff}
 .sc-note{margin:0 0 14px;color:var(--mute);font-size:15px}
+
+.tk-d{contain:paint}
 
 /* phone header: the brand and the search and day/night buttons share one row, so the header is one row shorter */
 @media (max-width:640px){
