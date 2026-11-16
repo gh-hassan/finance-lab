@@ -6,6 +6,7 @@ import { h, esc, sparkline, countUp } from './visuals.js';
 import { BEGINNER, TOPICS, keyCard } from './beginner.js';
 import { ICONS } from './icons.js';
 import { rangeSlider } from './slider.js';
+import '../styles/homeintro.css';
 
 const POPULAR = ['tvm', 'loan', 'bond', 'capbud', 'portfolio', 'options'];
 const QUESTIONS = ['tvm', 'loan', 'bond', 'ddm', 'capbud', 'breakeven', 'portfolio', 'options', 'fx', 'merger', 'wacc', 'ratios'];
@@ -25,29 +26,22 @@ const heroFv = years => { const r = 0.07 / 12, n = years * 12; return n ? 190 * 
 const split = (text, start = 0) => text.split(' ').map((w, k) => `<span class="w"><span style="--i:${start + k}">${esc(w)}</span></span>`).join(' ');
 
 export function renderHome(main, go) {
-  const groups = Object.keys(TOPICS);
   main.innerHTML = '';
-  const hero = h('section', { class: 'hero reveal' },
+  const hero = h('section', { class: 'hero solo reveal' },
     h('div', { class: 'hero-copy' },
-      h('p', { class: 'eyebrow' }, 'Interactive learning · Suleman Dawood School of Business'),
+      h('p', { class: 'eyebrow' }, 'Suleman Dawood School of Business'),
       h('h1', { class: 'split', html: `${split('Finance,')}<br><em>${split('made clear.', 1)}</em>` }),
-      h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))),
-    h('div', { class: 'hero-art', 'aria-hidden': 'true' },
-      h('div', { class: 'float f1', id: 'heroPkr', hidden: true }, h('span', {}, 'One US dollar costs'), h('b', {}, ''), h('small', {}, 'in Pakistani rupees')),
-      h('div', { class: 'float f1', id: 'heroR72' }, h('span', {}, 'Rule of 72'), h('b', { id: 'r72' }, '12 yrs'), h('small', {}, 'to double at 6%')),
-      h('div', { class: 'float f2', html: `<span>Example: save $190 a month for 20 years at 7%</span><b id="heroNum">$0</b>${sparkline(range(0, 20, 1).map(t => [t, heroFv(t)]), { w: 180, h: 60, color: 'var(--c3)' })}` }),
-      h('div', { class: 'float f4', id: 'heroPk', hidden: true }, h('span', {}, 'Pakistan stocks, last close'), h('b', {}, ''), h('small', {}, '')),
-      h('div', { class: 'float f3', id: 'heroSpx', hidden: true }, h('span', {}, 'S&P 500, live'), h('b', { class: 'pos' }, ''), h('small', {}, '')),
-      h('div', { class: 'float f3', id: 'heroNpv' }, h('span', {}, 'NPV'), h('b', { class: 'pos' }, '+$32,199')),
-      h('div', { class: 'coin c-a' }), h('div', { class: 'coin c-b' }), h('div', { class: 'coin c-c' })));
+      h('button', { class: 'ask', type: 'button', 'data-open-search': true }, h('span', { class: 'ask-icon', html: ICONS.search }), h('span', { class: 'ask-text', id: 'askText' }, PLACEHOLDERS[0]), h('kbd', {}, '/'))));
 
-  const learnBand = h('a', { class: 'learnband tilt reveal', href: '/learn', 'data-link': true },
-    h('div', {}, h('p', { class: 'eyebrow' }, 'New to money? Start here'), h('h2', { html: 'Start with the <em>basics</em>' }), h('p', {}, 'Interest, risk, loans, stocks and more, in plain words.')),
-    h('span', { class: 'go', html: ICONS.arrow }));
-  const scBand = h('a', { class: 'learnband sc tilt reveal', href: '/scenarios', 'data-link': true },
-    h('div', {}, h('p', { class: 'eyebrow' }, 'Test your plan'), h('h2', { html: 'Run <em>what-if</em> scenarios' }), h('p', {}, 'Best case, worst case and risk, in one place.')),
-    h('span', { class: 'go', html: ICONS.arrow }));
-  const bands = h('div', { class: 'bands' }, learnBand, scBand);
+  const step = (n, title, text) => h('li', { class: 'hi-step' }, h('span', { class: 'hi-n' }, String(n)), h('b', {}, title), h('p', {}, text));
+  const intro = h('section', { class: 'hi reveal', 'aria-labelledby': 'hiTitle' },
+    h('h2', { id: 'hiTitle' }, 'Learn finance by doing it'),
+    h('p', { class: 'hi-lead' }, 'Finance is far easier to understand when you can touch it. Every topic here is something you can play with: change a number and watch the result move.'),
+    h('ol', { class: 'hi-steps' },
+      step(1, 'Ask a real question', 'Start from something you actually wonder about, such as how much your savings will grow or what a loan really costs.'),
+      step(2, 'Move the numbers', 'Slide the controls and the answer, the chart and the animation change straight away. There are no formulas to type first.'),
+      step(3, 'See why it happened', 'Short notes in plain words explain each result. When you are ready, the Pro view shows the full working.')));
+
   const qCards = QUESTIONS.map(id => MODS.find(m => m.id === id)).filter(Boolean).map(m => {
     const t = TOPICS[m.group];
     return h('a', { class: `qcard tint-${t.tint} tilt`, href: '/' + m.id, 'data-link': true }, h('small', {}, t.label), h('b', {}, (BEGINNER[m.id] || {}).ask || m.title), h('span', { class: 'go', html: ICONS.arrow }));
@@ -75,18 +69,12 @@ export function renderHome(main, go) {
   const tryIt = h('section', { class: 'card try tint-lav' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Try it live'), h('small', {}, 'Investing monthly at 7% a year')), slider('Save each month', 25, 1000, 25, sav, v => '$' + v, v => (sav = v)), slider('For how long', 5, 40, 1, yrsN, v => v + ' yrs', v => (yrsN = v)), out, sub, spark);
   calc();
 
-  const total = MODS.length;
-  const map = h('section', { class: 'card map' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Your learning map'), h('small', {}, `${total} tools`)),
-    h('div', { class: 'mapbar' }, groups.map(g => { const n = MODS.filter(m => m.group === g).length; return h('a', { class: `seg tint-${TOPICS[g].tint}`, style: `flex:${n}`, href: '/' + MODS.find(m => m.group === g).id, 'data-link': true, title: TOPICS[g].label }, String(n)); })),
-    h('div', { class: 'maplist' }, groups.map(g => h('div', { class: 'mrow' }, h('i', { class: `dot tint-${TOPICS[g].tint}` }), h('div', {}, h('b', {}, TOPICS[g].label), h('small', {}, TOPICS[g].blurb)), h('span', {}, String(MODS.filter(m => m.group === g).length))))));
-  const grid2 = h('div', { class: 'cols2 reveal' }, popular, h('div', { class: 'stack' }, tryIt, map));
+  const grid2 = h('div', { class: 'cols2 reveal' }, popular, h('div', { class: 'stack' }, tryIt));
 
-  const all = h('section', { class: 'sec reveal' }, h('div', { class: 'sec-h' }, h('h2', {}, 'Every tool')),
-    groups.map(g => h('div', { class: 'agroup' }, h('h3', { class: `tint-${TOPICS[g].tint}` }, TOPICS[g].label), h('div', { class: 'chips' }, MODS.filter(m => m.group === g).map(m => h('a', { class: `chip2 tint-${TOPICS[g].tint}`, href: '/' + m.id, 'data-link': true }, m.title))))));
 
-  const liveHost = h('div', { class: 'reveal' }), tape = h('div', { class: 'hl-tape', hidden: true }), tmHost = h('div', { class: 'reveal' });
+  const liveHost = h('div', { class: 'reveal home-gap' }), tape = h('div', { class: 'hl-tape', hidden: true }) /* kept off the page */, tmHost = h('div', { class: 'reveal home-gap' });
   let stopLive = () => { }, stopTm = () => { };
-  main.append(tape, hero, bands, tmHost, liveHost, qrow, grid2, all);
+  main.append(hero, intro, tmHost, liveHost, qrow, grid2);
   /* loaded after the page is shown, so a slow data source never delays it */
   import('./homelive.js').then(m => { if (liveHost.isConnected) stopLive = m.mountHomeLive(liveHost, { tape, hero }) || stopLive; }).catch(() => { liveHost.hidden = true; });
   import('./timemachine.js').then(m => { if (tmHost.isConnected) stopTm = m.mountTimeMachine(tmHost) || stopTm; }).catch(() => { tmHost.hidden = true; });

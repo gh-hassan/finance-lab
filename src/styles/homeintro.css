@@ -1,0 +1,19 @@
+/* Home: plain hero and the "learn by doing" explainer */
+.hero.solo{grid-template-columns:minmax(0,1fr);margin:clamp(28px,5vw,64px) 0 clamp(48px,7vw,88px)}
+.hero.solo .eyebrow{margin-bottom:clamp(14px,2vw,22px)}
+.hero.solo h1{font-size:clamp(36px,5.6vw,76px);line-height:1.08;margin-bottom:clamp(28px,4vw,44px)}
+.hero.solo .hero-copy{max-width:780px}
+.hi{display:grid;gap:18px;margin:0 0 clamp(64px,8vw,104px);padding:clamp(26px,4vw,44px);border-radius:24px;background:var(--panel-solid);border:1px solid var(--line)}
+.hi h2{font:600 clamp(22px,2.6vw,30px)/1.15 var(--display);letter-spacing:-.03em}
+.hi-lead{font-size:17px;line-height:1.55;color:var(--mute);max-width:62ch}
+.hi-steps{list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.hi-step{display:grid;gap:10px;align-content:start;padding:22px;border-radius:18px;background:var(--soft)}
+.hi-n{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--pill-on);color:var(--pill-on-text);font:700 15px var(--body)}
+.hi-step b{font:600 17px/1.3 var(--body)}
+.hi-step p{font-size:15.5px;line-height:1.55;color:var(--mute)}
+@media (max-width:760px){.hi-steps{grid-template-columns:minmax(0,1fr)}}
+
+/* more room between the home sections */
+.home-gap{margin-bottom:clamp(56px,7vw,88px)}
+.home-gap .hl{margin-bottom:clamp(40px,5vw,64px)}
+.home-gap .hl:last-child{margin-bottom:0}

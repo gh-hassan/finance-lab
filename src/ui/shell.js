@@ -49,7 +49,7 @@ export function startApp(root) {
     pop2.hidden = true;
     const here = MODS.find(m => m.id === location.pathname.replace(/^\/+|\/+$/g, ''));
     calcGroup = here ? here.group : calcGroup || topics[0];
-    pop.innerHTML = '<a class="mpin" href="/calculator" data-link><span class="mpi">' + ICONS.Valuation + '</span><span><b>Financial calculator</b><small>A working BA II Plus calculator, free</small></span></a><div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
+    pop.innerHTML = '<a class="mpin" href="/calculator" data-link><span class="mpi">' + ICONS.calculator + '</span><span><b>Financial calculator</b><small>A BA II Plus calculator</small></span></a><div class="msearch"><input type="search" placeholder="Find a calculator…" aria-label="Find a calculator" autocomplete="off"></div><div class="mbody"><nav class="mrail" aria-label="Categories"></nav><div class="mlist"></div></div>';
     drawCalc();
     const inp = pop.querySelector('input');
     inp.addEventListener('input', () => drawCalc(inp.value));
