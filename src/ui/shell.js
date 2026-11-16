@@ -1,6 +1,7 @@
 // @ts-nocheck
 /* App shell: top pill navigation, topic menus, search palette, theme, routing, pointer effects. */
 import { MODS } from '../lib/registry';
+import './fit.js';
 import { h, esc, store } from './visuals.js';
 import { TOPICS, BEGINNER } from './beginner.js';
 import { ICONS } from './icons.js';

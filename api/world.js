@@ -8,9 +8,9 @@ import { COUNTRIES, INDICATORS, FIRST_YEAR, parseCountries, parseWorldBank, late
 const URL_FOR = (codes, id, year) => `https://api.worldbank.org/v2/country/${codes.join(';')}/indicator/${id}?format=json&per_page=1000&date=${FIRST_YEAR}:${year}`;
 const CACHE = 's-maxage=86400, stale-while-revalidate=604800';
 
-/** The World Bank is usually quick but sometimes stalls for a minute. A stalled request is abandoned and tried once more on a fresh connection. */
+/** The World Bank is usually quick but sometimes stalls for a minute. A stalled request is abandoned and tried again, up to three times, on a fresh connection. */
 async function fetchWorldBank(url, signal) {
-  for (const ms of [6000, 11000]) {
+  for (const ms of [3500, 3500, 6000]) {
     const ctl = new AbortController(), stop = () => ctl.abort(), timer = setTimeout(stop, ms);
     signal.addEventListener('abort', stop);
     try { return await getJson(url, { signal: ctl.signal }); }

@@ -25,7 +25,7 @@ function chartCard(data, selected, ind, scope) {
   if (!spec.series.length) return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, ind.label + ' over time'), h('p', { class: 'd-empty' }, 'The World Bank has no figures for these countries on this measure. Try different countries or another measure.'));
   const box = chartBox(spec); scope.add(box.destroy);
   return h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, `${ind.label} over time`),
-    sourceLine({ source: 'World Bank open data', url: 'https://data.worldbank.org/indicator/' + ind.id }), box.el,
+    sourceLine({ source: 'World Bank open data', asOf: data.asOf, live: !data.asOf, url: 'https://data.worldbank.org/indicator/' + ind.id }), box.el,
     missing.length ? h('p', { class: 'd-cap' }, `No figures for ${missing.map(countryName).join(', ')}.`) : null,
     h('p', { class: 'd-cap' }, 'Some countries report with a delay, so the newest year can be missing. Lines skip years without a figure.'));
 }

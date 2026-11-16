@@ -33,7 +33,7 @@ export function scope() {
 
 export const head = ({ eyebrow, title, lead }) => h('header', { class: 'learn-hero reveal' }, h('p', { class: 'eyebrow' }, eyebrow), h('h1', { html: title }), h('p', { class: 'lead' }, lead));
 
-const whenText = iso => { const d = new Date(iso); return Number.isNaN(+d) ? '' : d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); };
+const whenText = iso => { const d = new Date(iso); if (Number.isNaN(+d)) return ''; return /^\d{4}-\d{2}-\d{2}$/.test(String(iso)) ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); };
 /** "Live from <source>, checked <time>. Where this comes from." */
 export const sourceLine = ({ source, asOf, url, live = true, extra }) => h('p', { class: 'd-src' + (live ? '' : ' off') },
   h('span', { class: 'd-dot', 'aria-hidden': 'true' }),

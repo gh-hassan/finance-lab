@@ -34,6 +34,12 @@ export function niceScale(lo, hi, n = 5) {
   for (let t = min; t <= max + step / 2; t += step) ticks.push(+t.toFixed(10));
   return { min, max, step, ticks };
 }
+/** "$150,000K" becomes "$150M", so long axis labels stay short. */
+export const tidyLabel = l => {
+  const m = /^([\u2212-]?)(\$|Rs )?([\d,]+(?:\.\d+)?)K$/.exec(String(l)), v = m ? parseFloat(m[3].replace(/,/g, '')) : 0;
+  if (!m || v < 1000) return l;
+  return m[1] + (m[2] || '') + (v >= 1e6 ? +(v / 1e6).toFixed(2) + 'B' : +(v / 1e3).toFixed(2) + 'M');
+};
 export const tickFmt = step => x => {
   const a = Math.abs(x);
   if (a >= 1e6) return +(x / 1e6).toFixed(2) + 'M';
@@ -88,7 +94,7 @@ export class XY {
   draw() {
     const s = this.spec, W = Math.max(180, Math.floor(this.plot.clientWidth) || 600), narrow = W < 520;
     const H = s.h || (narrow ? 250 : 310), M = { l: narrow ? 48 : 58, r: 14, t: 12, b: s.xLabels ? 40 : s.xlab ? 44 : 30 };
-    const pw = W - M.l - M.r, ph = H - M.t - M.b, ser = s.series, s0 = ser[0], n0 = s0.pts.length, isBar = x => x.type === 'bars';
+    let pw = W - M.l - M.r; const ph = H - M.t - M.b, ser = s.series, s0 = ser[0], n0 = s0.pts.length, isBar = x => x.type === 'bars';
     let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
     const grow = (x, y) => { if (x != null && isFinite(x)) { xmin = Math.min(xmin, x); xmax = Math.max(xmax, x); } if (y != null && isFinite(y)) { ymin = Math.min(ymin, y); ymax = Math.max(ymax, y); } };
     ser.forEach(S => S.pts.forEach(p => grow(p[0], p[1])));
@@ -110,8 +116,10 @@ export class XY {
     const X = v => M.l + (v - xmin) / (xmax - xmin) * pw, Y = v => M.t + ph - (v - Yn.min) / (Yn.max - Yn.min) * ph;
     this.sc = { X, Y };
     const yF = s.yFmt || tickFmt(Yn.step), xF = s.xFmt || tickFmt(niceScale(xmin, xmax).step), yR = s.yRead || s.yFmt || (v => nf(v, 2)), xR = s.xRead || s.xFmt || (v => nf(v, 2));
+    const labelsY = Yn.ticks.map(t => tidyLabel(yF(t))), need = Math.ceil(Math.max(0, ...labelsY.map(l => String(l).length)) * 6.8 + 16);
+    if (need > M.l) { M.l = Math.min(need, Math.round(W * 0.42)); pw = W - M.l - M.r; }
     let defs = '', g = '';
-    Yn.ticks.forEach(t => { const y = Y(t); g += `<line class="gl" x1="${M.l}" x2="${W - M.r}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text class="tl" x="${M.l - 7}" y="${(y + 3.5).toFixed(1)}" text-anchor="end">${esc(yF(t))}</text>`; });
+    Yn.ticks.forEach((t, ti) => { const y = Y(t); g += `<line class="gl" x1="${M.l}" x2="${W - M.r}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text class="tl" x="${M.l - 7}" y="${(y + 3.5).toFixed(1)}" text-anchor="end">${esc(labelsY[ti])}</text>`; });
     xt.forEach((t, i) => { g += `<text class="tl" x="${X(t).toFixed(1)}" y="${H - M.b + 15}" text-anchor="middle">${esc(s.xLabels ? s.xLabels[i] : xF(t))}</text>`; });
     if (s.xlab) g += `<text class="al" x="${M.l + pw / 2}" y="${H - 6}" text-anchor="middle">${esc(s.xlab)}</text>`;
     if (Yn.min < 0 && Yn.max > 0) g += `<line class="zl" x1="${M.l}" x2="${W - M.r}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/>`;

@@ -13,6 +13,14 @@ const INFLATION = 'FP.CPI.TOTL.ZG';
 const POPULAR = ['US', 'CN', 'IN', 'PK', 'JP', 'DE', 'GB', 'BR', 'FR', 'CA', 'AU', 'KR', 'TR', 'SA'];
 const REGIONS = [...new Set(COUNTRIES.map(c => c.region))];
 const norm = s => s.toLowerCase().normalize('NFD').replace(/[^a-z0-9 ]+/g, '');
+/* Yearly histories saved ahead of time, one file per measure, so a chart appears at once. The World Bank's own service sometimes stalls for a minute. */
+const SAVED = import.meta.glob('../data/countries-series/*.json');
+async function savedSeries(id, codes) {
+  const load = SAVED[`../data/countries-series/${id}.json`];
+  if (!load) return null;
+  const d = (await load()).default;
+  return { indicator: { id }, series: Object.fromEntries(codes.map(c => [c, d.series[c] || []])), source: d.source, asOf: d.asOf };
+}
 async function cachedApi(key, params, signal) {
   if (memo.has(key)) return memo.get(key);
   const d = await api('world', params, signal);
@@ -71,7 +79,7 @@ export function renderCountries(main) {
     out.replaceChildren(skeleton('Loading country data'));
     const ranking = rankingFor(st.id), inflation = st.codes.length > 1 ? rankingFor(INFLATION) : null;
     try {
-      const series = await cachedApi(`s|${st.id}|${st.codes.join(';')}`, { indicator: st.id, countries: st.codes.join(';') }, S.signal);
+      const series = (await savedSeries(st.id, st.codes)) || await cachedApi(`s|${st.id}|${st.codes.join(';')}`, { indicator: st.id, countries: st.codes.join(';') }, S.signal);
       if (mine !== seq || !alive) return;
       out.replaceChildren(buildResults({ series, ranking, inflation }, st.codes, ind, S)); enhanceTerms(out);
     } catch (e) {
@@ -88,7 +96,7 @@ export function renderCountries(main) {
       h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Choose a measure'), seg.el, meaning),
       h('section', { class: 'd-card cty-pick' }, h('h2', { class: 'd-h' }, 'Choose countries'), h('p', { class: 'd-sub' }, `Comparing (up to ${MAX_SHOWN}):`), picked, search, found, h('p', { class: 'd-sub' }, 'Popular'), popular, h('p', { class: 'd-sub' }, 'All countries by region'), regions, msg),
       out,
-      explainer('How to read this page', `<ul><li>Each line is one country. Hover or slide across the chart to read each year. The charts are fetched live from the World Bank.</li><li>The table ranks all ${COUNTRIES.length} countries on the latest figure available. <b>Rank 1 is the highest figure, not always the best one</b>: for inflation, unemployment and debt, a high rank is a warning sign.</li><li>The table uses a snapshot of the World Bank figures from ${snapshot.asOf}. Countries can report in different years, so check the Year column.</li><li>Rich countries and poor ones behave very differently, so compare like with like. <b>Inflation</b> and <b>GDP</b> are explained in the glossary.</li></ul>`)));
+      explainer('How to read this page', `<ul><li>Each line is one country. Hover or slide across the chart to read each year. The charts show yearly World Bank figures, saved ahead of time so they load at once.</li><li>The table ranks all ${COUNTRIES.length} countries on the latest figure available. <b>Rank 1 is the highest figure, not always the best one</b>: for inflation, unemployment and debt, a high rank is a warning sign.</li><li>The table uses a snapshot of the World Bank figures from ${snapshot.asOf}. Countries can report in different years, so check the Year column.</li><li>Rich countries and poor ones behave very differently, so compare like with like. <b>Inflation</b> and <b>GDP</b> are explained in the glossary.</li></ul>`)));
   enhanceTerms(main);
   update();
   return () => { alive = false; S.run(); };
