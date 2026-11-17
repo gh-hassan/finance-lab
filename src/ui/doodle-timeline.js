@@ -1,12 +1,14 @@
 // @ts-nocheck
-/* The clock of the home page story. One timeline, in seconds, runs from the worried question to the happy answer with no cuts.
+/* The clock of the home page story. One timeline, in seconds, runs from the typed question to the answer on paper with no cuts.
    Everything on screen is worked out from the time alone, so the story can be paused, scrubbed and looped without drifting.
    These are plain numbers and functions, so tests can check them. */
 
-/** The whole story lasts this long before it starts again. */
-export const LOOP = 35.6;
+/** The story starts at this time (the first drawing begins just after). */
+export const START = 4.6;
+/** The whole story ends at this time. */
+export const LOOP = 29.8;
 /** A time at which the picture is complete, used for a still image when motion is reduced. */
-export const POSTER_T = 35.4;
+export const POSTER_T = 29.6;
 
 export const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 export const smooth = p => p * p * (3 - 2 * p);
@@ -22,12 +24,6 @@ export function interp(track, t) {
 
 /** Is t inside a window written like "0-4.8;6.4-21;23-999"? */
 export const inWindows = (spec, t) => spec.split(';').some(w => { const [a, b] = w.split('-').map(Number); return t >= a && t < b; });
-
-/** Where the student stands (feet). He walks from the thought, to the site, to the paper. */
-export const PERSON_X = [[0, 70], [5.4, 70], [6.5, 360], [21, 360], [23, 1060], [31, 1060], [35, 70], [99, 70]];
-/** The student walks during these windows. */
-export const WALKS = '5.4-6.5;21-23;31-35';
-export const isWalking = t => inWindows(WALKS, t);
 
 /** The slider time: it moves from 12.4 s to 14.6 s, and the answer follows it. */
 export const SLIDE = { from: 12.4, to: 14.6, x0: 557, x1: 658, y: 198 };
@@ -46,16 +42,16 @@ export const cursorShows = t => t >= 7.6 && t < 16.2;
 
 /** What the caption under the picture says at each moment. */
 export const CAPTIONS = [
-  [0, 'A new student has a real question about money.'],
-  [5.2, 'They open the site and pick that question.'],
+  [0, 'A student has a real question about money.'],
+  [5.2, 'They type it into the site and pick the matching tool.'],
   [10.4, 'They move a slider. The answer changes at once.'],
   [16.0, 'A short note explains why it changed.'],
-  [21.0, 'Then they use the same idea on paper, in class or in an exam.'],
-  [29.4, 'Now it makes sense, and it stays with them.']
+  [21.0, 'Then the same idea goes on paper, in class or in an exam.'],
+  [29.0, 'Now it makes sense, and it stays with them.']
 ];
 export const captionAt = t => { let c = CAPTIONS[0][1]; for (const [s, text] of CAPTIONS) if (t >= s) c = text; return c; };
 
 /** The moments a sound plays when sound is on: a click when something is clicked, ticks as the slider moves, and so on. */
-export const EVENTS = [[9.4, 'click'], [12.1, 'click'], [13.12, 'tick'], [13.5, 'tick'], [13.88, 'tick'], [23.6, 'scribble'], [24.6, 'scribble'], [25.6, 'scribble'], [26.6, 'scribble'], [27.7, 'swish'], [28.7, 'chime'], [29.5, 'pop']];
+export const EVENTS = [[9.4, 'click'], [12.1, 'click'], [13.12, 'tick'], [13.5, 'tick'], [13.88, 'tick'], [23.6, 'scribble'], [24.6, 'scribble'], [25.6, 'scribble'], [26.6, 'scribble'], [27.7, 'swish'], [28.7, 'chime']];
 /** Index of the first sound that is still to come at time t. */
 export const nextEvent = t => { const i = EVENTS.findIndex(e => e[0] > t); return i < 0 ? EVENTS.length : i; };

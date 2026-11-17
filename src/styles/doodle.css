@@ -11,7 +11,7 @@
 [data-k="pop"],[data-k="fade"],[data-k="tint"]{opacity:0}
 .dd-dot{fill:var(--ink)}
 .dd-t{fill:var(--ink);font-family:var(--body)}
-.dd-t.hand{font-family:'Segoe Print','Bradley Hand','Chalkboard SE','Comic Sans MS',cursive;font-weight:600}
+.dd-t.hand{font-family:'Caveat','Bradley Hand','Segoe Print',cursive;font-weight:600;font-size-adjust:.5}
 .dd-cursor{fill:var(--ink);stroke:var(--panel-solid);stroke-width:2;opacity:0}
 .dd-ripple{fill:none;stroke:var(--c4);stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
 .dd-tint{fill:#F2C14E}
@@ -19,15 +19,9 @@
 .dd-fill{fill:none;stroke:var(--pill-on);stroke-width:6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:.8}
 .dd-bar{transform-box:fill-box;transform-origin:left;transform:scaleX(0)}
 .dd-bar1{fill:color-mix(in srgb,var(--pill-on) 24%,transparent)}
-.dd-bar2{fill:var(--c4);opacity:.85}
+.dd-bar2{fill:var(--c4);opacity:.6}
 
-/* when the story is over, the resting student can be pressed to play it again */
+/* when the story is over, the Watch again prompt can be pressed to play it again */
 .dd-stage.rest #dd-hit{cursor:pointer}
 
-/* he keeps studying: the pencil scribbles and the coffee steams */
 .dd-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.dd-write{animation:ddScribble .7s ease-in-out infinite}
-.dd-steam{opacity:0;animation:ddSteam 2.6s ease-in-out infinite}
-@keyframes ddScribble{0%,100%{transform:translate(0,0)}50%{transform:translate(6px,2px)}}
-@keyframes ddSteam{0%{opacity:0;transform:translateY(4px)}45%{opacity:.8}100%{opacity:0;transform:translateY(-9px)}}
-@media (prefers-reduced-motion:reduce){.dd-write,.dd-steam{animation:none}.dd-steam{opacity:.6}}

@@ -28,7 +28,19 @@ export const ITEMS = {
   cash: { kind: 'instant', tags: ['CashAndCashEquivalentsAtCarryingValue', 'CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents', 'Cash'] },
   debtTotal: { kind: 'instant', tags: ['LongTermDebt', 'DebtAndCapitalLeaseObligations', 'LongTermDebtAndCapitalLeaseObligations'] },
   debtLong: { kind: 'instant', tags: ['LongTermDebtNoncurrent', 'LongTermDebtAndCapitalLeaseObligations'] },
-  debtShort: { kind: 'instant', tags: ['DebtCurrent', 'LongTermDebtCurrent', 'ShortTermBorrowings'] }
+  debtShort: { kind: 'instant', tags: ['DebtCurrent', 'LongTermDebtCurrent', 'ShortTermBorrowings'] },
+  /* the rest of the cash flow statement, and the lines that explain the profit and the working capital */
+  cfi: { kind: 'flow', tags: ['NetCashProvidedByUsedInInvestingActivities', 'NetCashProvidedByUsedInInvestingActivitiesContinuingOperations'] },
+  cff: { kind: 'flow', tags: ['NetCashProvidedByUsedInFinancingActivities', 'NetCashProvidedByUsedInFinancingActivitiesContinuingOperations'] },
+  dividends: { kind: 'flow', tags: ['PaymentsOfDividendsCommonStock', 'PaymentsOfDividends', 'PaymentsOfOrdinaryDividends'] },
+  buybacks: { kind: 'flow', tags: ['PaymentsForRepurchaseOfCommonStock'] },
+  acquisitions: { kind: 'flow', tags: ['PaymentsToAcquireBusinessesNetOfCashAcquired', 'PaymentsToAcquireBusinessesGross'] },
+  sbc: { kind: 'flow', tags: ['ShareBasedCompensation', 'AllocatedShareBasedCompensationExpense'] },
+  rnd: { kind: 'flow', tags: ['ResearchAndDevelopmentExpense', 'ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost'] },
+  sga: { kind: 'flow', tags: ['SellingGeneralAndAdministrativeExpense'] },
+  receivables: { kind: 'instant', tags: ['AccountsReceivableNetCurrent', 'ReceivablesNetCurrent'] },
+  inventory: { kind: 'instant', tags: ['InventoryNet'] },
+  payables: { kind: 'instant', tags: ['AccountsPayableCurrent', 'AccountsPayableAndAccruedLiabilitiesCurrent'] }
 };
 
 /** Banks, insurers and other lenders report interest as their business, so margins and "debt" mean something different. */
@@ -96,8 +108,9 @@ export function parseFacts(json, { years = 10 } = {}) {
   if (rows.shares.some((v, i) => v != null && Date.parse(periods[i]) < cut)) notes.push('Share counts older than three years are hidden because stock splits make them unreliable.');
   rows.shares = rows.shares.map((v, i) => (Date.parse(periods[i]) < cut ? null : v));
   rows.capex = rows.capex.map(v => (v == null ? null : Math.abs(v)));
+  for (const k of ['dividends', 'buybacks', 'acquisitions']) rows[k] = rows[k].map(v => (v == null ? null : Math.abs(v)));
   rows.interestExpense = rows.interestExpense.map(v => (v == null ? null : Math.abs(v)));
-  delete rows.equityTotal; delete rows.debtTotal; delete rows.debtLong; delete rows.debtShort; delete rows.costOfRevenue;
+  delete rows.equityTotal; delete rows.debtTotal; delete rows.debtLong; delete rows.debtShort;
   const lastEnd = periods[periods.length - 1], lastFiled = ['revenue', 'netIncome', 'assets'].map(k => (maps[k].get(lastEnd) || {}).filed || '').sort().pop() || null;
   const hasAny = Object.values(rows).some(r => r.some(v => v != null));
   if (!hasAny) return null;

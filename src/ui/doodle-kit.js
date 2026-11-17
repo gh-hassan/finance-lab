@@ -4,7 +4,7 @@
    together. Pass `k` (a short name) to keep a shape's wobble steady while it moves or grows; shapes that stay in place need no name. */
 import { wobblyLine, wobblyRect, wobblyEllipse, wobblyPath } from './doodle-shapes.js';
 
-export const HAND = "'Segoe Print','Bradley Hand','Chalkboard SE','Comic Sans MS',cursive";
+export const HAND = "'Caveat','Bradley Hand','Segoe Print',cursive";
 export const NAVY = 'color-mix(in srgb,var(--pill-on) 26%,transparent)';
 export const GREEN = 'color-mix(in srgb,var(--good) 42%,transparent)';
 export const GOLD = 'rgba(242,193,78,.62)';
@@ -52,18 +52,13 @@ export const bill = (x, y, w, h, label, o = {}) => box(x - w / 2, y - h / 2, w, 
 /** A tick mark. */
 export const tick = (x, y, s, o = {}) => pen(wobblyPath([[x - s * 0.5, y], [x - s * 0.1, y + s * 0.45], [x + s * 0.6, y - s * 0.5]], seedOf(o.k || 'tick' + Math.round(x)), 0.8), { c: 'var(--good)', w: 4.5, ...o });
 
-/** The stick-figure student, standing on `feet`. k scales it. mood: happy, neutral or worried. arms: down, point or cheer. */
+/** The stick-figure student, standing on `feet`. k scales it. arms: down, point or raised. It has no face, so it stays calm. */
 export function person(x, feet, k, o = {}) {
-  const { mood = 'neutral', arms = 'down', u = 1, id = 'p' } = o, P = (a, b) => [f1(x + a * k), f1(feet + b * k)];
+  const { arms = 'down', u = 1, id = 'p' } = o, P = (a, b) => [f1(x + a * k), f1(feet + b * k)];
   const L = (a, b, c, e, n) => line(...P(a, b), ...P(c, e), { k: id + n, u, w: 2.8 });
-  const head = P(0, -98), e1 = P(-6, -101), e2 = P(6, -101);
-  const arm = arms === 'cheer' ? [[-26, -104], [26, -104]] : arms === 'point' ? [[-24, -46], [34, -88]] : [[-24, -46], [24, -46]];
+  const head = P(0, -98);
+  const arm = arms === 'cheer' ? [[-24, -84], [24, -84]] : arms === 'point' ? [[-24, -46], [34, -88]] : [[-24, -46], [24, -46]];
   let g = ring(head[0], head[1], 18 * k, 18 * k, { k: id + 'h', u, w: 2.8 }) + L(0, -80, 0, -36, 'b') + L(0, -36, -16, 0, 'l1') + L(0, -36, 16, 0, 'l2') + L(0, -70, arm[0][0], arm[0][1], 'a1') + L(0, -70, arm[1][0], arm[1][1], 'a2');
-  if (u >= 0.8) {
-    g += `<circle cx="${e1[0]}" cy="${e1[1]}" r="${f1(2.3 * k)}" fill="var(--ink)"/><circle cx="${e2[0]}" cy="${e2[1]}" r="${f1(2.3 * k)}" fill="var(--ink)"/>`;
-    if (mood === 'worried') g += L(-6, -88, 6, -90, 'm') + L(-11, -108, -3, -112, 'w1') + L(3, -112, 11, -108, 'w2');
-    else { const q = mood === 'happy' ? [-92, 10] : [-90, 4], a = P(-7, q[0]), b = P(0, q[0] + q[1]), c = P(7, q[0]); g += pen(`M${a} Q${b} ${c}`, { w: 2.4 }); }
-  }
   return g;
 }
 

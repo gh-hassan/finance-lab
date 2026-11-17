@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* The live data pages. Each loads on demand, so the rest of the site stays light. */
 export const DATA_PAGES = [
-  { id: 'financials', title: 'Company numbers', blurb: 'Ten years of real numbers from company reports', load: () => import('./financials.js'), fn: 'renderFinancials', words: 'company financials statements income balance sheet cash flow sec edgar 10-k ticker dupont ratios' },
+  { id: 'financials', title: 'Company financials', blurb: 'Ten years of real reports, plus a full analysis', load: () => import('./financials.js'), fn: 'renderFinancials', words: 'company financials statements income balance sheet cash flow sec edgar 10-k ticker dupont ratios analysis verdict invest' },
   { id: 'industries', title: 'Industry averages', blurb: 'Usual risk, funding cost and price ratios by industry', load: () => import('./industries.js'), fn: 'renderIndustries', words: 'industry benchmarks beta wacc cost of capital multiples ev ebitda pe margins damodaran sector peers comps' },
   { id: 'economy', title: 'Interest rates and economy', blurb: 'Government bond returns, price rises and the yield curve', load: () => import('./rates.js'), fn: 'renderRates', words: 'interest rates economy treasury yield curve inflation cpi unemployment mortgage fed funds credit spread fred risk free' },
   { id: 'factor-returns', title: 'What beats the market?', blurb: 'What has beaten the market since 1963', load: () => import('./factors.js'), fn: 'renderFactors', words: 'factor returns fama french size value momentum profitability investment smb hml factors premium' },

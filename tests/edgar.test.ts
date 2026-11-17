@@ -53,6 +53,26 @@ describe('SEC annual statements, real filings', () => {
   });
 });
 
+describe('SEC annual statements, the rest of the cash flow statement', () => {
+  it('reads dividends, buybacks and acquisitions as positive amounts, and keeps investing and financing cash flow as reported', () => {
+    const r = parseFacts(co({
+      Revenues: fact([yr('2024-12-31', 100)]), NetIncomeLoss: fact([yr('2024-12-31', 10)]), Assets: fact([inst('2024-12-31', 500)]),
+      PaymentsOfDividendsCommonStock: fact([yr('2024-12-31', 4)]), PaymentsForRepurchaseOfCommonStock: fact([yr('2024-12-31', -6)]), PaymentsToAcquireBusinessesNetOfCashAcquired: fact([yr('2024-12-31', -3)]),
+      NetCashProvidedByUsedInInvestingActivities: fact([yr('2024-12-31', -12)]), NetCashProvidedByUsedInFinancingActivities: fact([yr('2024-12-31', -9)]),
+      ShareBasedCompensation: fact([yr('2024-12-31', 2)]), ResearchAndDevelopmentExpense: fact([yr('2024-12-31', 7)]),
+      AccountsReceivableNetCurrent: fact([inst('2024-12-31', 11)]), InventoryNet: fact([inst('2024-12-31', 13)]), AccountsPayableCurrent: fact([inst('2024-12-31', 17)]),
+      CostOfGoodsAndServicesSold: fact([yr('2024-12-31', 60)])
+    }))!;
+    expect(r.rows.dividends).toEqual([4]); expect(r.rows.buybacks).toEqual([6]); expect(r.rows.acquisitions).toEqual([3]);
+    expect(r.rows.cfi).toEqual([-12]); expect(r.rows.cff).toEqual([-9]); expect(r.rows.sbc).toEqual([2]); expect(r.rows.rnd).toEqual([7]);
+    expect(r.rows.receivables).toEqual([11]); expect(r.rows.inventory).toEqual([13]); expect(r.rows.payables).toEqual([17]); expect(r.rows.costOfRevenue).toEqual([60]);
+  });
+  it('leaves a line empty when the company does not report it', () => {
+    const r = parseFacts(co({ Revenues: fact([yr('2024-12-31', 100)]), NetIncomeLoss: fact([yr('2024-12-31', 10)]), Assets: fact([inst('2024-12-31', 500)]) }))!;
+    for (const k of ['dividends', 'buybacks', 'cfi', 'cff', 'sbc', 'rnd', 'inventory']) expect(r.rows[k]).toEqual([null]);
+  });
+});
+
 describe('SEC annual statements, awkward data', () => {
   it('ignores quarterly figures that appear inside a 10-K', () => {
     const r = parseFacts(co({ Revenues: fact([{ start: '2024-10-01', end: '2024-12-31', val: 999, form: '10-K', filed: '2025-02-01' }, yr('2024-12-31', 400)]) }))!;

@@ -17,7 +17,7 @@ export function rent(t, p, W, H) {
   const k = clamp(H / 330, 0.7, 1.05), feet = H * 0.57, ax = pad + 30, bx = W - pad - 30, topY = H * 0.26, x0 = ax + 78, x1 = bx - 78;
   let g = line(pad, feet, W - pad, feet, { k: 'ground', c: 'var(--mute)', w: 2.2 });
   g += curve([[x0 - 10, topY + 24], [(x0 + x1) / 2, topY - 6], [x1 + 10, topY + 24]], { k: 'arc', dash: 6, c: 'var(--mute)', w: 2 });
-  g += person(ax, feet, k, { id: 'sam', mood: c > 0 ? 'happy' : 'neutral', arms: a > 0 && a < 1 ? 'point' : 'down' }) + person(bx, feet, k, { id: 'alex', mood: b > 0 && c === 0 ? 'happy' : 'neutral', arms: 'down' });
+  g += person(ax, feet, k, { id: 'sam', arms: a > 0 && a < 1 ? 'point' : 'down' }) + person(bx, feet, k, { id: 'alex', arms: 'down' });
   g += ink(ax, feet + 22, 'Sam', { z: 17 }) + ink(ax, feet + 40, 'lender', { z: 12.5, c: 'var(--mute)', hand: false }) + ink(bx, feet + 22, 'Alex', { z: 17 }) + ink(bx, feet + 40, 'borrower', { z: 12.5, c: 'var(--mute)', hand: false });
   if (c === 0) g += bill(a < 1 ? lerp(x0, x1, ease(a)) : x1, topY + 4, 78, 32, M(p.amount), { k: 'money' });
   else { const x = lerp(x1, x0, ease(c)); g += bill(x, topY + 4, 78, 32, M(p.amount), { k: 'money' }) + bill(x, topY - 34, 104, 30, '+ ' + M(fee) + ' fee', { k: 'fee', fill: GREEN, z: 13 }); }

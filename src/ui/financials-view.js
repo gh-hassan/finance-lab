@@ -5,6 +5,7 @@ import { col } from './visuals.js';
 import { sharePath } from './sharing.js';
 import { ratios, dupont, dupontShift, plainWords, toCalculators } from '../lib/fin';
 import { money, pct, signedPct, mult, num, longDate, yy, monthYear } from '../lib/format';
+import { renderAnalysis } from './financials-analysis.js';
 
 const TABS = [['profit', 'Sales and profit'], ['margins', 'Margins'], ['cash', 'Cash'], ['balance', 'What it owns'], ['returns', 'Returns']];
 const TAB_TITLE = { profit: 'Sales and net income by year', margins: 'Margins by year', cash: 'Cash flow by year', balance: 'Owed to others and owners\' money by year', returns: 'Return on equity and assets by year' };
@@ -51,12 +52,12 @@ function dupontCard(d, q) {
     const tile = (k, label, val, what) => h('div', { class: 't' + (moved === k ? ' moved' : '') }, h('small', {}, label), h('b', {}, val), h('span', {}, what));
     const txt = { netMargin: 'net margin', assetTurnover: 'asset turnover', equityMultiplier: 'equity multiplier' };
     const f = { netMargin: v => pct(v), assetTurnover: v => mult(v, 2), equityMultiplier: v => mult(v, 2) };
-    body.replaceChildren(
+    body.replaceChildren(...[
       h('div', { class: 'fin-eq' }, tile('netMargin', 'Net margin', pct(x.netMargin), 'Profit kept from each $1 of sales'), h('div', { class: 'op', 'aria-hidden': 'true' }, '×'),
         tile('assetTurnover', 'Asset turnover', mult(x.assetTurnover, 2), 'Sales made from each $1 of assets'), h('div', { class: 'op', 'aria-hidden': 'true' }, '×'),
         tile('equityMultiplier', 'Equity multiplier', mult(x.equityMultiplier, 2), 'Assets funded by each $1 of owners\' money'), h('div', { class: 'op', 'aria-hidden': 'true' }, '='),
         h('div', { class: 't key' }, h('small', {}, 'Return on equity'), h('b', {}, pct(x.roe)), h('span', {}, 'Profit per $1 of owners\' money'))),
-      sh ? h('p', { class: 'd-plain plain', html: `Compared with the year before, return on equity went from <b>${pct(sh.roeFrom)}</b> to <b>${pct(sh.roeTo)}</b>. The biggest change was <b>${txt[sh.factor]}</b>, which moved from ${f[sh.factor](sh.from)} to ${f[sh.factor](sh.to)} (outlined above).` }) : null);
+      sh ? h('p', { class: 'd-plain plain', html: `Compared with the year before, return on equity went from <b>${pct(sh.roeFrom)}</b> to <b>${pct(sh.roeTo)}</b>. The biggest change was <b>${txt[sh.factor]}</b>, which moved from ${f[sh.factor](sh.from)} to ${f[sh.factor](sh.to)} (outlined above).` }) : null].filter(Boolean));
   };
   const seg = segmented({ options: years.map(i => [String(i), yy(d.periods[i].end)]), value: String(years[years.length - 1]), label: 'Choose a year', onChange: v => draw(+v) });
   draw(years[years.length - 1]);
@@ -102,25 +103,27 @@ export function renderResult(d, scope) {
   const tone = v => (v == null ? '' : v < 0 ? 'bad' : '');
   const tiles = [
     { label: 'Sales', value: money(r.revenue[i]), sub: q.revenueGrowth[i] != null ? signedPct(q.revenueGrowth[i]) + ' vs last year' : '' },
-    { label: 'Net income', value: money(r.netIncome[i]), sub: q.netMargin[i] != null && std ? pct(q.netMargin[i]) + ' of sales' : '', tone: tone(r.netIncome[i]) },
-    std ? { label: 'Operating margin', value: pct(q.operatingMargin[i]), tone: tone(q.operatingMargin[i]) } : { label: 'Return on assets', value: pct(q.roa[i]) },
-    { label: 'Return on equity', value: pct(q.roe[i]), tone: tone(q.roe[i]) },
-    std ? { label: 'Free cash flow', value: money(q.fcf[i]), sub: q.fcfMargin[i] != null ? pct(q.fcfMargin[i]) + ' of sales' : '', tone: tone(q.fcf[i]) } : { label: 'Total assets', value: money(r.assets[i]) },
-    std ? { label: 'Borrowings to equity', value: mult(q.debtToEquity[i], 2) } : { label: 'Owners\' equity', value: money(r.equity[i]) }
+    { label: 'Profit (net income)', value: money(r.netIncome[i]), sub: q.netMargin[i] != null && std ? pct(q.netMargin[i]) + ' of sales' : '', tone: tone(r.netIncome[i]) },
+    std ? { label: 'Profit from the business', value: pct(q.operatingMargin[i]), sub: 'of sales, before interest and tax', tone: tone(q.operatingMargin[i]) } : { label: 'Return on assets', value: pct(q.roa[i]) },
+    { label: 'Return for owners', value: pct(q.roe[i]), sub: 'profit per $1 of owners\' money', tone: tone(q.roe[i]) },
+    std ? { label: 'Free cash', value: money(q.fcf[i]), sub: q.fcfMargin[i] != null ? pct(q.fcfMargin[i]) + ' of sales' : '', tone: tone(q.fcf[i]) } : { label: 'Total assets', value: money(r.assets[i]) },
+    std ? { label: 'Debt vs owners\' money', value: mult(q.debtToEquity[i], 2), sub: 'borrowed for each $1 owners put in' } : { label: 'Owners\' money', value: money(r.equity[i]) }
   ];
   const words = plainWords(d, d.name);
   frag.append(...[
     h('section', { class: 'd-card' },
       h('div', { class: 'd-row between' }, h('div', { class: 'd-title' }, h('h2', {}, d.name), h('p', { class: 'd-meta' }, `${d.ticker} · year ended ${longDate(d.periods[i].end)}${d.filed ? ' · filed ' + longDate(d.filed) : ''} · US dollars`)),
-        h('div', { class: 'd-row' }, d.kind === 'financial' ? h('span', { class: 'd-badge' }, 'BANK / INSURER') : null, h('button', { type: 'button', class: 'd-btn', onclick: () => { const rows = tableRows(d, q).filter(x => !x.group); saveCsv(`${d.ticker}-financials.csv`, [[d.name + ' (' + d.ticker + '), annual figures from SEC 10-K filings'], ['Line item', ...d.periods.map(p => p.end)], ...rows.map(x => [x.label, ...x.raw.map(v => (v == null ? '' : v))]), [], ['Source: US SEC EDGAR. Made with SmartWealth. For study, not investment advice.']]); } }, 'Download CSV'))),
+        h('div', { class: 'd-row' }, d.kind === 'financial' ? h('span', { class: 'd-badge' }, 'BANK / INSURER') : null, h('a', { class: 'd-btn', href: '#full-analysis' }, 'Full analysis ↓'), h('button', { type: 'button', class: 'd-btn', onclick: () => { const rows = tableRows(d, q).filter(x => !x.group); saveCsv(`${d.ticker}-financials.csv`, [[d.name + ' (' + d.ticker + '), annual figures from SEC 10-K filings'], ['Line item', ...d.periods.map(p => p.end)], ...rows.map(x => [x.label, ...x.raw.map(v => (v == null ? '' : v))]), [], ['Source: US SEC EDGAR. Made with SmartWealth. For study, not investment advice.']]); } }, 'Download CSV'))),
       sourceLine({ source: 'SEC EDGAR 10-K filings', asOf: d.asOf, url: d.filingsUrl }),
       statGrid(tiles, tiles.length % 3 === 0 ? 3 : 0)),
     words.length ? h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'In plain words'), ...words.map(w => h('p', { class: 'd-plain plain', html: w }))) : null,
-    chartCard(d, q, scope), dupontCard(d, q),
+    chartCard(d, q, scope),
+    h('details', { class: 'fin-more' }, h('summary', {}, h('b', {}, 'Go deeper'), h('span', {}, 'Return breakdown, every number in a table, calculators and notes')), h('div', { class: 'fin-mb' }, ...[dupontCard(d, q),
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'All the numbers'), h('p', { class: 'd-sub' }, 'One column per fiscal year, oldest on the left. Scroll sideways for more years.'), dataTable({ head: ['', ...d.periods.map(p => monthYear(p.end))], rows: tableRows(d, q), label: `${d.name} annual figures` })),
     handoff(d),
     h('section', { class: 'd-card' }, h('h2', { class: 'd-h' }, 'Before you rely on these'), h('ul', { class: 'plain d-cap', style: 'margin:0;padding-left:20px;display:grid;gap:6px' },
       [...(d.notes || []), 'Companies label some items differently, so a line can be missing even when the company has it. When it matters, check the filing itself.', 'These are annual figures from 10-K filings. The latest quarters are not included. Each year comes from the latest report that includes it. If the company corrected a year later, its definition may differ slightly from nearby years.', d.kind === 'financial' ? 'Banks, insurers and similar firms are shown with fewer measures because margins and debt mean something different for them.' : 'Debt is the long-term borrowing the company reports. Leases and short-term borrowing may or may not be included.'].map(t => h('li', {}, t))),
-      explainer('What is a 10-K?', '<p>Every US-listed company sends a 10-K once a year to the Securities and Exchange Commission (SEC). Outside accountants check its financial statements. They are the <b>income statement</b> (profit), the <b>balance sheet</b> (what it owns and owes) and the <b>cash flow statement</b> (where cash came from and went).</p><p>This page reads those filings directly, so the numbers are the company\'s own.</p>'))].filter(Boolean));
+      explainer('What is a 10-K?', '<p>Every US-listed company sends a 10-K once a year to the Securities and Exchange Commission (SEC). Outside accountants check its financial statements. They are the <b>income statement</b> (profit), the <b>balance sheet</b> (what it owns and owes) and the <b>cash flow statement</b> (where cash came from and went).</p><p>This page reads those filings directly, so the numbers are the company\'s own.</p>'))].filter(Boolean))),
+    renderAnalysis(d, scope)].filter(Boolean));
   return frag;
 }
