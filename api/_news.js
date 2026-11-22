@@ -29,7 +29,9 @@ const KEEP = { global: { age: 3 * DAY, send: 10, perSource: 4, half: 14 }, local
 const MONEY = /\b(markets?|stocks?|shares?|equit(?:y|ies)|bonds?|yields?|rates?|inflation|interest|central bank|fed|ecb|sbp|state bank|econom(?:y|ic|ics|ist|ists)|gdp|budget|tax(?:es)?|trade|tariffs?|exports?|imports?|currency|dollar|euro|rupee|oil|gold|banks?|banking|investors?|investment|earnings|profits?|revenues?|ipo|merger|acquisition|takeover|debt|imf|world bank|psx|kse|growth|recession|prices?|crypto|bitcoin|funds?|financ(?:e|ial|ing)|insurance|loans?|credit|capital|jobs|wages|unemployment|inflationary|valuation|dividends?|bankruptcy|regulat(?:or|ors|ion|ory)|sec|treasury)\b/gi;
 /** A feed is read from its start only. The newest stories come first, and some feeds are megabytes long. */
 const MAX_FEED_BYTES = 260e3;
-const SOURCE_TIMEOUT = 3500;
+const SOURCE_TIMEOUT = 7000;
+/** The answer never waits longer than this for a slow source. The source keeps loading, so the next answer has it. */
+const DEADLINE = 2600;
 const MAX_ITEMS_PER_FEED = 60;
 
 const NAMED = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '–', mdash: '—', lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', hellip: '…', pound: '£', euro: '€' };
@@ -171,10 +173,16 @@ export function relevance(it, group, now) {
 }
 
 /** All stories from every source, newest first. A source that fails is left out and named in `sources`. */
-export async function collect({ signal, now = Date.now(), sources = SOURCES } = {}) {
+export async function collect({ signal, now = Date.now(), sources = SOURCES, deadline = DEADLINE } = {}) {
+  const LATE = Symbol('late'), why = new Map();
   const results = await Promise.all(sources.map(async src => {
-    try { return { src, items: await loadSource(src, signal, now), ok: true }; }
-    catch (e) { if (e && e.name === 'AbortError' && signal && signal.aborted) throw e; const stale = memo.get(src.id); return { src, items: stale ? stale.items : [], ok: !!stale }; }
+    const stale = () => { const m = memo.get(src.id); return m ? m.items : null; };
+    try {
+      const work = loadSource(src, signal, now).catch(e => { if (e && e.name === 'AbortError' && signal && signal.aborted) throw e; const m = /answered (\d+)/.exec((e && e.message) || ''); why.set(src.id, m ? `answered ${m[1]}` : 'unreachable'); throw e; });
+      let timer; const out = await Promise.race([work, new Promise(r => { timer = setTimeout(() => r(LATE), deadline); })]); clearTimeout(timer);
+      if (out === LATE) { work.catch(() => {}); why.set(src.id, 'slow'); const old = stale(); return { src, items: old || [], ok: !!old }; }
+      return { src, items: out, ok: true };
+    } catch (e) { if (e && e.name === 'AbortError' && signal && signal.aborted) throw e; const old = stale(); return { src, items: old || [], ok: !!old }; }
   }));
   const seen = new Set(), items = [];
   for (const { src, items: list } of results) {
@@ -200,5 +208,5 @@ export async function collect({ signal, now = Date.now(), sources = SOURCES } = 
   items.length = 0; items.push(...picked);
   const ok = results.filter(r => r.ok).length;
   if (!ok) throw new HttpError(502, 'No news source could be reached right now. Try again in a moment.');
-  return { updated: new Date(now).toISOString(), items, sources: results.map(r => ({ id: r.src.id, name: r.src.name, group: r.src.group, ok: r.ok, count: items.filter(i => i.sourceId === r.src.id).length })) };
+  return { updated: new Date(now).toISOString(), items, sources: results.map(r => ({ id: r.src.id, name: r.src.name, group: r.src.group, ok: r.ok, count: items.filter(i => i.sourceId === r.src.id).length, ...(r.ok ? {} : { why: why.get(r.src.id) || 'unreachable' }) })) };
 }
