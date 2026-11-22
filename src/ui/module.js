@@ -57,7 +57,7 @@ export function mountModule(m, main, onMode) {
   const state = simple ? b : v, stateKey = simple ? sKey : key;
   const effective = () => (simple ? { ...defaults, ...B.simple.map(b) } : beginner ? { ...v, ...(B.force || {}) } : v);
   const refs = {};
-  let lastOut = null;
+  let lastOut = null, lastPlain = null;
   let raf = 0, charts = [], sig = '', observers = [], sceneView = null;
 
   /* ----- inputs ----- */
@@ -106,7 +106,13 @@ export function mountModule(m, main, onMode) {
   const fieldLabel = f => U((beginner && B.labels && B.labels[f.id]) || f.label);
   const toolsEl = toolsBar({
     id: m.id, title: m.title, getState: () => ({ ...state }), getSimple: () => !!simple, getMode: () => (beginner ? 'beginner' : 'pro'), getUnit: () => unit, getOut: () => lastOut,
-    getInputs: () => fieldList.map(f => [fieldLabel(f), (f.pre || '') + state[f.id] + (f.unit ? ' ' + f.unit : '')])
+    getInputs: () => fieldList.map(f => [fieldLabel(f), (f.pre || '') + state[f.id] + (f.unit ? ' ' + f.unit : '')]),
+    getReport: () => {
+      if (!lastOut || !(lastOut.cards || []).length) return null;
+      const shown = f => !(refs[f.id] && refs[f.id].wrap && refs[f.id].wrap.hidden), val = f => { const x = state[f.id]; if (f.type === 'select') { const o = (f.options || []).find(p => String(p[0]) === String(x)); return o ? o[1] : String(x); } if (f.type === 'text') return String(x); return (f.pre || '') + (Number.isFinite(+x) ? (+x).toLocaleString('en-US', { maximumFractionDigits: 6 }) : String(x)) + (f.unit ? (f.unit === '%' ? '' : ' ') + f.unit : ''); };
+      const un = hasUnits ? UNIT_LIST.find(u => u[0] === unit) : null;
+      return { id: m.id, title: U(m.title), blurb: U(m.blurb), ask: beginner && B.ask ? U(B.ask) : '', topic: topic.label, headline: beginner && lastPlain ? lastPlain[0] : '', key: keyCard(lastOut), inputs: fieldList.filter(shown).map(f => [U(fieldLabel(f)), val(f)]), units: un ? `Amounts are in ${un[2].toLowerCase()}.` : '', out: lastOut, assume: ASSUMPTIONS[m.id] || [], url: location.origin + '/' + m.id };
+    }
   });
   const assume = ASSUMPTIONS[m.id];
   const assumeEl = assume ? h('details', { class: 'assume card' }, h('summary', {}, h('h3', {}, 'What we assume')), h('ul', {}, assume.map(x => h('li', {}, x))), h('p', { class: 'src' }, 'Based on standard textbooks (for example Brealey, Myers and Allen; Berk and DeMarzo; Bodie, Kane and Marcus). For study and practice.')) : null;
@@ -138,7 +144,7 @@ export function mountModule(m, main, onMode) {
     if (beginner) {
       const ek = easyCard(B, k);
       let plain; try { const fn = simple ? B.simple.plain : B.plain; plain = fn ? U(fn(simple ? b : eff, out, k)) : [`${ek.label}: ${k.value}`, '']; } catch (e) { plain = [`${ek.label}: ${k.value}`, '']; }
-      heroEl.hidden = !cards.length;
+      lastPlain = plain; heroEl.hidden = !cards.length;
       heroEl.innerHTML = `<p class="eyebrow">${esc(ek.label || '')}</p><div class="big" data-v></div><p class="headline">${esc(plain[0] || '')}</p>`;
       const big = heroEl.querySelector('[data-v]');
       tick(big, k.value || '—', 'big:' + moduleKey());

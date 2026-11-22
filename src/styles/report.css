@@ -1,0 +1,61 @@
+/* The printed report: a separate, structured document. It is off screen, and shows only while printing. */
+#print-report{display:none}
+html.rp-preview #print-report{display:block;max-width:794px;margin:0 auto;padding:28px;background:#fff}
+@media print{
+  @page{size:A4;margin:15mm 14mm 17mm;@bottom-left{content:"Finance Fundamentals · LUMS Suleman Dawood School of Business";font:8pt 'Outfit',Arial,sans-serif;color:#667}@bottom-right{content:"Page " counter(page) " of " counter(pages);font:8pt 'Outfit',Arial,sans-serif;color:#667}}
+  html.printing body>*:not(#print-report){display:none!important}
+  html.printing,html.printing body{background:#fff!important}
+  html.printing #print-report{display:block}
+}
+#print-report{color:#14213d;font:10pt/1.5 'Outfit',Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#print-report *{box-sizing:border-box}
+#print-report h1,#print-report h2,#print-report h3,#print-report p{margin:0}
+.rp-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:10px;border-bottom:3px solid #002581}
+.rp-brand{display:grid;gap:0}
+.rp-brand b{font:700 20pt/1 'Outfit',Arial,sans-serif;letter-spacing:.02em;color:#002581}
+.rp-brand span{font-size:8.5pt;color:#44506b}
+.rp-brand i{font-style:normal;font-size:8.5pt;font-weight:600;color:#002581;margin-top:2px}
+.rp-kind{text-align:right;display:grid;gap:1px}
+.rp-kind b{font:600 9pt var(--body,'Outfit'),Arial,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#002581}
+.rp-kind span{font-size:9pt;color:#44506b}
+.rp-titlebox{padding:18px 0 12px;display:grid;gap:5px}
+.rp-topic{font:600 8.5pt 'Outfit',Arial,sans-serif;text-transform:uppercase;letter-spacing:.12em;color:#5b6784}
+#print-report h1{font:700 22pt/1.15 'Outfit',Arial,sans-serif;letter-spacing:-.01em;color:#0b1b3d}
+.rp-ask{font-size:11pt;color:#44506b}
+.rp-result{margin:6px 0 14px;padding:16px 20px;border-radius:10px;background:#eef1fb;border:1px solid #c9d2f0;border-left:6px solid #002581;display:grid;gap:3px;break-inside:avoid}
+.rp-rl{font:600 8.5pt 'Outfit',Arial,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#44506b}
+.rp-rv{font:700 30pt/1.1 'Outfit',Arial,sans-serif;letter-spacing:-.02em;color:#002581;overflow-wrap:anywhere}
+.rp-result p{font-size:11pt;color:#14213d;margin-top:2px}
+.rp-note{margin:0 0 12px;padding:9px 13px;border-radius:8px;background:#f5f6fa;border:1px solid #dde1ee;font-size:9.5pt;color:#33405c;break-inside:avoid}
+.rp-note.warn{background:#fff6e3;border-color:#f0d9a0}
+.rp-sec{margin:18px 0 0}
+#print-report h2{font:700 12.5pt/1.2 'Outfit',Arial,sans-serif;color:#002581;padding-bottom:5px;margin-bottom:9px;border-bottom:1px solid #c9d2f0;break-after:avoid}
+.rp-grp{font:700 9.5pt 'Outfit',Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:#5b6784;margin:12px 0 6px;break-after:avoid}
+.rp-grp:first-of-type{margin-top:2px}
+.rp-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rp-tile{padding:9px 12px;border:1px solid #dde1ee;border-left:4px solid #8a97b3;border-radius:7px;display:grid;gap:1px;break-inside:avoid;background:#fff}
+.rp-tile.good{border-left-color:#0f7a43}.rp-tile.bad{border-left-color:#c62f2f}.rp-tile.warn{border-left-color:#c48a00}
+.rp-tile span{font-size:8.5pt;color:#5b6784;line-height:1.3}
+.rp-tile b{font:600 13pt/1.25 'Outfit',Arial,sans-serif;color:#0b1b3d;overflow-wrap:anywhere}
+.rp-tile small{font-size:8pt;color:#667;line-height:1.3}
+#print-report table{width:100%;border-collapse:collapse;font-size:9pt;font-variant-numeric:tabular-nums}
+#print-report th,#print-report td{padding:3.5px 8px;border-bottom:1px solid #e3e6f1;text-align:right;vertical-align:top}
+#print-report thead th{background:#eef1fb;color:#002581;font-weight:700;border-bottom:2px solid #002581;font-size:8.5pt}
+#print-report thead{display:table-header-group}
+.rp-tbl.keep{break-inside:avoid}
+#print-report tr{break-inside:avoid}
+#print-report tbody tr:nth-child(even){background:#fafbfe}
+#print-report th:first-child,#print-report td:first-child,#print-report table.left th,#print-report table.left td{text-align:left}
+.rp-inputs th{width:55%;font-weight:500;color:#33405c;background:none}
+.rp-inputs td{font-weight:600;color:#0b1b3d;text-align:left}
+.rp-inputs tbody tr:nth-child(even){background:#fafbfe}
+.rp-cap{font-size:8.5pt;color:#5b6784;margin:-3px 0 6px}
+tr.gh td{background:#eef1fb;color:#002581;font-weight:700;text-align:left;font-size:8.5pt;letter-spacing:.04em}
+.rp-steps ol{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:6px}
+.rp-steps li{counter-increment:s;display:grid;grid-template-columns:22px 1fr;column-gap:8px;row-gap:1px;padding:7px 10px;border:1px solid #e3e6f1;border-radius:7px;break-inside:avoid}
+.rp-steps li::before{content:counter(s);grid-row:1 / span 2;width:20px;height:20px;border-radius:50%;background:#002581;color:#fff;font:600 8.5pt/20px 'Outfit',Arial,sans-serif;text-align:center}
+.rp-steps li b{font-weight:600;font-size:9.5pt;color:#0b1b3d}
+.rp-steps li code{font:500 9pt ui-monospace,Menlo,Consolas,monospace;color:#33405c;white-space:pre-wrap;overflow-wrap:anywhere}
+.rp-sec ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:9.5pt;color:#33405c}
+.rp-foot{margin-top:22px;padding-top:10px;border-top:1px solid #c9d2f0;display:grid;gap:3px;font-size:8.5pt;color:#5b6784;break-inside:avoid}
+.rp-foot b{color:#33405c}

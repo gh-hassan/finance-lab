@@ -1,6 +1,7 @@
 // @ts-nocheck
 /* Share a calculation as a link, download its results as a spreadsheet file, or print it. */
 import { h, store } from './visuals.js';
+import { printReport } from './report.js';
 
 const enc = obj => btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
 const dec = s => JSON.parse(decodeURIComponent(escape(atob(s))));
@@ -41,7 +42,7 @@ export function download(name, text, type = 'text/csv') {
 }
 
 /** A small row of buttons: copy link, download CSV, print or save as PDF. */
-export function toolsBar({ id, title, getState, getSimple, getMode, getUnit, getInputs, getOut }) {
+export function toolsBar({ id, title, getState, getSimple, getMode, getUnit, getInputs, getOut, getReport }) {
   const note = h('span', { class: 'xnote', role: 'status' });
   let timer = 0;
   const say = msg => { note.textContent = msg; clearTimeout(timer); timer = setTimeout(() => { note.textContent = ''; }, 2400); };
@@ -54,7 +55,7 @@ export function toolsBar({ id, title, getState, getSimple, getMode, getUnit, get
   return h('div', { class: 'xtools' },
     h('button', { type: 'button', class: 'btn small', onclick: copy }, 'Copy link'),
     h('button', { type: 'button', class: 'btn small', onclick: csv }, 'Download CSV'),
-    h('button', { type: 'button', class: 'btn small', onclick: () => { say('Choose "Save as PDF" in the print window.'); setTimeout(() => window.print(), 250); } }, 'Print or PDF'),
+    h('button', { type: 'button', class: 'btn small', onclick: () => { const r = getReport && getReport(); if (!r) { say('Nothing to print yet.'); return; } say('Choose "Save as PDF" in the print window.'); setTimeout(() => printReport(r), 250); } }, 'Print or PDF'),
     note);
 }
 void store;
