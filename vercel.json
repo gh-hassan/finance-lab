@@ -27,6 +27,9 @@
     "api/pulse.js": {
       "maxDuration": 20
     },
+    "api/news.js": {
+      "maxDuration": 20
+    },
     "api/pkhistory.js": {
       "maxDuration": 25
     }

@@ -17,6 +17,7 @@ export const ICONS = {
   'd-factor-returns': svg('<path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/>'),
   'd-currency': svg('<circle cx="8.500" cy="8.500" r="4.500"/><circle cx="15.500" cy="15.500" r="4.500"/><path d="M8.500 6.500v4M7 8.500h3"/>'),
   'd-countries': svg('<path d="M5 21V4M5 5h11l-2 3.500 2 3.500H5"/>'),
+  'd-news': svg('<path d="M5 4h11a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2z"/><path d="M18 9h2a1 1 0 011 1v7a3 3 0 01-3 3"/><path d="M8.500 8h6M8.500 12h6M8.500 16h3.500"/>'),
   'd-market-pulse': svg('<path d="M3 12h4l2.500-6 4 12 2.500-6H21"/>'),
   'd-crypto': svg('<path d="M12 3l7.500 4.300v8.400L12 20l-7.500-4.300V7.300z"/><path d="M9.500 8v8M9.500 8.500h3.800a1.700 1.700 0 010 3.400H9.500m0 0h4.200a1.700 1.700 0 010 3.400H9.500"/>'),
   search: svg('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>'),

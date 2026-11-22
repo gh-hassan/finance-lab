@@ -127,6 +127,12 @@ export function startApp(root) {
     }
   });
   document.addEventListener('click', e => { if (e.target.closest('[data-open-search]')) openSearch(); });
+  /* the news page opens at once because its data and code are fetched as soon as someone points at its link or opens the Decide menu */
+  const warmNews = () => { import('./newscache.js').then(m => m.prefetchNews()); import('./news.js'); };
+  document.addEventListener('pointerover', e => { if (e.target.closest && e.target.closest('a[href="/news"]')) warmNews(); }, { passive: true });
+  document.addEventListener('touchstart', e => { if (e.target.closest && e.target.closest('a[href="/news"]')) warmNews(); }, { passive: true });
+  document.addEventListener('focusin', e => { if (e.target.closest && e.target.closest('a[href="/news"]')) warmNews(); });
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-menu="decide"]')) warmNews(); });
 
   /* ----- routing ----- */
   document.addEventListener('click', e => {
