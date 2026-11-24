@@ -68,15 +68,15 @@ describe('collecting every source', () => {
     expect((await collect({ now: NOW })).items).toHaveLength(1);
   });
   it('carries on without a source that fails, and says which one', async () => {
-    mockFetch(u => (u.includes('dawn.com') ? { status: 500, text: '' } : feedFor(u)));
-    const r = await collect({ now: NOW }); expect(r.sources.find(s => s.id === 'dawn')).toMatchObject({ ok: false, count: 0, why: 'answered 500' }); expect(r.items.some(i => i.sourceId === 'cnbc')).toBe(true);
+    mockFetch(u => (u.includes('tribune.com.pk') ? { status: 500, text: '' } : feedFor(u)));
+    const r = await collect({ now: NOW }); expect(r.sources.find(s => s.id === 'tribune')).toMatchObject({ ok: false, count: 0, why: 'answered 500' }); expect(r.items.some(i => i.sourceId === 'cnbc')).toBe(true);
   });
   it('does not wait for a slow source, says why it is missing, and has it ready next time', async () => {
-    mockFetch(u => (u.includes('dawn.com') ? new Promise(r => setTimeout(() => r(feedFor(u)), 120)) : feedFor(u)));
-    const first = await collect({ now: NOW, deadline: 20 }), d = first.sources.find(x => x.id === 'dawn')!;
+    mockFetch(u => (u.includes('tribune.com.pk') ? new Promise(r => setTimeout(() => r(feedFor(u)), 120)) : feedFor(u)));
+    const first = await collect({ now: NOW, deadline: 20 }), d = first.sources.find(x => x.id === 'tribune')!;
     expect(d).toMatchObject({ ok: false, count: 0, why: 'slow' }); expect(first.items.some(i => i.sourceId === 'cnbc')).toBe(true);
     await new Promise(r => setTimeout(r, 250));
-    const second = await collect({ now: NOW + 1000, deadline: 20 }); expect(second.sources.find(x => x.id === 'dawn')).toMatchObject({ ok: true }); expect(second.items.some(i => i.sourceId === 'dawn')).toBe(true);
+    const second = await collect({ now: NOW + 1000, deadline: 20 }); expect(second.sources.find(x => x.id === 'tribune')).toMatchObject({ ok: true }); expect(second.items.some(i => i.sourceId === 'tribune')).toBe(true);
   });
   it('gives up with a clear message when nothing can be reached', async () => {
     mockFetch(() => ({ status: 503, text: '' })); await expect(collect({ now: NOW })).rejects.toThrow(/No news source/);

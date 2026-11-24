@@ -9,7 +9,6 @@ export const SOURCES = [
   { id: 'marketwatch', name: 'MarketWatch', group: 'global', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories' },
   { id: 'bbc', name: 'BBC Business', group: 'global', url: 'https://feeds.bbci.co.uk/news/business/rss.xml' },
   { id: 'guardian', name: 'The Guardian Business', group: 'global', url: 'https://www.theguardian.com/business/rss' },
-  { id: 'dawn', name: 'Dawn Business', group: 'local', url: 'https://www.dawn.com/feeds/business' },
   { id: 'tribune', name: 'Express Tribune Business', group: 'local', url: 'https://tribune.com.pk/feed/business' },
   { id: 'dailytimes', name: 'Daily Times Business', group: 'local', url: 'https://dailytimes.com.pk/category/business/feed/' },
   { id: 'propakistani', name: 'ProPakistani Business', group: 'local', url: 'https://propakistani.pk/category/business/feed/' },
