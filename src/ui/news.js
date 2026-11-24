@@ -43,12 +43,12 @@ export function renderNews(main) {
   function listing() {
     const all = ofGroup(state.items, state.tab), part = all.slice(0, state.limit);
     if (!all.length) return h('p', { class: 'nw-empty' }, 'No stories here yet.');
-    return h('div', { class: 'nw-one' }, state.tab === 'learn' ? h('div', { class: 'nw-lgrid wide' }, part.map(learnCard)) : h('div', { class: 'nw-rows big' }, part.map(i => row(i, true))),
+    return h('div', { class: 'nw-one' }, state.tab === 'learn' ? h('div', { class: 'nw-lgrid nw-wide' }, part.map(learnCard)) : h('div', { class: 'nw-rows nw-big' }, part.map(i => row(i, true))),
       all.length > part.length ? h('button', { type: 'button', class: 'nw-more', onclick: () => { state.limit += STEP; paint(); } }, 'Show more') : null);
   }
 
   function paint() {
-    tabsEl.replaceChildren(...TABS.map(([v, l]) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(v === state.tab), class: v === state.tab ? 'on' : '', onclick: () => setTab(v) }, l)));
+    tabsEl.replaceChildren(...TABS.map(([v, l]) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(v === state.tab), class: v === state.tab ? 'nw-on' : '', onclick: () => setTab(v) }, l)));
     view.replaceChildren(state.tab === 'top' ? front() : listing());
     drawStatus();
   }
@@ -105,7 +105,7 @@ export function renderNews(main) {
     } finally { state.busy = false; checkBtn.disabled = false; checkBtn.textContent = 'Refresh'; state.opening = false; }
   }
 
-  const skeleton = () => h('div', { class: 'nw-skel', 'aria-hidden': 'true' }, h('div', { class: 'nw-hero' }, h('i', { class: 'sk lead' }), h('div', {}, [0, 1, 2, 3].map(() => h('i', { class: 'sk row' })))), h('div', { class: 'nw-cols' }, [0, 1, 2].map(() => h('div', {}, [0, 1, 2, 3].map(() => h('i', { class: 'sk row' }))))));
+  const skeleton = () => h('div', { class: 'nw-skel', 'aria-hidden': 'true' }, h('div', { class: 'nw-hero' }, h('i', { class: 'nw-sk nw-sk-lead' }), h('div', {}, [0, 1, 2, 3].map(() => h('i', { class: 'nw-sk nw-sk-row' })))), h('div', { class: 'nw-cols' }, [0, 1, 2].map(() => h('div', {}, [0, 1, 2, 3].map(() => h('i', { class: 'nw-sk nw-sk-row' }))))));
 
   const onVis = () => { if (!document.hidden && state.last && Date.now() - state.last > POLL_MS / 2) check(false); };
   const touch = () => { state.touched = true; };

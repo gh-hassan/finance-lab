@@ -11,6 +11,8 @@ export const SOURCES = [
   { id: 'guardian', name: 'The Guardian Business', group: 'global', url: 'https://www.theguardian.com/business/rss' },
   { id: 'dawn', name: 'Dawn Business', group: 'local', url: 'https://www.dawn.com/feeds/business' },
   { id: 'tribune', name: 'Express Tribune Business', group: 'local', url: 'https://tribune.com.pk/feed/business' },
+  { id: 'dailytimes', name: 'Daily Times Business', group: 'local', url: 'https://dailytimes.com.pk/category/business/feed/' },
+  { id: 'propakistani', name: 'ProPakistani Business', group: 'local', url: 'https://propakistani.pk/category/business/feed/' },
   { id: 'fed', name: 'Federal Reserve', group: 'policy', url: 'https://www.federalreserve.gov/feeds/press_all.xml' },
   { id: 'sec', name: 'US SEC', group: 'policy', url: 'https://www.sec.gov/news/pressreleases.rss' },
   { id: 'ecb', name: 'European Central Bank', group: 'policy', url: 'https://www.ecb.europa.eu/rss/press.html' },
@@ -120,6 +122,7 @@ export function parseFeed(xml, { now = Date.now() } = {}) {
     const body = inner(block, 'description') || inner(block, 'summary') || inner(block, 'content:encoded') || inner(block, 'content') || '';
     let summary = clip(plain(body), 170);
     if (summary.toLowerCase() === title.toLowerCase() || summary.length < 25) summary = '';
+    if (/(\.{3}|…)\s*$/.test(summary)) { summary = summary.replace(/(\s*(\.{3}|…))+\s*$/, ''); if (summary && !/[.!?"”)]$/.test(summary)) summary += '…'; }
     if (!title || !link) continue;
     out.push({ title: clip(title, 180), link, published: new Date(when).toISOString(), summary });
   }

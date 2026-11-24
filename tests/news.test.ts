@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { parseFeed, decode, plain, clip, inner, collect, relevance, SOURCES, resetNewsCache } from '../api/_news.js';
 import handler, { resetNewsCache as reset2 } from '../api/news.js';
 import { ago, kindOf, freshIds, frontPage, ofGroup, initials, hueOf, TABS, type NewsItem } from '../src/lib/news';
@@ -37,6 +38,10 @@ describe('reading feeds', () => {
   it('never lets a story be dated in the future, and drops summaries that only repeat the title', () => {
     const r = parseFeed(rss(item('Same words here for the title', 'https://example.com/9', 'Mon, 01 Jan 2029 00:00:00 GMT', 'Same words here for the title')), { now: NOW });
     expect(Date.parse(r[0].published)).toBeLessThanOrEqual(NOW); expect(r[0].summary).toBe('');
+  });
+  it('does not stack ellipses when a feed already ends its summary with dots', () => {
+    const r = parseFeed(rss(item('Plots scenarios', 'https://example.com/e', 'Sun, 22 Nov 2026 08:00:00 GMT', 'Wharton senior fellow plots four trajectories for business leaders to follow as they plan their AI future, with all its potential risks and rewards. ...')), { now: NOW });
+    expect(r[0].summary).not.toMatch(/(\.|…)\s*(\.|…)/); expect(r[0].summary.endsWith('rewards.')).toBe(true);
   });
   it('copes with empty, broken and non-feed text', () => { for (const x of ['', '<html>nope</html>', '<item><title>x', null as any]) expect(parseFeed(x, { now: NOW })).toEqual([]); });
   it('decodes entities and shortens on a whole word', () => {
@@ -153,5 +158,21 @@ describe('keeping the last news for an instant open', () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, headers: { get: () => 'application/json' }, json: async () => ({ updated: 'x', items: [{ id: 'z' }] }) })));
     const [a, b] = await Promise.all([prefetchNews(), prefetchNews()]);
     expect(a).toEqual(b); expect((fetch as any).mock.calls).toHaveLength(1); expect(readNewsCache()!.data.items[0].id).toBe('z'); void m;
+  });
+});
+
+describe('news page styles stay out of the way of the rest of the site', () => {
+  /* the site already has global classes such as .big (huge answer figures) and .lead; an unprefixed name here once squashed every story's text */
+  const js = readFileSync(new URL('../src/ui/news.js', import.meta.url), 'utf8'), css = readFileSync(new URL('../src/styles/news.css', import.meta.url), 'utf8');
+  it('gives every class the page uses its own nw- prefix', () => {
+    const used = [...js.matchAll(/(?:class:\s*|link\(|h\('[a-z]+',\s*\{\s*class:\s*)(?:'([^']+)'|`([^`]+)`)/g)].flatMap(m => (m[1] || m[2]).split(/\s+/)).filter(Boolean);
+    const stray = [...new Set(used)].filter(c => !/^(nw-|d-)/.test(c) && !/^\$\{/.test(c));
+    expect(stray).toEqual([]);
+    for (const m of js.matchAll(/'(nw-[a-z-]+)(?: ([a-z-]+))+'/g)) for (const c of m[0].replace(/'/g, '').split(' ')) expect(c, m[0]).toMatch(/^nw-/);
+  });
+  it('styles only nw- classes', () => {
+    const noKeyframes = css.replace(/@keyframes\s+\w+\s*\{[^}]*\{[^}]*\}[^}]*\{[^}]*\}\s*\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const classes = [...noKeyframes.matchAll(/\.([a-zA-Z_][\w-]*)/g)].map(m => m[1]);
+    expect(classes.filter(c => !c.startsWith('nw-'))).toEqual([]);
   });
 });
